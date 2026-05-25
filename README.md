@@ -1,6 +1,6 @@
 # Employee Time Tracking Application
 
-A full-stack web application for tracking and reporting employee hourly work across different clients.
+A full-stack web application for tracking and reporting employee hourly work across different clients. Mirrored for training delivery.
 
 ## ⚠️ Important Notes
 
