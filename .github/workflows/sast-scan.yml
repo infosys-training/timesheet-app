@@ -47,9 +47,9 @@ jobs:
 
           echo "PR #${PR_NUMBER} by ${PR_AUTHOR} on branch ${PR_BRANCH} (state: ${PR_STATE})"
 
-          # Only trigger for author bsmitches on open PRs
-          if [ "$PR_AUTHOR" != "bsmitches" ]; then
-            echo "PR author is '${PR_AUTHOR}', not 'bsmitches'. Skipping."
+          # Only trigger for author mbatchelor81 on open PRs
+          if [ "$PR_AUTHOR" != "mbatchelor81" ]; then
+            echo "PR author is '${PR_AUTHOR}', not 'mbatchelor81'. Skipping."
             echo "should_run=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -99,7 +99,7 @@ jobs:
 
           Instructions:
           1. Clone the repository ${REPO} and checkout branch '${PR_BRANCH}'.
-          2. Review the SonarCloud findings for this PR at: https://sonarcloud.io/dashboard?id=Cognition-Partner-Workshops_app_timesheet&pullRequest=${PR_NUMBER}
+          2. Review the SonarCloud findings for this PR at: https://sonarcloud.io/dashboard?id=infosys-training_timesheet-app&pullRequest=${PR_NUMBER}
           3. Fix ALL security vulnerabilities flagged by SonarCloud:
              - For SQL injection: use parameterized queries instead of string interpolation.
              - For command injection: use child_process.execFile() or validate/sanitize inputs instead of exec().

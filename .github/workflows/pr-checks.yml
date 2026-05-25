@@ -196,7 +196,7 @@ jobs:
     needs: [security-audit]
     if: |
       always() &&
-      github.event.pull_request.user.login == 'bsmitches' &&
+      github.event.pull_request.user.login == 'mbatchelor81' &&
       needs.security-audit.result == 'failure'
     runs-on: ubuntu-latest
 
