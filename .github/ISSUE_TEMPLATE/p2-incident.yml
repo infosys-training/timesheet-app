@@ -1,0 +1,132 @@
+name: "P2 Incident - High"
+description: "Major feature degradation affecting significant number of users"
+title: "[P2] "
+labels: ["incident", "P2-high"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 Incident Report - High
+        **Response SLA: 1 hour** | **Notify: On-call Engineer**
+        Use this template for major feature degradation, auth failures, or significant performance issues.
+
+  - type: input
+    id: incident-start
+    attributes:
+      label: Incident Start Time
+      description: When did the incident begin? (UTC)
+      placeholder: "2025-01-15 14:30 UTC"
+    validations:
+      required: true
+
+  - type: input
+    id: incident-detected
+    attributes:
+      label: Detection Time
+      description: When was the incident detected? (UTC)
+      placeholder: "2025-01-15 14:35 UTC"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: impact-scope
+    attributes:
+      label: Impact Scope
+      description: How many users/services are affected?
+      options:
+        - Significant subset of users (10-50%)
+        - Specific feature completely broken
+        - Performance severely degraded for all users
+        - Data integrity concerns (no loss)
+        - Authentication/authorization issues
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact-description
+    attributes:
+      label: Impact Description
+      description: Describe what is degraded and how users are affected.
+      placeholder: |
+        - Which feature or endpoint is affected?
+        - What error messages are users seeing?
+        - Is there a workaround available?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Select the closest matching failure mode from the RUNBOOK.
+      options:
+        - Authentication Failures
+        - Memory Exhaustion / Leaks
+        - In-Memory Data Loss on Restart
+        - Frontend/Proxy Connectivity Issues
+        - Docker Container Health Check Failures
+        - Disk Space Exhaustion
+        - Unknown / Under Investigation
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Chronological list of events, actions taken, and findings.
+      placeholder: |
+        - 14:30 UTC - User reports unable to log in
+        - 14:45 UTC - Confirmed auth middleware returning 401 for valid emails
+        - 15:00 UTC - Identified CORS misconfiguration after deploy
+        - 15:10 UTC - Updated FRONTEND_URL, restarted server
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnosis
+    attributes:
+      label: Diagnosis / Root Cause
+      description: What caused the incident? Reference RUNBOOK.md sections if applicable.
+      placeholder: |
+        Root cause: FRONTEND_URL was not updated after domain change.
+        See RUNBOOK.md - Failure Mode 6: Authentication Failures
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution / Mitigation Steps
+      description: What was done to resolve the incident?
+      placeholder: |
+        1. Updated FRONTEND_URL in environment configuration
+        2. Restarted the backend server
+        3. Verified login works for affected users
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention / Follow-up Actions
+      description: What should be done to prevent this from happening again?
+      placeholder: |
+        - [ ] Add CORS validation to deployment checklist
+        - [ ] Create automated test for auth flow
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Where did this occur?
+      placeholder: |
+        - Environment: production / staging / development
+        - Docker image version:
+        - Node.js version:
+        - Browser (if frontend-related):
+    validations:
+      required: false

@@ -1,0 +1,134 @@
+name: "P1 Incident - Critical"
+description: "Complete service outage or data loss affecting all users"
+title: "[P1] "
+labels: ["incident", "P1-critical", "urgent"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 Incident Report - Critical
+        **Response SLA: 15 minutes** | **Notify: On-call + Team Lead**
+        Use this template for complete service outages, data loss, or security breaches.
+
+  - type: input
+    id: incident-start
+    attributes:
+      label: Incident Start Time
+      description: When did the incident begin? (UTC)
+      placeholder: "2025-01-15 14:30 UTC"
+    validations:
+      required: true
+
+  - type: input
+    id: incident-detected
+    attributes:
+      label: Detection Time
+      description: When was the incident detected? (UTC)
+      placeholder: "2025-01-15 14:35 UTC"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: impact-scope
+    attributes:
+      label: Impact Scope
+      description: How many users/services are affected?
+      options:
+        - All users - complete outage
+        - All users - partial functionality loss
+        - Majority of users (>50%)
+        - Data loss or corruption detected
+        - Security breach detected
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact-description
+    attributes:
+      label: Impact Description
+      description: Describe what is broken and how users are affected.
+      placeholder: |
+        - Which endpoints/features are down?
+        - What error messages are users seeing?
+        - Is data at risk?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Select the closest matching failure mode from the RUNBOOK.
+      options:
+        - Database Connection Failure
+        - Database Corruption
+        - API Server Crash / Fails to Start
+        - Memory Exhaustion
+        - In-Memory Data Loss
+        - Security Breach
+        - Unknown / Under Investigation
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Chronological list of events, actions taken, and findings.
+      placeholder: |
+        - 14:30 UTC - Monitoring alert triggered for /health endpoint
+        - 14:32 UTC - On-call engineer paged
+        - 14:35 UTC - Confirmed database connection failure
+        - 14:40 UTC - Restarted container, service restored
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnosis
+    attributes:
+      label: Diagnosis / Root Cause
+      description: What caused the incident? Reference RUNBOOK.md sections if applicable.
+      placeholder: |
+        Root cause: SQLite database file permissions changed after volume remount.
+        See RUNBOOK.md - Failure Mode 1: Database Connection Failure
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution / Mitigation Steps
+      description: What was done to resolve the incident?
+      placeholder: |
+        1. Identified database file permissions issue
+        2. Ran `chown nodejs:nodejs /app/data/timesheet.db`
+        3. Restarted container
+        4. Verified all endpoints responding
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention / Follow-up Actions
+      description: What should be done to prevent this from happening again?
+      placeholder: |
+        - [ ] Add file permission check to container startup
+        - [ ] Set up monitoring for database health
+        - [ ] Schedule post-mortem meeting
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Where did this occur?
+      placeholder: |
+        - Environment: production / staging / development
+        - Docker image version:
+        - Node.js version:
+        - Host OS:
+    validations:
+      required: false
