@@ -1,0 +1,125 @@
+name: "P3 Incident - Medium"
+description: "Minor feature degradation or non-critical service issue"
+title: "[P3] "
+labels: ["incident", "P3-medium"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 Incident Report - Medium
+        **Response SLA: 4 hours** | **Notify: Team Channel**
+        Use this template for minor feature degradation, rate limiting issues, or non-critical failures.
+
+  - type: input
+    id: incident-start
+    attributes:
+      label: Incident Start Time
+      description: When did the incident begin? (UTC)
+      placeholder: "2025-01-15 14:30 UTC"
+    validations:
+      required: true
+
+  - type: input
+    id: incident-detected
+    attributes:
+      label: Detection Time
+      description: When was the incident detected? (UTC)
+      placeholder: "2025-01-15 15:00 UTC"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: impact-scope
+    attributes:
+      label: Impact Scope
+      description: How many users/services are affected?
+      options:
+        - Small subset of users (<10%)
+        - Single non-critical feature degraded
+        - Performance mildly degraded
+        - Report generation issues
+        - Rate limiting affecting legitimate users
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact-description
+    attributes:
+      label: Impact Description
+      description: Describe what is affected and the user experience impact.
+      placeholder: |
+        - Which feature is affected?
+        - Is there a workaround?
+        - How frequently does the issue occur?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Select the closest matching failure mode from the RUNBOOK.
+      options:
+        - Rate Limiting Triggered
+        - Report Generation Failures (PDF/CSV)
+        - Dependency Vulnerabilities
+        - Disk Space Exhaustion
+        - Frontend/Proxy Connectivity Issues
+        - Unknown / Under Investigation
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Chronological list of events and actions taken.
+      placeholder: |
+        - 14:30 UTC - User reports CSV export failing
+        - 15:00 UTC - Confirmed temp directory full
+        - 15:15 UTC - Cleaned up orphaned temp files
+        - 15:20 UTC - Exports working again
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnosis
+    attributes:
+      label: Diagnosis / Root Cause
+      description: What caused the incident?
+      placeholder: |
+        Root cause: Temp file cleanup failed on previous export errors,
+        accumulating files until disk was full.
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution / Mitigation Steps
+      description: What was done to resolve the incident?
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention / Follow-up Actions
+      description: What should be done to prevent this from happening again?
+      placeholder: |
+        - [ ] Add cron job to clean temp files
+        - [ ] Add disk space monitoring
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Where did this occur?
+      placeholder: |
+        - Environment: production / staging / development
+        - Docker image version:
+    validations:
+      required: false

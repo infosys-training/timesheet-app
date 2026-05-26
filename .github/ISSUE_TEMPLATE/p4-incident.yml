@@ -1,0 +1,80 @@
+name: "P4 Incident - Low"
+description: "Cosmetic issues, minor warnings, or improvement opportunities"
+title: "[P4] "
+labels: ["incident", "P4-low"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 Incident Report - Low
+        **Response SLA: Next business day** | **Notify: Backlog**
+        Use this template for cosmetic issues, non-critical warnings, or improvement opportunities discovered during operations.
+
+  - type: input
+    id: incident-date
+    attributes:
+      label: Date Observed
+      description: When was the issue observed? (UTC)
+      placeholder: "2025-01-15"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: impact-scope
+    attributes:
+      label: Impact Scope
+      description: What is the scope of this issue?
+      options:
+        - Cosmetic / UI glitch
+        - Non-critical warning in logs
+        - Minor performance inefficiency
+        - Documentation gap
+        - Improvement opportunity
+        - Low-severity dependency vulnerability
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact-description
+    attributes:
+      label: Description
+      description: Describe the issue and its impact.
+      placeholder: |
+        - What was observed?
+        - What is the expected behavior?
+        - Does it affect functionality?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: How can this issue be reproduced?
+      placeholder: |
+        1. Navigate to ...
+        2. Click on ...
+        3. Observe ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: proposed-fix
+    attributes:
+      label: Proposed Fix / Improvement
+      description: Suggested resolution or improvement.
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Where did this occur?
+      placeholder: |
+        - Environment: production / staging / development
+        - Browser:
+        - OS:
+    validations:
+      required: false
