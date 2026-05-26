@@ -1,0 +1,147 @@
+name: "P2 Incident - High"
+description: "Major feature degraded or unavailable, workaround may exist"
+title: "[P2] "
+labels: ["incident", "P2-high", "priority:high"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 Incident Report - High
+        Use this template for **major feature degradation** where a workaround may exist but core functionality is impaired.
+        **Response SLA**: Acknowledge within 1 hour, begin resolution within 4 hours.
+
+  - type: input
+    id: incident-commander
+    attributes:
+      label: Incident Commander
+      description: Who is leading the incident response?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Which failure mode best describes this incident? (See RUNBOOK.md)
+      options:
+        - "FM-2: Database Corruption / Data Loss (non-prod)"
+        - "FM-3: SQLite Lock Contention"
+        - "FM-6: Authentication Failures"
+        - "FM-8: PDF/CSV Report Generation Failure"
+        - "FM-12: Frontend Build / Serving Failure"
+        - "FM-13: Docker Health Check Failure"
+        - "FM-14: Dependency Vulnerability"
+        - "FM-15: CORS / Proxy Misconfiguration"
+        - "Other (describe below)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Describe the user and business impact of this incident.
+      placeholder: |
+        - Number of users affected: All / Subset / Single user
+        - Functionality impacted: Specific feature (e.g., reports, auth)
+        - Workaround available: Yes / No
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms
+      description: What symptoms are being observed?
+      placeholder: |
+        - Error messages seen
+        - HTTP status codes returned
+        - Monitoring alerts triggered
+    validations:
+      required: true
+
+  - type: input
+    id: detection-time
+    attributes:
+      label: Detection Time
+      description: When was the incident first detected? (UTC)
+      placeholder: "YYYY-MM-DD HH:MM UTC"
+    validations:
+      required: true
+
+  - type: input
+    id: start-time
+    attributes:
+      label: Estimated Start Time
+      description: When did the incident likely begin? (UTC)
+      placeholder: "YYYY-MM-DD HH:MM UTC"
+    validations:
+      required: false
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: Chronological timeline of events and actions taken.
+      value: |
+        | Time (UTC) | Event |
+        |---|---|
+        | HH:MM | Incident detected |
+        | HH:MM | Investigation started |
+        | HH:MM | Root cause identified |
+        | HH:MM | Fix applied |
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What caused the incident?
+      placeholder: "Describe the underlying root cause."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: Steps taken to resolve the incident.
+      placeholder: |
+        1. Step taken to mitigate
+        2. Step taken to resolve
+        3. Verification performed
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention / Follow-up Actions
+      description: What actions will prevent recurrence?
+      placeholder: |
+        - [ ] Action item 1
+        - [ ] Action item 2
+    validations:
+      required: false
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Production
+        - Staging
+        - Development
+    validations:
+      required: true
+
+  - type: input
+    id: related-prs
+    attributes:
+      label: Related PRs / Commits
+      description: Link any related pull requests or commits.
+      placeholder: "#123, abc1234"
+    validations:
+      required: false

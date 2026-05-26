@@ -1,0 +1,118 @@
+name: "P3 Incident - Medium"
+description: "Minor feature issue or degraded performance, most users unaffected"
+title: "[P3] "
+labels: ["incident", "P3-medium"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 Incident Report - Medium
+        Use this template for **minor feature issues or degraded performance** where most users are unaffected.
+        **Response SLA**: Acknowledge within 4 hours, resolve within 1 business day.
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reporter
+      description: Who is reporting this incident?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Which failure mode best describes this incident? (See RUNBOOK.md)
+      options:
+        - "FM-5: API Rate Limit Exhaustion"
+        - "FM-7: Validation Errors Spike"
+        - "FM-9: Temp File Accumulation"
+        - "FM-12: Frontend Build / Serving Failure (dev)"
+        - "FM-14: Dependency Vulnerability (moderate)"
+        - "Other (describe below)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Describe who is affected and how.
+      placeholder: |
+        - Number of users affected: Few / Single user
+        - Functionality impacted: Describe the specific issue
+        - Workaround available: Yes / No
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms
+      description: What symptoms are being observed?
+      placeholder: |
+        - Error messages or unexpected behavior
+        - Performance metrics
+    validations:
+      required: true
+
+  - type: input
+    id: detection-time
+    attributes:
+      label: Detection Time
+      description: When was the issue first noticed? (UTC)
+      placeholder: "YYYY-MM-DD HH:MM UTC"
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: Timeline of events.
+      value: |
+        | Time (UTC) | Event |
+        |---|---|
+        | HH:MM | Issue detected |
+        | HH:MM | Investigation started |
+    validations:
+      required: false
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What caused the issue?
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: Steps taken or planned to resolve.
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention / Follow-up Actions
+      description: What actions will prevent recurrence?
+      placeholder: |
+        - [ ] Action item 1
+        - [ ] Action item 2
+    validations:
+      required: false
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Production
+        - Staging
+        - Development
+    validations:
+      required: true
