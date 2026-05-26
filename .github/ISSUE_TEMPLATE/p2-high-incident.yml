@@ -1,0 +1,119 @@
+name: "P2 High Incident"
+description: "Report a P2 (High) incident — degraded performance, feature unavailable, or subset of users affected"
+title: "[P2-HIGH] "
+labels: ["incident", "P2", "high"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 High Incident Report
+        Use this template for high-severity incidents causing degraded service.
+        Refer to [RUNBOOK.md](../../RUNBOOK.md) for resolution procedures.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Incident Summary
+      description: Brief description of the incident
+      placeholder: "e.g., Rate limiting blocking legitimate users during bulk import"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Impact
+      description: What is the scope of this incident?
+      options:
+        - "Degraded performance"
+        - "Feature unavailable"
+        - "Subset of users affected"
+        - "Rate limiting issues"
+    validations:
+      required: true
+
+  - type: input
+    id: detection-time
+    attributes:
+      label: Detection Time
+      description: When was the incident first detected? (ISO 8601 timestamp)
+      placeholder: "2026-05-26T14:30:00Z"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: affected-components
+    attributes:
+      label: Affected Components
+      description: Which components are affected?
+      options:
+        - label: Backend API
+        - label: Frontend
+        - label: Database
+        - label: Docker/Infrastructure
+        - label: Authentication
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: Chronological list of events (detection, actions taken, etc.)
+      placeholder: |
+        - HH:MM UTC — Incident detected via [alert/user report]
+        - HH:MM UTC — On-call engineer engaged
+        - HH:MM UTC — Root cause identified
+        - HH:MM UTC — Fix deployed
+    validations:
+      required: true
+
+  - type: dropdown
+    id: current-status
+    attributes:
+      label: Current Status
+      description: What is the current status of this incident?
+      options:
+        - "Investigating"
+        - "Identified"
+        - "Mitigating"
+        - "Resolved"
+    validations:
+      required: true
+
+  - type: input
+    id: user-impact-count
+    attributes:
+      label: User Impact Count
+      description: Estimated number of affected users
+      placeholder: "e.g., 25"
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution-steps
+    attributes:
+      label: Resolution Steps
+      description: What was done to resolve the incident?
+      placeholder: "Numbered steps taken to resolve..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: Technical root cause analysis (can be filled post-resolution)
+      placeholder: "e.g., CORS origin mismatch after frontend URL change..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow-up-actions
+    attributes:
+      label: Follow-up Actions
+      description: Preventive measures and follow-up tasks
+      placeholder: |
+        - [ ] Adjust rate limit thresholds
+        - [ ] Add monitoring for ...
+        - [ ] Update runbook with ...
+    validations:
+      required: false
