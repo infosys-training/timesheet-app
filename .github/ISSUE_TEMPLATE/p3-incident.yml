@@ -1,0 +1,99 @@
+name: "P3 Incident - Minor Feature Degraded"
+description: "Minor feature degraded, workaround exists. Response time: 4 hours."
+title: "[P3] "
+labels: ["incident", "P3-minor", "priority:medium"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 Incident Report
+        **Response SLA: 4 hours** — Minor feature degraded, workaround exists.
+        Refer to [RUNBOOK.md](../../RUNBOOK.md) for diagnosis and resolution steps.
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reporter
+      description: Who is filing this incident?
+      placeholder: "name / email / on-call alias"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure_mode
+    attributes:
+      label: Failure Mode
+      description: Which failure mode best matches this incident?
+      options:
+        - "FM-1: Database Failures"
+        - "FM-2: API Errors (5xx)"
+        - "FM-3: Authentication Failures"
+        - "FM-4: Memory Leaks / High Resource Usage"
+        - "FM-5: Dependency / npm Failures"
+        - "FM-6: Rate Limiting Issues"
+        - "FM-7: PDF/CSV Export Failures"
+        - "FM-8: Frontend Unreachable / Build Failures"
+        - "FM-9: Docker Container Failures"
+        - "FM-10: Data Loss (In-Memory DB Restart)"
+        - "Other / Unknown"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Describe the scope and severity of the impact.
+      placeholder: |
+        - Number of users affected:
+        - Features impacted:
+        - Workaround description:
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms
+      description: What is the observable behavior?
+      placeholder: |
+        - Error messages:
+        - Steps to reproduce:
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When was this detected and what has happened since?
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        |            | Issue first detected |
+        |            | Investigation started |
+        |            | Fix applied |
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Where is this happening?
+      placeholder: |
+        - Environment: production / staging / development
+        - Browser / OS (if frontend):
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: How was this resolved?
+      placeholder: |
+        - Root cause:
+        - Fix applied:
+    validations:
+      required: false

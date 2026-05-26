@@ -1,0 +1,94 @@
+name: "P4 Incident - Low Priority / Cosmetic"
+description: "Cosmetic or minor issue with no significant user impact. Response time: 1 business day."
+title: "[P4] "
+labels: ["incident", "P4-low", "priority:low"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 Incident Report
+        **Response SLA: 1 business day** — Cosmetic or minor issue, no significant user impact.
+        Refer to [RUNBOOK.md](../../RUNBOOK.md) for context.
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reporter
+      description: Who is filing this incident?
+      placeholder: "name / email / on-call alias"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure_mode
+    attributes:
+      label: Failure Mode
+      description: Which failure mode best matches this incident?
+      options:
+        - "FM-1: Database Failures"
+        - "FM-2: API Errors (5xx)"
+        - "FM-3: Authentication Failures"
+        - "FM-4: Memory Leaks / High Resource Usage"
+        - "FM-5: Dependency / npm Failures"
+        - "FM-6: Rate Limiting Issues"
+        - "FM-7: PDF/CSV Export Failures"
+        - "FM-8: Frontend Unreachable / Build Failures"
+        - "FM-9: Docker Container Failures"
+        - "FM-10: Data Loss (In-Memory DB Restart)"
+        - "Other / Unknown"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Describe the impact (usually minimal for P4).
+      placeholder: |
+        - Users affected:
+        - Feature impacted:
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms
+      description: What is the observable behavior?
+      placeholder: |
+        - Description of the issue:
+        - Steps to reproduce:
+        - Expected vs actual behavior:
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When was this noticed?
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        |            | Issue first noticed |
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Where is this happening?
+      placeholder: |
+        - Environment: production / staging / development
+        - Browser / OS (if frontend):
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: How was this resolved (or proposed fix)?
+    validations:
+      required: false
