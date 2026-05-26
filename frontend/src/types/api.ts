@@ -13,11 +13,16 @@ export interface Client {
   updated_at: string;
 }
 
+export type EffortCategory = 'Learning' | 'Project Management' | 'Development' | 'Testing';
+
+export const EFFORT_CATEGORIES: EffortCategory[] = ['Learning', 'Project Management', 'Development', 'Testing'];
+
 export interface WorkEntry {
   id: number;
   client_id: number;
   hours: number;
   description: string | null;
+  effort_category: EffortCategory;
   date: string;
   created_at: string;
   updated_at: string;
@@ -54,6 +59,7 @@ export interface CreateWorkEntryRequest {
   hours: number;
   description?: string;
   date: string;
+  effortCategory?: EffortCategory;
 }
 
 export interface UpdateWorkEntryRequest {
@@ -61,6 +67,19 @@ export interface UpdateWorkEntryRequest {
   hours?: number;
   description?: string;
   date?: string;
+  effortCategory?: EffortCategory;
+}
+
+export interface EffortBreakdownItem {
+  category: EffortCategory;
+  totalHours: number;
+  entryCount: number;
+}
+
+export interface EffortBreakdownResponse {
+  breakdown: EffortBreakdownItem[];
+  grandTotalHours: number;
+  categories: EffortCategory[];
 }
 
 export interface LoginRequest {

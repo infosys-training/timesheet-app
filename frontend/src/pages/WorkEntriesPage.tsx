@@ -34,7 +34,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import apiClient from '../api/client';
-import { type WorkEntry } from '../types/api';
+import { type WorkEntry, type EffortCategory, EFFORT_CATEGORIES } from '../types/api';
 
 const WorkEntriesPage: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -44,6 +44,7 @@ const WorkEntriesPage: React.FC = () => {
     hours: '',
     description: '',
     date: new Date(),
+    effortCategory: 'Development' as EffortCategory,
   });
   const [error, setError] = useState('');
 
@@ -60,7 +61,7 @@ const WorkEntriesPage: React.FC = () => {
   });
 
   const createMutation = useMutation({
-    mutationFn: (entryData: { clientId: number; hours: number; description?: string; date: string }) =>
+    mutationFn: (entryData: { clientId: number; hours: number; description?: string; date: string; effortCategory?: string }) =>
       apiClient.createWorkEntry(entryData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workEntries'] });
@@ -73,7 +74,7 @@ const WorkEntriesPage: React.FC = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: { clientId?: number; hours?: number; description?: string; date?: string } }) =>
+    mutationFn: ({ id, data }: { id: number; data: { clientId?: number; hours?: number; description?: string; date?: string; effortCategory?: string } }) =>
       apiClient.updateWorkEntry(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workEntries'] });
@@ -107,6 +108,7 @@ const WorkEntriesPage: React.FC = () => {
         hours: entry.hours.toString(),
         description: entry.description || '',
         date: new Date(entry.date),
+        effortCategory: entry.effort_category || 'Development',
       });
     } else {
       setEditingEntry(null);
@@ -115,6 +117,7 @@ const WorkEntriesPage: React.FC = () => {
         hours: '',
         description: '',
         date: new Date(),
+        effortCategory: 'Development',
       });
     }
     setError('');
@@ -129,6 +132,7 @@ const WorkEntriesPage: React.FC = () => {
       hours: '',
       description: '',
       date: new Date(),
+      effortCategory: 'Development',
     });
     setError('');
   };
@@ -158,6 +162,7 @@ const WorkEntriesPage: React.FC = () => {
       hours,
       description: formData.description || undefined,
       date: formData.date.toISOString().split('T')[0],
+      effortCategory: formData.effortCategory,
     };
 
     if (editingEntry) {
@@ -218,6 +223,7 @@ const WorkEntriesPage: React.FC = () => {
                     <TableCell>Client</TableCell>
                     <TableCell>Date</TableCell>
                     <TableCell>Hours</TableCell>
+                    <TableCell>Category</TableCell>
                     <TableCell>Description</TableCell>
                     <TableCell align="right">Actions</TableCell>
                   </TableRow>
@@ -241,6 +247,18 @@ const WorkEntriesPage: React.FC = () => {
                             label={`${entry.hours} hours`} 
                             color="primary" 
                             variant="outlined" 
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={entry.effort_category}
+                            size="small"
+                            color={
+                              entry.effort_category === 'Development' ? 'primary' :
+                              entry.effort_category === 'Testing' ? 'secondary' :
+                              entry.effort_category === 'Learning' ? 'info' :
+                              'warning'
+                            }
                           />
                         </TableCell>
                         <TableCell>
@@ -272,7 +290,7 @@ const WorkEntriesPage: React.FC = () => {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={5} align="center">
+                      <TableCell colSpan={6} align="center">
                         <Typography color="text.secondary" sx={{ py: 3 }}>
                           No work entries found. Add your first work entry to get started.
                         </Typography>
@@ -301,6 +319,21 @@ const WorkEntriesPage: React.FC = () => {
                   {clients.map((client: { id: number; name: string }) => (
                     <MenuItem key={client.id} value={client.id}>
                       {client.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth margin="dense">
+                <InputLabel>Effort Category</InputLabel>
+                <Select
+                  value={formData.effortCategory}
+                  onChange={(e) => setFormData({ ...formData, effortCategory: e.target.value as EffortCategory })}
+                  disabled={createMutation.isPending || updateMutation.isPending}
+                >
+                  {EFFORT_CATEGORIES.map((category) => (
+                    <MenuItem key={category} value={category}>
+                      {category}
                     </MenuItem>
                   ))}
                 </Select>

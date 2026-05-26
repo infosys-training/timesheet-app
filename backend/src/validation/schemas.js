@@ -7,18 +7,22 @@ const clientSchema = Joi.object({
   email: Joi.string().trim().email().max(255).optional().allow('')
 });
 
+const EFFORT_CATEGORIES = ['Learning', 'Project Management', 'Development', 'Testing'];
+
 const workEntrySchema = Joi.object({
   clientId: Joi.number().integer().positive().required(),
   hours: Joi.number().positive().max(24).precision(2).required(),
   description: Joi.string().trim().max(1000).optional().allow(''),
-  date: Joi.date().iso().required()
+  date: Joi.date().iso().required(),
+  effortCategory: Joi.string().valid(...EFFORT_CATEGORIES).default('Development')
 });
 
 const updateWorkEntrySchema = Joi.object({
   clientId: Joi.number().integer().positive().optional(),
   hours: Joi.number().positive().max(24).precision(2).optional(),
   description: Joi.string().trim().max(1000).optional().allow(''),
-  date: Joi.date().iso().optional()
+  date: Joi.date().iso().optional(),
+  effortCategory: Joi.string().valid(...EFFORT_CATEGORIES).optional()
 }).min(1); // At least one field must be provided
 
 const updateClientSchema = Joi.object({
@@ -37,5 +41,6 @@ module.exports = {
   workEntrySchema,
   updateWorkEntrySchema,
   updateClientSchema,
-  emailSchema
+  emailSchema,
+  EFFORT_CATEGORIES
 };
