@@ -1,0 +1,92 @@
+name: "P4 Incident - Low"
+description: "Minor issue, cosmetic defect, or improvement needed. Response time: 1 business day."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 - Low Severity Incident
+        Use this template for minor issues, cosmetic defects, logging gaps, or non-critical improvements identified during operations.
+        **Expected response time: 1 business day.**
+
+  - type: input
+    id: incident-summary
+    attributes:
+      label: Incident Summary
+      description: One-line description of the issue.
+      placeholder: "e.g., Missing structured logging for authentication events"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected Component
+      description: Which part of the system is affected?
+      multiple: true
+      options:
+        - Backend API
+        - Frontend UI
+        - Database (SQLite)
+        - Authentication
+        - Report Generation (PDF/CSV)
+        - Docker / Infrastructure
+        - CI/CD Pipeline
+        - Logging / Monitoring
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the impact of this issue.
+      value: |
+        **Users affected:** (none / minimal)
+        **Severity justification:** 
+        **Workaround:** (if applicable)
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Discovery Timeline
+      description: When and how the issue was discovered.
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue discovered |
+        | YYYY-MM-DD HH:MM | Fix planned / assigned |
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Detailed Description
+      description: Provide details about the issue, including steps to reproduce if applicable.
+      placeholder: "Describe the issue in detail."
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Proposed Resolution
+      description: Suggested fix or improvement.
+      placeholder: "Describe the proposed fix."
+    validations:
+      required: false
+
+  - type: textarea
+    id: runbook-reference
+    attributes:
+      label: Runbook Reference
+      description: Relevant runbook section, if any.
+      placeholder: "e.g., RUNBOOK.md Section 5.3 - Environment Variable Misconfiguration"
+    validations:
+      required: false

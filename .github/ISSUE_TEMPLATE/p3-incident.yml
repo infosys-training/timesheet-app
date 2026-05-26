@@ -1,0 +1,114 @@
+name: "P3 Incident - Moderate"
+description: "Feature is degraded but a workaround exists. Response time: 4 hours."
+title: "[P3] "
+labels: ["incident", "P3-moderate"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 - Moderate Incident
+        Use this template when a feature is degraded but a workaround exists for affected users.
+        **Expected response time: 4 hours.**
+
+  - type: input
+    id: incident-summary
+    attributes:
+      label: Incident Summary
+      description: One-line description of the incident.
+      placeholder: "e.g., CSV export failing for clients with more than 500 entries"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected Component
+      description: Which part of the system is affected?
+      multiple: true
+      options:
+        - Backend API
+        - Frontend UI
+        - Database (SQLite)
+        - Authentication
+        - Report Generation (PDF/CSV)
+        - Docker / Infrastructure
+        - CI/CD Pipeline
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the user and business impact.
+      value: |
+        **Users affected:** (subset / specific condition)
+        **Features degraded:** 
+        **Workaround:** (describe the workaround)
+        **Data loss:** No
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Key timestamps for the incident.
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue first detected |
+        | YYYY-MM-DD HH:MM | Investigation started |
+        | YYYY-MM-DD HH:MM | Root cause identified |
+        | YYYY-MM-DD HH:MM | Fix deployed |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Errors
+      description: What errors or symptoms are being observed?
+      placeholder: "Describe the degraded behavior and any error messages."
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What caused the incident? (Fill in once identified.)
+      placeholder: "To be determined during investigation."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution & Mitigation
+      description: Steps taken to resolve the incident.
+      value: |
+        **Fix applied:**
+
+        **Prevention measures:**
+    validations:
+      required: false
+
+  - type: textarea
+    id: runbook-reference
+    attributes:
+      label: Runbook Reference
+      description: Which runbook section was followed?
+      placeholder: "e.g., RUNBOOK.md Section 3.2 - Large Report Generation Failures"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: post-incident
+    attributes:
+      label: Post-Incident Checklist
+      options:
+        - label: Root cause identified
+        - label: Fix verified
+        - label: Runbook updated if needed
