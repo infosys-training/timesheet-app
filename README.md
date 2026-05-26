@@ -288,6 +288,18 @@ See `backend/DEPLOYMENT.md` for detailed production deployment instructions.
 - Mobile app
 - Integration with calendar systems
 
+## Incident Response
+
+This project includes operational tooling for incident detection and response:
+
+- **[RUNBOOK.md](RUNBOOK.md)** — Comprehensive runbook with step-by-step procedures for all identified failure modes (P1–P4), escalation matrix, and post-incident review template.
+- **[Issue Templates](.github/ISSUE_TEMPLATE/)** — GitHub issue form templates for filing incidents by priority level (P1 Critical, P2 High, P3 Medium, P4 Low).
+- **[scripts/healthcheck.sh](scripts/healthcheck.sh)** — Automated health check script that tests all critical endpoints and reports pass/fail with response times. Usage:
+  ```bash
+  ./scripts/healthcheck.sh                        # Default: http://localhost:3001
+  ./scripts/healthcheck.sh http://your-host:3001  # Custom target
+  ```
+
 ## License
 
 MIT

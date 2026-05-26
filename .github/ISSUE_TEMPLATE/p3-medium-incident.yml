@@ -1,0 +1,116 @@
+name: "P3 Medium Incident"
+description: "Report a P3 (Medium) incident — minor feature degradation, export issues, or intermittent errors"
+title: "[P3-MEDIUM] "
+labels: ["incident", "P3", "medium"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 Medium Incident Report
+        Use this template for medium-severity incidents with limited user impact.
+        Refer to [RUNBOOK.md](../../RUNBOOK.md) for resolution procedures.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Incident Summary
+      description: Brief description of the incident
+      placeholder: "e.g., CSV export returning 500 for clients with special characters in name"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Impact
+      description: What is the scope of this incident?
+      options:
+        - "Minor feature degraded"
+        - "Export functionality affected"
+        - "Intermittent errors"
+        - "Single user affected"
+    validations:
+      required: true
+
+  - type: input
+    id: detection-time
+    attributes:
+      label: Detection Time
+      description: When was the incident first detected? (ISO 8601 timestamp)
+      placeholder: "2026-05-26T14:30:00Z"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: affected-components
+    attributes:
+      label: Affected Components
+      description: Which components are affected?
+      options:
+        - label: Backend API
+        - label: Frontend
+        - label: Database
+        - label: Docker/Infrastructure
+        - label: Authentication
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: Chronological list of events (optional for P3)
+      placeholder: |
+        - HH:MM UTC — Issue reported by user
+        - HH:MM UTC — Reproduced in staging
+    validations:
+      required: false
+
+  - type: dropdown
+    id: current-status
+    attributes:
+      label: Current Status
+      description: What is the current status of this incident?
+      options:
+        - "Investigating"
+        - "Identified"
+        - "Mitigating"
+        - "Resolved"
+    validations:
+      required: true
+
+  - type: input
+    id: user-impact-count
+    attributes:
+      label: User Impact Count
+      description: Estimated number of affected users
+      placeholder: "e.g., 5"
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution-steps
+    attributes:
+      label: Resolution Steps
+      description: What was done to resolve the incident?
+      placeholder: "Numbered steps taken to resolve..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: Technical root cause analysis (optional for P3)
+      placeholder: "e.g., Temp directory missing after container rebuild..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow-up-actions
+    attributes:
+      label: Follow-up Actions
+      description: Preventive measures and follow-up tasks
+      placeholder: |
+        - [ ] Add temp directory creation to startup
+        - [ ] Improve error handling in export routes
+    validations:
+      required: false
