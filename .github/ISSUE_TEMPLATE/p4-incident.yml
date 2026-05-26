@@ -1,0 +1,95 @@
+name: "P4 Incident - Low"
+description: "Cosmetic issue, minor inconvenience, or improvement opportunity identified during operations"
+title: "[P4] "
+labels: ["incident", "P4-low"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 Incident Report - Low
+        Use this template for **cosmetic issues, minor inconveniences, or operational improvement opportunities**.
+        **Response SLA**: Acknowledge within 1 business day, schedule for next sprint.
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reporter
+      description: Who is reporting this issue?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: What category best describes this issue?
+      options:
+        - "Logging / Observability gap"
+        - "Documentation update needed"
+        - "Performance optimization opportunity"
+        - "Dependency update (non-security)"
+        - "Developer experience improvement"
+        - "Configuration cleanup"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Describe the impact, even if minor.
+      placeholder: |
+        - Who is affected and how
+        - Is there a workaround? (usually yes for P4)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Detailed description of the issue or improvement opportunity.
+    validations:
+      required: true
+
+  - type: input
+    id: detection-time
+    attributes:
+      label: Detection Time
+      description: When was the issue first noticed? (UTC)
+      placeholder: "YYYY-MM-DD HH:MM UTC"
+    validations:
+      required: false
+
+  - type: textarea
+    id: proposed-fix
+    attributes:
+      label: Proposed Fix
+      description: Suggested approach to resolve or improve.
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-up Actions
+      description: Action items to track.
+      placeholder: |
+        - [ ] Action item 1
+        - [ ] Action item 2
+    validations:
+      required: false
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Production
+        - Staging
+        - Development
+        - All
+    validations:
+      required: true
