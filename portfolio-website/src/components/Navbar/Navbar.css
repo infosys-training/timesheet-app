@@ -1,0 +1,130 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding: 20px 0;
+  transition: var(--transition);
+}
+
+.navbar--scrolled {
+  background: rgba(10, 25, 47, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 12px 0;
+  box-shadow: 0 10px 30px -10px rgba(2, 12, 27, 0.7);
+}
+
+.navbar__container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar__logo {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-highlight);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.navbar__logo:hover {
+  color: var(--primary);
+}
+
+.navbar__logo-bracket {
+  color: var(--primary);
+}
+
+.navbar__menu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.navbar__links {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.navbar__link {
+  padding: 8px 14px;
+  font-size: 13px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+  border-radius: 4px;
+}
+
+.navbar__link:hover,
+.navbar__link--active {
+  color: var(--primary);
+}
+
+.navbar__link-number {
+  color: var(--primary);
+  margin-right: 5px;
+  font-size: 12px;
+}
+
+.navbar__resume-btn {
+  margin-left: 15px;
+  padding: 10px 20px;
+  font-size: 13px;
+}
+
+.navbar__toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 1001;
+}
+
+@media (max-width: 768px) {
+  .navbar__toggle {
+    display: block;
+  }
+
+  .navbar__menu {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 70%;
+    height: 100vh;
+    background: var(--bg-card);
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: right 0.3s ease;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.3);
+  }
+
+  .navbar__menu--open {
+    right: 0;
+  }
+
+  .navbar__links {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .navbar__link {
+    font-size: 16px;
+    padding: 12px 20px;
+  }
+
+  .navbar__resume-btn {
+    margin-left: 0;
+    margin-top: 20px;
+  }
+}

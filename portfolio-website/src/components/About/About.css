@@ -1,0 +1,131 @@
+.about__grid {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 50px;
+  align-items: start;
+}
+
+.about__text p {
+  margin-bottom: 16px;
+  font-size: 16px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.about__text strong {
+  color: var(--text-highlight);
+}
+
+.about__link {
+  color: var(--primary);
+  transition: var(--transition);
+}
+
+.about__link:hover {
+  color: var(--primary-light);
+  text-decoration: underline;
+}
+
+.about__tech-intro {
+  color: var(--text-primary) !important;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+.about__tech-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px 10px;
+  margin-top: 10px;
+}
+
+.about__tech-item {
+  display: flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.about__tech-icon {
+  color: var(--primary);
+  margin-right: 8px;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.about__image-container {
+  position: relative;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.about__image-placeholder {
+  position: relative;
+  z-index: 1;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  overflow: hidden;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.about__image-placeholder::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(108, 99, 255, 0.15);
+  transition: var(--transition);
+}
+
+.about__image-container:hover .about__image-placeholder::after {
+  background: transparent;
+}
+
+.about__avatar {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.about__avatar-text {
+  font-size: 80px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.3);
+  letter-spacing: 5px;
+}
+
+.about__image-border {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--primary);
+  border-radius: 8px;
+  z-index: 0;
+  transition: var(--transition);
+}
+
+.about__image-container:hover .about__image-border {
+  top: 10px;
+  left: 10px;
+}
+
+@media (max-width: 768px) {
+  .about__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about__image-container {
+    max-width: 250px;
+  }
+
+  .about__tech-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
