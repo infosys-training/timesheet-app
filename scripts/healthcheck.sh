@@ -138,9 +138,16 @@ fi
 echo ""
 echo -e "${BLUE}[2/6] Authentication${NC}"
 
-http_check "POST" "/api/auth/login" "201" "Auth login (new user)" '{"email":"'"${TEST_EMAIL}"'"}'
+# Accept both 201 (new user) and 200 (existing user) so the check is
+# idempotent across repeated runs against persistent databases.
+http_request "POST" "/api/auth/login" '{"email":"'"${TEST_EMAIL}"'"}'
+if [ "$RESPONSE_STATUS" = "201" ] || [ "$RESPONSE_STATUS" = "200" ]; then
+  check_pass "Auth login (HTTP $RESPONSE_STATUS)"
+else
+  check_fail "Auth login" "Expected HTTP 200 or 201, got HTTP $RESPONSE_STATUS"
+fi
 
-# Login again should return 200 (existing user)
+# Second login must always return 200 (user now exists)
 http_check "POST" "/api/auth/login" "200" "Auth login (existing user)" '{"email":"'"${TEST_EMAIL}"'"}'
 
 http_check "GET" "/api/auth/me" "200" "Auth me (current user)"
@@ -162,7 +169,7 @@ echo -e "${BLUE}[3/6] Client CRUD Operations${NC}"
 http_request "POST" "/api/clients" '{"name":"HealthCheck Test Client","description":"Created by health check script","department":"QA"}'
 if [ "$RESPONSE_STATUS" = "201" ]; then
   check_pass "Create client (HTTP 201)"
-  CLIENT_ID=$(echo "$RESPONSE_BODY" | grep -o '"id":[0-9]*' | head -1 | grep -o '[0-9]*')
+  CLIENT_ID=$(echo "$RESPONSE_BODY" | grep -o '"id":[0-9]*' | head -1 | grep -o '[0-9]*') || true
 else
   check_fail "Create client" "Expected HTTP 201, got HTTP $RESPONSE_STATUS"
   CLIENT_ID=""
@@ -194,7 +201,7 @@ if [ -n "${CLIENT_ID:-}" ]; then
   http_request "POST" "/api/work-entries" '{"clientId":'"${CLIENT_ID}"',"hours":2.5,"description":"Health check test entry","date":"'"${TODAY}"'"}'
   if [ "$RESPONSE_STATUS" = "201" ]; then
     check_pass "Create work entry (HTTP 201)"
-    WORK_ENTRY_ID=$(echo "$RESPONSE_BODY" | grep -o '"id":[0-9]*' | head -1 | grep -o '[0-9]*')
+    WORK_ENTRY_ID=$(echo "$RESPONSE_BODY" | grep -o '"id":[0-9]*' | head -1 | grep -o '[0-9]*') || true
   else
     check_fail "Create work entry" "Expected HTTP 201, got HTTP $RESPONSE_STATUS"
   fi
