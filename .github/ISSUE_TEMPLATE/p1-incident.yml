@@ -1,0 +1,135 @@
+name: "P1 Incident - Critical"
+description: "Complete service outage or data loss affecting all users. Requires immediate response."
+title: "[P1] "
+labels: ["incident", "P1-critical"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 Incident Report
+        **Response SLA: Immediately (< 15 min)**
+        A P1 incident is a complete outage or data loss event affecting all users. Escalate to the on-call engineer and engineering manager immediately.
+
+  - type: input
+    id: incident-commander
+    attributes:
+      label: Incident Commander
+      description: Name of the person leading the incident response.
+      placeholder: "e.g., Jane Doe"
+    validations:
+      required: true
+
+  - type: input
+    id: detection-time
+    attributes:
+      label: Detection Time
+      description: When was the incident first detected? (UTC)
+      placeholder: "YYYY-MM-DD HH:MM UTC"
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Incident Summary
+      description: Brief description of what is happening.
+      placeholder: "The backend API is returning 500 errors on all endpoints..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Primary category of the failure (see RUNBOOK.md).
+      options:
+        - Database Failure
+        - API / Express Server Crash
+        - Memory Leak / Resource Exhaustion
+        - Dependency / Build Failure
+        - Authentication Failure
+        - Frontend / Proxy Failure
+        - Rate Limiting / DoS
+        - Export (PDF/CSV) Failure
+        - Unknown / Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: |
+        Describe the impact in detail:
+        - How many users are affected?
+        - Which features are unavailable?
+        - Is there data loss?
+        - Is there a workaround?
+      placeholder: |
+        - All users unable to access the application
+        - No workaround available
+        - In-memory data lost due to backend crash
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: |
+        Chronological record of events. Update as the incident progresses.
+      placeholder: |
+        - HH:MM UTC - Incident detected via [monitoring/user report/etc.]
+        - HH:MM UTC - On-call engineer paged
+        - HH:MM UTC - Root cause identified
+        - HH:MM UTC - Fix deployed
+        - HH:MM UTC - Service restored
+      value: |
+        - HH:MM UTC - Incident detected
+        - HH:MM UTC -
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause Analysis
+      description: What caused the incident? (Fill in after investigation)
+      placeholder: "The SQLite in-memory database was corrupted due to..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: What was done to resolve the incident? Reference RUNBOOK.md procedures where applicable.
+      placeholder: |
+        1. Followed RUNBOOK.md "Failure Mode 1: Database Failures"
+        2. Restarted the backend service
+        3. Verified health endpoint returned 200
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-up Actions
+      description: Post-incident improvements to prevent recurrence.
+      placeholder: |
+        - [ ] Add database health check to /health endpoint
+        - [ ] Migrate from in-memory to file-based SQLite
+        - [ ] Add monitoring alerts for 5xx error rates
+    validations:
+      required: false
+
+  - type: textarea
+    id: communication
+    attributes:
+      label: Stakeholder Communication
+      description: Record of communications sent during the incident.
+      placeholder: |
+        - Notified engineering team via Slack #incidents
+        - Status page updated
+    validations:
+      required: false

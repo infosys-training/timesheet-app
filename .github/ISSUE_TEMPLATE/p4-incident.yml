@@ -1,0 +1,110 @@
+name: "P4 Incident - Low"
+description: "Cosmetic or low-impact issue. Response next business day."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 Incident Report
+        **Response SLA: Next business day**
+        A P4 incident is a cosmetic or low-impact issue that does not affect core functionality.
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reporter
+      description: Name of the person reporting the issue.
+      placeholder: "e.g., Jane Doe"
+    validations:
+      required: true
+
+  - type: input
+    id: detection-time
+    attributes:
+      label: Detection Time
+      description: When was the issue first noticed? (UTC)
+      placeholder: "YYYY-MM-DD HH:MM UTC"
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Issue Summary
+      description: Brief description of the issue.
+      placeholder: "Date picker shows incorrect format on Safari..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Category
+      description: Primary category of the issue.
+      options:
+        - UI / Cosmetic
+        - Performance (minor)
+        - Logging / Monitoring
+        - Documentation
+        - Dependency / Build (non-blocking)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: |
+        Describe the impact:
+        - How noticeable is the issue?
+        - Does it affect usability?
+        - How many users have reported it?
+      placeholder: |
+        - Minor UI glitch in date formatting
+        - Does not affect data accuracy
+        - Reported by 1 user
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: How to reproduce the issue.
+      placeholder: |
+        1. Navigate to Work Entries page
+        2. Click the date picker
+        3. Observe incorrect date format
+    validations:
+      required: false
+
+  - type: textarea
+    id: expected-vs-actual
+    attributes:
+      label: Expected vs Actual Behavior
+      description: What should happen vs what actually happens.
+      placeholder: |
+        Expected: Date shows as YYYY-MM-DD
+        Actual: Date shows as MM/DD/YYYY
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: How the issue was resolved.
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-up Actions
+      description: Any improvements or related work.
+      placeholder: |
+        - [ ] Action item 1
+    validations:
+      required: false
