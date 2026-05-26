@@ -1,0 +1,66 @@
+name: "P1 - Critical Incident"
+description: "Complete service outage or data loss affecting all users"
+title: "[P1] "
+labels: ["incident", "P1-critical"]
+body:
+  - type: markdown
+    attributes:
+      value: "## P1 Critical Incident Report - Immediate Response Required"
+  - type: input
+    id: incident-start
+    attributes:
+      label: "Incident Start Time"
+      description: "When was the incident first detected? (UTC)"
+      placeholder: "YYYY-MM-DD HH:MM UTC"
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: "Environment"
+      options:
+        - "Production"
+        - "Staging"
+        - "Development"
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: "Impact Assessment"
+      description: "Number of users affected, business impact, data loss"
+      placeholder: "Describe the scope and severity of impact"
+    validations:
+      required: true
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: "Symptoms / Error Messages"
+      description: "What errors are being observed? Include HTTP status codes, log excerpts"
+    validations:
+      required: true
+  - type: textarea
+    id: timeline
+    attributes:
+      label: "Timeline of Events"
+      description: "Chronological list of events, actions taken, and observations"
+      value: |
+        - **HH:MM UTC** - Incident detected
+        - **HH:MM UTC** - 
+    validations:
+      required: true
+  - type: textarea
+    id: resolution
+    attributes:
+      label: "Resolution / Mitigation Steps"
+      description: "What was done to resolve or mitigate? Reference RUNBOOK.md sections if applicable"
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: "Root Cause (if known)"
+      description: "Preliminary root cause analysis"
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: "Follow-up Actions"
+      description: "Post-incident action items to prevent recurrence"
