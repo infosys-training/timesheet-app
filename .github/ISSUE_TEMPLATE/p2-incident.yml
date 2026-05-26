@@ -1,0 +1,123 @@
+name: "P2 Incident — Major Degradation"
+description: "Major feature degraded or partially unavailable. Response SLA: 1 hour."
+title: "[P2] "
+labels: ["incident", "P2-major"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 — Major Incident Report
+        Significant feature degradation affecting multiple users. Prompt response required.
+        **Response SLA: 1 hour | Escalation: 2 hours**
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief summary of the incident
+      placeholder: "e.g., Authentication failing for all users — 401 on all protected endpoints"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Primary failure category (refer to RUNBOOK.md)
+      options:
+        - "FM-1: Database Connection Failure"
+        - "FM-2: Database Corruption / Data Loss"
+        - "FM-5: Memory Leak / OOM Kill"
+        - "FM-6: Dependency Failure (npm packages)"
+        - "FM-7: Frontend Build/Serve Failure"
+        - "FM-8: Authentication Middleware Failure"
+        - "FM-11: Disk Space Exhaustion"
+        - "Other (describe below)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the scope and impact of the incident
+      value: |
+        **Affected Users:** [All / Percentage / Specific group]
+        **Affected Features:** [e.g., Authentication, Reports, Work Entries]
+        **Workaround Available:** [Yes — describe / No]
+        **Data Impact:** [None / Read-only / Potential loss]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Chronological sequence of events
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Incident detected |
+        | YYYY-MM-DD HH:MM | Investigation started |
+        | YYYY-MM-DD HH:MM | Root cause identified |
+        | YYYY-MM-DD HH:MM | Fix deployed |
+        | YYYY-MM-DD HH:MM | Verified resolution |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms Observed
+      description: What errors/behaviors are being seen?
+      placeholder: |
+        - Specific endpoints affected
+        - Error messages in logs
+        - User reports
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: Identified root cause
+      placeholder: "Fill in once root cause is identified"
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: Steps taken to resolve and prevent recurrence
+      value: |
+        **Immediate Fix:**
+        - 
+
+        **Permanent Fix:**
+        - PR: #
+        - 
+
+        **Prevention:**
+        - [ ] Action item — Owner: @username — Due: YYYY-MM-DD
+    validations:
+      required: false
+
+  - type: textarea
+    id: lessons-learned
+    attributes:
+      label: Lessons Learned
+      description: What went well? What could be improved?
+      placeholder: |
+        **What went well:**
+        - 
+
+        **What could be improved:**
+        - 
+
+        **Process changes needed:**
+        - 
+    validations:
+      required: false
