@@ -1,0 +1,119 @@
+name: "P3 Incident - Minor"
+description: "Minor feature degradation with workaround available. Response within 4 hours."
+title: "[P3] "
+labels: ["incident", "P3-minor"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 Incident Report
+        **Response SLA: < 4 hours**
+        A P3 incident is a minor degradation where a workaround exists and most functionality remains available.
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reporter
+      description: Name of the person reporting the incident.
+      placeholder: "e.g., Jane Doe"
+    validations:
+      required: true
+
+  - type: input
+    id: detection-time
+    attributes:
+      label: Detection Time
+      description: When was the incident first detected? (UTC)
+      placeholder: "YYYY-MM-DD HH:MM UTC"
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Incident Summary
+      description: Brief description of the issue.
+      placeholder: "API response times are elevated (> 2s) for work entry queries..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Primary category of the failure (see RUNBOOK.md).
+      options:
+        - Database Failure
+        - API / Express Server Crash
+        - Memory Leak / Resource Exhaustion
+        - Dependency / Build Failure
+        - Authentication Failure
+        - Frontend / Proxy Failure
+        - Rate Limiting / DoS
+        - Export (PDF/CSV) Failure
+        - Unknown / Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: |
+        Describe the impact:
+        - Which feature(s) are affected?
+        - Is there a workaround?
+        - Approximate number of users impacted.
+      placeholder: |
+        - Work entry listing is slow for users with > 100 entries
+        - Workaround: filter by client to reduce result set
+        - Affects ~10% of users
+    validations:
+      required: true
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Workaround
+      description: Describe the available workaround.
+      placeholder: "Users can filter by client or date range to reduce response time."
+    validations:
+      required: false
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Chronological record of events.
+      value: |
+        - HH:MM UTC - Issue noticed
+        - HH:MM UTC -
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause Analysis
+      description: What caused the issue?
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: What was done to resolve the issue?
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-up Actions
+      description: Improvements to prevent recurrence.
+      placeholder: |
+        - [ ] Action item 1
+        - [ ] Action item 2
+    validations:
+      required: false
