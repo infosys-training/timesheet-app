@@ -1,0 +1,121 @@
+name: "P2 Incident — Major Feature Broken"
+description: "A major feature is broken affecting many users. Respond within 30 minutes."
+title: "[P2] "
+labels: ["incident", "P2-major"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 — Major Incident
+        Use this template when a **major feature is broken** (e.g., cannot create work entries, reports unavailable) affecting many users.
+        **Response target: 30 min acknowledge, 4 hrs resolve.**
+
+  - type: input
+    id: incident-commander
+    attributes:
+      label: Incident Commander
+      description: Who is leading the response?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Primary category of the failure.
+      options:
+        - API endpoint returning 500 errors
+        - Database query failures
+        - Work entry creation/update broken
+        - Client management broken
+        - Report generation (PDF/CSV) failing
+        - Authentication intermittent failures
+        - Rate limiting blocking legitimate users
+        - Frontend unable to reach backend
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Describe the user-facing impact and scope.
+      placeholder: |
+        - **Users affected**: Estimated count or percentage
+        - **Functionality affected**: e.g., "Cannot create new work entries"
+        - **Workaround available**: Yes/No — describe if available
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: Chronological record of events. Update as the incident progresses.
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue first reported |
+        | YYYY-MM-DD HH:MM | Investigation started |
+        | | |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Evidence
+      description: What errors, logs, or user reports were observed?
+      placeholder: |
+        - POST /api/work-entries returns 500
+        - Backend logs: "Database error: SQLITE_BUSY"
+        - 12 user reports in the last 30 minutes
+    validations:
+      required: true
+
+  - type: textarea
+    id: affected-endpoints
+    attributes:
+      label: Affected Endpoints
+      description: Which API endpoints or pages are impacted?
+      placeholder: |
+        - `POST /api/work-entries`
+        - `GET /api/clients`
+        - WorkEntriesPage.tsx
+    validations:
+      required: false
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: Fill in once identified.
+      placeholder: "To be determined during investigation."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution & Recovery Steps
+      description: What actions were taken to resolve the issue?
+      placeholder: |
+        1. Identified the root cause in ...
+        2. Applied fix / restarted service
+        3. Verified affected endpoints return expected responses
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention / Follow-up Actions
+      description: What changes will prevent recurrence?
+      placeholder: |
+        - [ ] Add integration test for the failing scenario
+        - [ ] Improve error handling in affected route
+        - [ ] Add monitoring for this failure mode
+    validations:
+      required: false

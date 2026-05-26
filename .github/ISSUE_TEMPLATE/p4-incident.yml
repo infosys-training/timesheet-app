@@ -1,0 +1,90 @@
+name: "P4 Incident — Low Impact / Cosmetic"
+description: "Low-impact or cosmetic issue. Resolve by next business day."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 — Low Impact Incident
+        Use this template for **cosmetic issues**, minor UX problems, or non-urgent improvements discovered during incident investigation.
+        **Response target: Next business day.**
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reporter
+      description: Who reported or discovered the issue?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Primary category of the issue.
+      options:
+        - UI cosmetic issue
+        - Misleading error message
+        - Performance not optimal (but functional)
+        - Documentation incorrect or missing
+        - Logging insufficient for debugging
+        - Minor validation gap
+        - Accessibility issue
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Describe the impact. Why does this matter?
+      placeholder: |
+        - **Users affected**: Minimal / edge case
+        - **Functionality affected**: Fully functional, but experience is suboptimal
+        - **Example**: Error message says "Internal server error" instead of a helpful description
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When was the issue first observed?
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue first observed |
+        | | |
+    validations:
+      required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description & Steps to Reproduce
+      description: Detailed description and reproduction steps.
+      placeholder: |
+        1. Log in with any email
+        2. Navigate to Reports page
+        3. Observe that ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What should happen instead?
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Proposed Fix
+      description: Suggested fix or improvement, if known.
+    validations:
+      required: false
