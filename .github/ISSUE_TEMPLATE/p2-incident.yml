@@ -1,0 +1,116 @@
+name: "P2 Incident — Major Degradation"
+description: "Major feature degraded or unavailable. Response time: 30 minutes."
+title: "[P2] "
+labels: ["incident", "P2", "major"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 Incident Report — Major Degradation
+        **Response SLA:** 30 minutes · **Escalation:** Backend/Frontend Lead
+        
+        Use this template when a major feature is broken but the service is partially available.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief description of the incident
+      placeholder: "e.g., Report generation failing for all users"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Which failure mode does this incident match?
+      options:
+        - FM-3: SQLite Lock / SQLITE_BUSY Errors
+        - FM-5: Authentication Middleware Failure
+        - FM-6: PDF/CSV Report Generation Failure
+        - FM-9: Backend Dependency Failure
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the scope and impact of this incident
+      value: |
+        **Affected Users:** [Percentage or count of affected users]
+        **Affected Features:** [List specific features that are broken]
+        **Workaround Available:** [Yes/No — if yes, describe]
+        **Data Integrity:** [Is data at risk?]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Document the timeline of events
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Incident detected |
+        | | Investigation started |
+        | | Root cause identified |
+        | | Fix deployed |
+        | | Verified resolved |
+    validations:
+      required: true
+
+  - type: textarea
+    id: detection
+    attributes:
+      label: Detection Method
+      description: How was this incident detected?
+      placeholder: "e.g., User complaint, error spike in logs, health check partial failure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause Analysis
+      description: What caused this incident?
+      placeholder: "Describe the root cause"
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: What steps were taken to resolve the incident?
+      value: |
+        1. 
+        2. 
+        3. 
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention & Follow-up Actions
+      description: What changes will prevent this from recurring?
+      value: |
+        - [ ] Action item 1
+        - [ ] Action item 2
+        - [ ] Update RUNBOOK.md if needed
+    validations:
+      required: false
+
+  - type: textarea
+    id: runbook-reference
+    attributes:
+      label: Runbook Reference
+      description: Which runbook section was followed?
+      placeholder: "e.g., RUNBOOK.md#fm-6-pdfcsv-report-generation-failure"
+    validations:
+      required: false

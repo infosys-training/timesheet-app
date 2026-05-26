@@ -1,0 +1,93 @@
+name: "P3 Incident — Minor Impact"
+description: "Minor feature impacted, workaround available. Response time: 4 hours."
+title: "[P3] "
+labels: ["incident", "P3", "minor"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 Incident Report — Minor Impact
+        **Response SLA:** 4 hours · **Escalation:** Team Lead if unresolved in 8 hours
+        
+        Use this template for minor feature issues where a workaround exists.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief description of the incident
+      placeholder: "e.g., Rate limiting triggering for power users during peak hours"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Which failure mode does this incident match?
+      options:
+        - FM-4: API Rate Limiting Triggered
+        - FM-8: Frontend Build / Dependency Failure
+        - Performance Degradation
+        - UI/UX Issue
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the scope and impact
+      value: |
+        **Affected Users:** [Number or percentage]
+        **Affected Feature:** [Specific feature]
+        **Workaround:** [Describe the workaround]
+        **User-Facing Error:** [What does the user see?]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Document key events
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue reported |
+        | | Investigation started |
+        | | Fix applied |
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What caused this issue?
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: How was this resolved?
+      value: |
+        1. 
+        2. 
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Follow-up Actions
+      description: Any preventive measures?
+      value: |
+        - [ ] Action item
+        - [ ] Update RUNBOOK.md if needed
+    validations:
+      required: false
