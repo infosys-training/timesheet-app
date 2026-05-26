@@ -1,0 +1,115 @@
+name: "P2 Incident - Major Feature Broken"
+description: "Major feature broken or many users affected. Response time: 1 hour."
+title: "[P2] "
+labels: ["incident", "P2-major", "priority:high"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 Incident Report
+        **Response SLA: 1 hour** — Major feature broken, many users affected.
+        Refer to [RUNBOOK.md](../../RUNBOOK.md) for diagnosis and resolution steps.
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reporter
+      description: Who is filing this incident?
+      placeholder: "name / email / on-call alias"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure_mode
+    attributes:
+      label: Failure Mode
+      description: Which failure mode best matches this incident?
+      options:
+        - "FM-1: Database Failures"
+        - "FM-2: API Errors (5xx)"
+        - "FM-3: Authentication Failures"
+        - "FM-4: Memory Leaks / High Resource Usage"
+        - "FM-5: Dependency / npm Failures"
+        - "FM-6: Rate Limiting Issues"
+        - "FM-7: PDF/CSV Export Failures"
+        - "FM-8: Frontend Unreachable / Build Failures"
+        - "FM-9: Docker Container Failures"
+        - "FM-10: Data Loss (In-Memory DB Restart)"
+        - "Other / Unknown"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Describe the scope and severity of the impact.
+      placeholder: |
+        - Number of users affected:
+        - Features impacted:
+        - Workaround available (yes/no):
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms
+      description: What is the observable behavior? Include error messages, HTTP status codes, and log excerpts.
+      placeholder: |
+        - Error messages seen by users:
+        - HTTP status codes returned:
+        - Relevant log lines:
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: Chronological record of events.
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        |            | Issue first detected |
+        |            | Incident declared |
+        |            | First responder engaged |
+        |            | Mitigation applied |
+        |            | Service restored |
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Where is this happening?
+      placeholder: |
+        - Environment: production / staging / development
+        - Docker image tag / commit SHA:
+        - Node.js version:
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution / Mitigation
+      description: What has been done (or is being done) to resolve the incident?
+      placeholder: |
+        - Immediate mitigation steps taken:
+        - Root cause (if known):
+        - Permanent fix plan:
+    validations:
+      required: false
+
+  - type: textarea
+    id: action_items
+    attributes:
+      label: Action Items
+      description: Follow-up tasks to prevent recurrence.
+      placeholder: |
+        - [ ] Action item 1 — Owner — Due date
+        - [ ] Action item 2 — Owner — Due date
+    validations:
+      required: false
