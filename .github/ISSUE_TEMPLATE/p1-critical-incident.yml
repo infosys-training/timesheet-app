@@ -1,0 +1,109 @@
+name: "P1 - Critical Incident"
+description: "Complete service outage — all APIs returning 500, database corruption, process won't start"
+title: "[P1] "
+labels: ["incident", "P1-critical", "priority:highest"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Incident Summary
+      description: Brief description of the critical incident
+      placeholder: Describe what is happening...
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Number of users affected, business impact, which services are down
+      placeholder: |
+        - Users affected: All / Partial / Specific users
+        - Business impact: ...
+        - Services down: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When detected, when acknowledged, key milestones
+      placeholder: |
+        - Detected: YYYY-MM-DD HH:MM UTC
+        - Acknowledged: YYYY-MM-DD HH:MM UTC
+        - Mitigation started: ...
+        - Resolved: ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: status
+    attributes:
+      label: Current Status
+      options:
+        - Investigating
+        - Identified
+        - Monitoring
+        - Resolved
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: affected-components
+    attributes:
+      label: Affected Components
+      options:
+        - label: Backend API
+        - label: Frontend
+        - label: Database
+        - label: Authentication
+        - label: Reports/Export
+        - label: Docker/Infrastructure
+
+  - type: textarea
+    id: error-details
+    attributes:
+      label: Error Details
+      description: Error messages, HTTP status codes, log excerpts
+      placeholder: Paste relevant error messages and log output here...
+      render: shell
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: How to reproduce the issue (if applicable)
+      placeholder: |
+        1. ...
+        2. ...
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution / Workaround
+      description: What was done to resolve or mitigate the incident
+      placeholder: Describe the resolution or workaround applied...
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: Root cause analysis (fill after resolution)
+      placeholder: Describe the root cause...
+
+  - type: textarea
+    id: action-items
+    attributes:
+      label: Action Items
+      description: Preventive measures for the future
+      placeholder: |
+        - [ ] Action item 1
+        - [ ] Action item 2
+
+  - type: input
+    id: incident-commander
+    attributes:
+      label: Incident Commander
+      description: Who is leading the response
+      placeholder: "@username"
