@@ -1,0 +1,122 @@
+name: "P2 — Major Incident"
+description: "Significant degradation affecting a core feature. Requires urgent response."
+title: "[P2] "
+labels: ["incident", "P2-major"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 — Major Incident
+        **Response SLA**: Acknowledge within **30 minutes**, resolve or mitigate within **4 hours**.
+        Use this template for major feature degradation (e.g., report generation broken, login failures for a subset of users).
+
+  - type: input
+    id: incident-commander
+    attributes:
+      label: Incident Commander
+      description: Who is leading the incident response?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected Component
+      description: Which part of the system is affected?
+      multiple: true
+      options:
+        - Backend API
+        - Frontend UI
+        - Database (SQLite)
+        - Authentication
+        - Report Generation (CSV/PDF)
+        - Docker / Production Deployment
+        - CI/CD Pipeline
+        - Infrastructure / Network
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Describe the user and business impact.
+      placeholder: |
+        - Feature affected: (e.g., CSV export, client management)
+        - Number of affected users: some / many
+        - Workaround available: Yes / No
+        - Data integrity at risk: Yes / No
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms
+      description: What is the observable behavior? Include error messages, HTTP status codes, and log excerpts.
+      placeholder: |
+        - API endpoint returning: (status code + body)
+        - Browser console errors: ...
+        - Steps to reproduce: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: Key timestamps for the incident (use UTC).
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Incident detected |
+        | YYYY-MM-DD HH:MM | Response initiated |
+        | YYYY-MM-DD HH:MM | Root cause identified |
+        | YYYY-MM-DD HH:MM | Mitigation applied |
+        | YYYY-MM-DD HH:MM | Service restored |
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What caused the incident? (Fill in during or after resolution.)
+      placeholder: "Describe the root cause or write 'Under investigation'."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution / Mitigation
+      description: What actions were taken to resolve or mitigate the incident?
+      placeholder: |
+        1. Step taken ...
+        2. Step taken ...
+        3. Verified via health check
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-Up Actions
+      description: Post-incident action items to prevent recurrence.
+      placeholder: |
+        - [ ] Update RUNBOOK.md
+        - [ ] Add tests covering this failure mode
+        - [ ] Improve error handling
+        - [ ] Create fix PR
+    validations:
+      required: false
+
+  - type: textarea
+    id: runbook-reference
+    attributes:
+      label: Runbook Reference
+      description: Which RUNBOOK.md section was used?
+      placeholder: "e.g., Section 7 — Report Generation Failures"
+    validations:
+      required: false

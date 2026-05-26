@@ -1,0 +1,109 @@
+name: "P4 — Low Priority Incident"
+description: "Cosmetic issues, minor improvements, or tech debt discovered during incident response."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 — Low Priority Incident
+        **Response SLA**: Acknowledge within **1 business day**, resolve within **next sprint/cycle**.
+        Use this template for cosmetic issues, non-user-facing bugs, tech debt, or improvements discovered during incident response.
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reporter
+      description: Who reported or discovered this issue?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected Component
+      description: Which part of the system is affected?
+      multiple: true
+      options:
+        - Backend API
+        - Frontend UI
+        - Database (SQLite)
+        - Authentication
+        - Report Generation (CSV/PDF)
+        - Docker / Production Deployment
+        - CI/CD Pipeline
+        - Infrastructure / Network
+        - Documentation
+        - Developer Experience
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Describe the impact (may be minimal or cosmetic).
+      placeholder: |
+        - User-visible: Yes / No
+        - Workaround available: Yes (describe) / No / Not needed
+        - Risk if unresolved: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the issue or improvement in detail.
+      placeholder: |
+        - Current behavior: ...
+        - Desired behavior: ...
+        - Context (e.g., discovered during P1 post-mortem): ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When was this discovered?
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue discovered |
+        | YYYY-MM-DD HH:MM | Fix deployed |
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: How should this be resolved?
+      placeholder: |
+        - Proposed fix: ...
+        - PR link: ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-Up Actions
+      description: Any related improvements?
+      placeholder: |
+        - [ ] Create fix PR
+        - [ ] Update documentation
+        - [ ] Add to tech debt backlog
+    validations:
+      required: false
+
+  - type: textarea
+    id: runbook-reference
+    attributes:
+      label: Runbook Reference
+      description: Which RUNBOOK.md section is relevant (if any)?
+      placeholder: "e.g., Section 9 — Dependency Issues"
+    validations:
+      required: false

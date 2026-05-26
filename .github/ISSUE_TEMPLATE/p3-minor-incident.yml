@@ -1,0 +1,119 @@
+name: "P3 — Minor Incident"
+description: "Non-critical issue affecting a limited feature or user subset. Standard business-hours response."
+title: "[P3] "
+labels: ["incident", "P3-minor"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 — Minor Incident
+        **Response SLA**: Acknowledge within **4 hours**, resolve within **2 business days**.
+        Use this template for limited-impact issues (e.g., slow report generation, intermittent validation errors, non-blocking UI glitches).
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reporter
+      description: Who reported or discovered this issue?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected Component
+      description: Which part of the system is affected?
+      multiple: true
+      options:
+        - Backend API
+        - Frontend UI
+        - Database (SQLite)
+        - Authentication
+        - Report Generation (CSV/PDF)
+        - Docker / Production Deployment
+        - CI/CD Pipeline
+        - Infrastructure / Network
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Describe the user and business impact.
+      placeholder: |
+        - Feature affected: ...
+        - Number of affected users: few / limited
+        - Workaround available: Yes (describe) / No
+        - Frequency: always / intermittent / rare
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms
+      description: What is the observable behavior?
+      placeholder: |
+        - What happened: ...
+        - Expected behavior: ...
+        - Steps to reproduce: ...
+        - Error messages (if any): ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When was this first noticed? Include key timestamps (UTC).
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue first observed |
+        | YYYY-MM-DD HH:MM | Investigation started |
+        | YYYY-MM-DD HH:MM | Fix deployed |
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What caused the issue? (Fill in during or after resolution.)
+      placeholder: "Describe the root cause or write 'Under investigation'."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: How was the issue resolved?
+      placeholder: |
+        1. Fix applied: ...
+        2. Verified by: ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-Up Actions
+      description: Any preventive measures or improvements?
+      placeholder: |
+        - [ ] Add test coverage
+        - [ ] Update documentation
+        - [ ] Create fix PR
+    validations:
+      required: false
+
+  - type: textarea
+    id: runbook-reference
+    attributes:
+      label: Runbook Reference
+      description: Which RUNBOOK.md section is relevant?
+      placeholder: "e.g., Section 3 — API / Backend Errors"
+    validations:
+      required: false

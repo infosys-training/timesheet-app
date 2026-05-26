@@ -1,0 +1,122 @@
+name: "P1 — Critical Incident"
+description: "Complete outage or data loss affecting all users. Requires immediate response."
+title: "[P1] "
+labels: ["incident", "P1-critical"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 — Critical Incident
+        **Response SLA**: Acknowledge within **15 minutes**, resolve or mitigate within **1 hour**.
+        Use this template for complete service outages, data loss, or security breaches.
+
+  - type: input
+    id: incident-commander
+    attributes:
+      label: Incident Commander
+      description: Who is leading the incident response?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected Component
+      description: Which part of the system is affected?
+      multiple: true
+      options:
+        - Backend API
+        - Frontend UI
+        - Database (SQLite)
+        - Authentication
+        - Report Generation (CSV/PDF)
+        - Docker / Production Deployment
+        - CI/CD Pipeline
+        - Infrastructure / Network
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Describe the user and business impact.
+      placeholder: |
+        - Number of affected users: ALL / subset
+        - Revenue impact: Yes / No / Unknown
+        - Data loss: Yes / No / Risk of
+        - External customers affected: Yes / No
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms
+      description: What is the observable behavior? Include error messages, HTTP status codes, and log excerpts.
+      placeholder: |
+        - Health check returns: (paste response or error)
+        - Error messages observed: ...
+        - Monitoring alerts triggered: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: Key timestamps for the incident (use UTC).
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Incident detected |
+        | YYYY-MM-DD HH:MM | Response initiated |
+        | YYYY-MM-DD HH:MM | Root cause identified |
+        | YYYY-MM-DD HH:MM | Mitigation applied |
+        | YYYY-MM-DD HH:MM | Service restored |
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What caused the incident? (Fill in during or after resolution.)
+      placeholder: "Describe the root cause or write 'Under investigation'."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution / Mitigation
+      description: What actions were taken to resolve or mitigate the incident?
+      placeholder: |
+        1. Step taken ...
+        2. Step taken ...
+        3. Service verified via health check script
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-Up Actions
+      description: Post-incident action items to prevent recurrence.
+      placeholder: |
+        - [ ] Schedule post-mortem within 24 hours
+        - [ ] Update RUNBOOK.md with new procedure
+        - [ ] Add monitoring / alerting for this failure mode
+        - [ ] Create fix PR
+    validations:
+      required: false
+
+  - type: textarea
+    id: runbook-reference
+    attributes:
+      label: Runbook Reference
+      description: Which RUNBOOK.md section was used?
+      placeholder: "e.g., Section 12 — Complete Outage"
+    validations:
+      required: false
