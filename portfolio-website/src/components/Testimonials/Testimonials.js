@@ -48,7 +48,7 @@ const Testimonials = () => {
               transition={{ duration: 0.5, delay: index * 0.15 }}
             >
               <div className="testimonials__stars">
-                {[...new Array(testimonial.rating)].map((_, i) => (
+                {Array.from({ length: testimonial.rating }).map((_, i) => (
                   <FiStar key={`star-${testimonial.name}-${i}`} className="testimonials__star" />
                 ))}
               </div>
