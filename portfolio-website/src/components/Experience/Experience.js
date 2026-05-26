@@ -104,8 +104,8 @@ const Experience = () => {
             </h3>
             <p className="experience__period">{experiences[activeTab].period}</p>
             <ul className="experience__points">
-              {experiences[activeTab].points.map((point, i) => (
-                <li key={i} className="experience__point">
+              {experiences[activeTab].points.map((point) => (
+                <li key={point} className="experience__point">
                   {point}
                 </li>
               ))}

@@ -32,8 +32,8 @@ const Navbar = () => {
       <div className="navbar__container">
         <Link to="hero" smooth duration={500} className="navbar__logo" onClick={closeMenu}>
           <span className="navbar__logo-bracket">&lt;</span>
-          AM
-          <span className="navbar__logo-bracket"> /&gt;</span>
+          {'AM'}
+          <span className="navbar__logo-bracket">{' />'}</span>
         </Link>
 
         <div className={`navbar__menu ${menuOpen ? 'navbar__menu--open' : ''}`}>

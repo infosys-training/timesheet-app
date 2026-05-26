@@ -90,7 +90,7 @@ const Projects = () => {
           {featuredProjects.map((project, index) => (
             <motion.div
               key={project.title}
-              className={`projects__featured-item ${index % 2 !== 0 ? 'projects__featured-item--reverse' : ''}`}
+              className={`projects__featured-item ${index % 2 === 1 ? 'projects__featured-item--reverse' : ''}`}
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}

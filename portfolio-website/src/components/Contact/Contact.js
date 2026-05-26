@@ -17,8 +17,9 @@ const Contact = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const mailtoLink = `mailto:alex.morgan@email.com?subject=${encodeURIComponent(formData.subject)}&body=${encodeURIComponent(`Name: ${formData.name}\nEmail: ${formData.email}\n\n${formData.message}`)}`;
-    window.location.href = mailtoLink;
+    const bodyText = "Name: " + formData.name + "\nEmail: " + formData.email + "\n\n" + formData.message;
+    const mailtoLink = "mailto:alex.morgan@email.com?subject=" + encodeURIComponent(formData.subject) + "&body=" + encodeURIComponent(bodyText);
+    globalThis.location.href = mailtoLink;
   };
 
   return (
