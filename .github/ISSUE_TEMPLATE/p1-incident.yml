@@ -1,0 +1,138 @@
+name: "P1 Incident — Critical Outage"
+description: "Complete service outage or data loss. Response SLA: 15 minutes."
+title: "[P1] "
+labels: ["incident", "P1-critical", "urgent"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 — Critical Incident Report
+        Complete service outage affecting all users. Immediate response required.
+        **Response SLA: 15 minutes | Escalation: 30 minutes**
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief summary of the incident
+      placeholder: "e.g., Complete API outage — all endpoints returning 503"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Primary failure category (refer to RUNBOOK.md)
+      options:
+        - "FM-1: Database Connection Failure"
+        - "FM-2: Database Corruption / Data Loss"
+        - "FM-3: API Unresponsive (Express Server Crash)"
+        - "FM-5: Memory Leak / OOM Kill"
+        - "FM-10: Docker Container Failure"
+        - "Other (describe below)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the scope and impact of the incident
+      value: |
+        **Affected Users:** [All / Percentage / Specific group]
+        **Affected Features:** [All API endpoints / Specific feature]
+        **Data Loss:** [Yes / No / Unknown]
+        **Revenue Impact:** [Estimated if applicable]
+        **External Dependencies Affected:** [List any downstream systems]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Chronological sequence of events (update as incident progresses)
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Incident detected |
+        | YYYY-MM-DD HH:MM | First responder acknowledged |
+        | YYYY-MM-DD HH:MM | Root cause identified |
+        | YYYY-MM-DD HH:MM | Mitigation applied |
+        | YYYY-MM-DD HH:MM | Service restored |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms Observed
+      description: What errors/behaviors are being seen?
+      placeholder: |
+        - Health check returning 503
+        - Docker container in restart loop
+        - Error logs showing: [paste relevant log lines]
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: Identified root cause (update once known)
+      placeholder: "Fill in once root cause is identified during investigation"
+    validations:
+      required: false
+
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Mitigation Steps Taken
+      description: Immediate actions taken to restore service
+      placeholder: |
+        1. Restarted container
+        2. Restored database from backup
+        3. Increased memory limits
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution & Permanent Fix
+      description: Long-term fix to prevent recurrence
+      placeholder: |
+        - PR #XXX: Fixed memory leak in report generation
+        - Added database connection pooling
+        - Configured automated backups
+    validations:
+      required: false
+
+  - type: textarea
+    id: action-items
+    attributes:
+      label: Follow-up Action Items
+      description: Tasks to prevent recurrence
+      value: |
+        - [ ] Action item 1 — Owner: @username — Due: YYYY-MM-DD
+        - [ ] Action item 2 — Owner: @username — Due: YYYY-MM-DD
+        - [ ] Schedule post-incident review meeting
+        - [ ] Update RUNBOOK.md if new procedure was needed
+    validations:
+      required: false
+
+  - type: textarea
+    id: communication
+    attributes:
+      label: Communication Log
+      description: Record of stakeholder notifications
+      value: |
+        | Time (UTC) | Channel | Message |
+        |------------|---------|---------|
+        | | Slack #incidents | Incident declared |
+        | | Email / Status page | User notification |
+        | | Slack #incidents | Resolution confirmed |
+    validations:
+      required: false

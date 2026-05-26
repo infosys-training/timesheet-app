@@ -1,0 +1,74 @@
+name: "P4 Incident — Low Impact"
+description: "Low-impact issue, cosmetic or non-critical. Response SLA: 24 hours."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 — Low-Impact Incident Report
+        Non-critical issue with minimal user impact. Handled during normal workflow.
+        **Response SLA: 24 hours**
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief summary of the issue
+      placeholder: "e.g., Deprecation warnings in server logs"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: Type of issue
+      options:
+        - "UI/Cosmetic issue"
+        - "Non-critical log warnings"
+        - "Performance (minor slowdown)"
+        - "Documentation gap"
+        - "Dependency deprecation"
+        - "Rate limiting (expected behavior)"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the impact
+      value: |
+        **Affected Users:** [None directly / Minimal]
+        **User-visible:** [Yes / No]
+        **Workaround needed:** [No / Yes — describe]
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Detailed description of the issue
+      placeholder: |
+        Describe what's happening, any relevant logs, and steps to reproduce if applicable.
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Proposed Resolution
+      description: Suggested fix or improvement
+      value: |
+        **Proposed Fix:**
+        - 
+
+        **Priority Justification:**
+        - Low impact, no immediate user disruption
+        - Can be addressed in next maintenance cycle
+    validations:
+      required: false

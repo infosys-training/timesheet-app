@@ -1,0 +1,94 @@
+name: "P3 Incident — Minor Degradation"
+description: "Minor feature degraded, workaround available. Response SLA: 4 hours."
+title: "[P3] "
+labels: ["incident", "P3-minor"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 — Minor Incident Report
+        Minor feature degradation with workaround available. Standard response.
+        **Response SLA: 4 hours**
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief summary of the incident
+      placeholder: "e.g., PDF export returning empty documents for large reports"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Primary failure category (refer to RUNBOOK.md)
+      options:
+        - "FM-4: Rate Limiting Triggered"
+        - "FM-7: Frontend Build/Serve Failure"
+        - "FM-9: Report Generation Failure (PDF/CSV)"
+        - "FM-11: Disk Space Exhaustion"
+        - "FM-12: CORS / Proxy Misconfiguration"
+        - "Other (describe below)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the scope and impact
+      value: |
+        **Affected Users:** [Few / Some / Specific conditions]
+        **Affected Feature:** [Specific feature or endpoint]
+        **Workaround:** [Describe the available workaround]
+        **User-facing Error:** [Error message users see, if any]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Key events
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue reported / detected |
+        | YYYY-MM-DD HH:MM | Investigation started |
+        | YYYY-MM-DD HH:MM | Fix applied |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Reproduction Steps
+      description: How to reproduce the issue
+      placeholder: |
+        1. Log in as any user
+        2. Navigate to Reports
+        3. Click "Export PDF" for a client with >100 entries
+        4. Observe: empty PDF downloaded
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: Fix applied and prevention measures
+      value: |
+        **Root Cause:**
+        - 
+
+        **Fix:**
+        - PR: #
+
+        **Testing:**
+        - [ ] Verified fix resolves the issue
+        - [ ] No regression in related features
+    validations:
+      required: false
