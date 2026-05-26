@@ -560,15 +560,15 @@ sqlite3 data/timesheet.db "PRAGMA integrity_check;"
 
 ## Escalation Contacts
 
-| Role | Responsibility |
-|------|---------------|
-| On-call Engineer | First responder for P1/P2 incidents |
-| Backend Lead | Database and API issues |
-| Frontend Lead | UI and proxy issues |
-| DevOps Lead | Infrastructure, Docker, CI/CD issues |
-| Engineering Manager | P1 incident commander |
+| Role | Contact | Responsibility |
+|------|---------|---------------|
+| On-call Engineer | vijaya.akula | First responder for P1/P2 incidents |
+| Backend Lead | vijaya.akula | Database and API issues |
+| Frontend Lead | vijaya.akula | UI and proxy issues |
+| DevOps Lead | vijaya.akula | Infrastructure, Docker, CI/CD issues |
+| Engineering Manager | vijaya.akula | P1 incident commander |
 
 **Escalation process:**
 1. P4/P3: File a GitHub issue using the appropriate template
-2. P2: File a GitHub issue AND notify the on-call engineer
-3. P1: File a GitHub issue, notify on-call, and start an incident bridge immediately
+2. P2: File a GitHub issue AND notify vijaya.akula
+3. P1: File a GitHub issue, notify vijaya.akula, and start an incident bridge immediately
