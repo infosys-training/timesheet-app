@@ -1,0 +1,120 @@
+name: "P2 Incident - Major"
+description: "Major feature is broken with no workaround available. Response time: 1 hour."
+title: "[P2] "
+labels: ["incident", "P2-major"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 - Major Incident
+        Use this template when a major feature is broken and no workaround is available for affected users.
+        **Expected response time: 1 hour.**
+
+  - type: input
+    id: incident-summary
+    attributes:
+      label: Incident Summary
+      description: One-line description of the incident.
+      placeholder: "e.g., Authentication endpoint failing for all new users"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected Component
+      description: Which part of the system is affected?
+      multiple: true
+      options:
+        - Backend API
+        - Frontend UI
+        - Database (SQLite)
+        - Authentication
+        - Report Generation (PDF/CSV)
+        - Docker / Infrastructure
+        - CI/CD Pipeline
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the user and business impact.
+      value: |
+        **Users affected:** (all / percentage / specific group)
+        **Features broken:** 
+        **Workaround available:** No
+        **Data loss:** (yes / no / unknown)
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Key timestamps for the incident.
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue first detected |
+        | YYYY-MM-DD HH:MM | Investigation started |
+        | YYYY-MM-DD HH:MM | Root cause identified |
+        | YYYY-MM-DD HH:MM | Fix deployed |
+        | YYYY-MM-DD HH:MM | Incident resolved |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Errors
+      description: What errors or symptoms are being observed? Include log snippets, error messages, and status codes.
+      placeholder: "Paste relevant logs, error messages, HTTP status codes, etc."
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What caused the incident? (Fill in once identified.)
+      placeholder: "To be determined during investigation."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution & Mitigation
+      description: Steps taken to resolve the incident and prevent recurrence.
+      value: |
+        **Immediate fix:**
+
+        **Long-term fix:**
+
+        **Prevention measures:**
+    validations:
+      required: false
+
+  - type: textarea
+    id: runbook-reference
+    attributes:
+      label: Runbook Reference
+      description: Which runbook section was followed?
+      placeholder: "e.g., RUNBOOK.md Section 2.1 - Rate Limiting"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: post-incident
+    attributes:
+      label: Post-Incident Checklist
+      options:
+        - label: Incident timeline documented
+        - label: Root cause identified
+        - label: Impact assessment completed
+        - label: Fix verified in production
+        - label: Monitoring/alerting gaps addressed
+        - label: Runbook updated with learnings
