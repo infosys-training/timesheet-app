@@ -1,0 +1,118 @@
+name: "P1 Incident — Critical / Complete Outage"
+description: "Complete service outage or data loss affecting all users. Respond within 15 minutes."
+title: "[P1] "
+labels: ["incident", "P1-critical"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 — Critical Incident
+        Use this template for **complete service outages**, data loss, or security breaches affecting all users.
+        **Response target: 15 min acknowledge, 1 hr resolve.**
+
+  - type: input
+    id: incident-commander
+    attributes:
+      label: Incident Commander
+      description: Who is leading the response?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Primary category of the failure.
+      options:
+        - Complete service outage
+        - Database corruption / data loss
+        - Security breach / data exposure
+        - Infrastructure failure (Docker / hosting)
+        - Authentication system down
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Describe the user-facing impact and scope.
+      placeholder: |
+        - **Users affected**: All / percentage
+        - **Functionality affected**: All endpoints unreachable
+        - **Business impact**: Users cannot log time entries; billing data unavailable
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: Chronological record of events. Update as the incident progresses.
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue first detected |
+        | YYYY-MM-DD HH:MM | Incident declared |
+        | | |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Evidence
+      description: What errors, logs, or monitoring alerts were observed?
+      placeholder: |
+        - Health endpoint `/health` returns connection refused
+        - Backend logs: "Failed to start server: ..."
+        - Docker container in restart loop
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: Fill in once identified. Link to relevant code or config.
+      placeholder: "To be determined during investigation."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution & Recovery Steps
+      description: What actions were taken to restore service?
+      placeholder: |
+        1. Restarted the backend container
+        2. Restored database from backup
+        3. Verified health endpoint returned 200
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention / Follow-up Actions
+      description: What changes will prevent recurrence?
+      placeholder: |
+        - [ ] Add automated database backup cron job
+        - [ ] Implement database health in /health endpoint
+        - [ ] Add alerting for container restart loops
+    validations:
+      required: false
+
+  - type: textarea
+    id: communication
+    attributes:
+      label: Communication Log
+      description: Record of stakeholder notifications.
+      placeholder: |
+        - Notified on-call channel at HH:MM UTC
+        - Status page updated at HH:MM UTC
+        - All-hands update sent at HH:MM UTC
+    validations:
+      required: false

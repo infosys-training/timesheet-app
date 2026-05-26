@@ -1,0 +1,101 @@
+name: "P3 Incident — Minor Feature Degraded"
+description: "A minor feature is degraded but a workaround exists. Respond within 4 hours."
+title: "[P3] "
+labels: ["incident", "P3-minor"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 — Minor Incident
+        Use this template when a **minor feature is degraded** but a workaround exists and most users are unaffected.
+        **Response target: 4 hrs acknowledge, 24 hrs resolve.**
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reporter
+      description: Who reported or discovered the issue?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Primary category of the failure.
+      options:
+        - CSV export failing
+        - PDF export failing
+        - Slow response times on specific endpoint
+        - Validation error not user-friendly
+        - UI rendering issue on specific page
+        - Intermittent API timeouts
+        - Rate limiting too aggressive
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Describe the user-facing impact.
+      placeholder: |
+        - **Users affected**: Small number / specific workflow
+        - **Functionality affected**: e.g., "PDF export returns empty file"
+        - **Workaround**: e.g., "Use CSV export instead"
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When was the issue first observed?
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue first observed |
+        | | |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Evidence
+      description: What errors or unexpected behavior was observed?
+      placeholder: |
+        - Export button triggers download but file is 0 bytes
+        - Backend log: "Error creating CSV: ENOSPC"
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: Fill in once identified.
+      placeholder: "To be determined."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: What fix was applied?
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention / Follow-up Actions
+      description: What changes will prevent recurrence?
+      placeholder: |
+        - [ ] Add disk space monitoring
+        - [ ] Improve error message for the user
+    validations:
+      required: false
