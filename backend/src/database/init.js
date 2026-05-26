@@ -59,6 +59,7 @@ async function initializeDatabase() {
           hours DECIMAL(5,2) NOT NULL,
           description TEXT,
           date DATE NOT NULL,
+          effort_category TEXT NOT NULL DEFAULT 'Development' CHECK(effort_category IN ('Learning', 'Project Management', 'Development', 'Testing')),
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (client_id) REFERENCES clients (id) ON DELETE CASCADE,

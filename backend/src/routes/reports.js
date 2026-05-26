@@ -1,6 +1,7 @@
 const express = require('express');
 const { getDatabase } = require('../database/init');
 const { authenticateUser } = require('../middleware/auth');
+const { EFFORT_CATEGORIES } = require('../validation/schemas');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const PDFDocument = require('pdfkit');
 const path = require('path');
@@ -10,6 +11,43 @@ const router = express.Router();
 
 // All routes require authentication
 router.use(authenticateUser);
+
+// Get effort breakdown by category for the authenticated user
+router.get('/effort-breakdown', (req, res) => {
+  const db = getDatabase();
+
+  db.all(
+    `SELECT effort_category, SUM(hours) as total_hours, COUNT(*) as entry_count
+     FROM work_entries
+     WHERE user_email = ?
+     GROUP BY effort_category
+     ORDER BY total_hours DESC`,
+    [req.userEmail],
+    (err, rows) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+
+      const breakdown = EFFORT_CATEGORIES.map((category) => {
+        const row = rows.find((r) => r.effort_category === category);
+        return {
+          category,
+          totalHours: row ? parseFloat(row.total_hours) : 0,
+          entryCount: row ? row.entry_count : 0,
+        };
+      });
+
+      const grandTotalHours = breakdown.reduce((sum, item) => sum + item.totalHours, 0);
+
+      res.json({
+        breakdown,
+        grandTotalHours,
+        categories: EFFORT_CATEGORIES,
+      });
+    }
+  );
+});
 
 // Get hourly report for specific client
 router.get('/client/:clientId', (req, res) => {
