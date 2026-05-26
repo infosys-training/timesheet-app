@@ -1,0 +1,119 @@
+name: "P1 Incident — Critical Outage"
+description: "Complete service outage or data loss affecting all users. Response time: 15 minutes."
+title: "[P1] "
+labels: ["incident", "P1", "critical"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 Incident Report — Critical Outage
+        **Response SLA:** 15 minutes · **Escalation:** Engineering Manager after 30 minutes
+        
+        Use this template for complete service outages, data loss, or security breaches.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief description of the incident
+      placeholder: "e.g., Complete API outage — all endpoints returning 500"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Which failure mode does this incident match?
+      options:
+        - FM-1: Database Initialization Failure
+        - FM-2: Database Connection Loss
+        - FM-7: Memory Leak / OOM
+        - FM-10: Docker Container Health Check Failure
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the scope and impact of this incident
+      value: |
+        **Affected Users:** [All / Subset — describe]
+        **Affected Features:** [List affected functionality]
+        **Data Loss:** [Yes/No — if yes, describe extent]
+        **Revenue Impact:** [If applicable]
+        **External Visibility:** [Are customers aware?]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Document the timeline of events (update as incident progresses)
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Incident detected |
+        | | First responder engaged |
+        | | Root cause identified |
+        | | Mitigation applied |
+        | | Service restored |
+        | | All-clear confirmed |
+    validations:
+      required: true
+
+  - type: textarea
+    id: detection
+    attributes:
+      label: Detection Method
+      description: How was this incident detected?
+      placeholder: "e.g., Health check script alert, user report, monitoring dashboard"
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause Analysis
+      description: What caused this incident? (Fill in after resolution)
+      placeholder: "Describe the underlying cause, not just the symptoms"
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: What steps were taken to resolve the incident?
+      value: |
+        1. 
+        2. 
+        3. 
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention & Follow-up Actions
+      description: What changes will prevent this from recurring?
+      value: |
+        - [ ] Action item 1
+        - [ ] Action item 2
+        - [ ] Update RUNBOOK.md if needed
+        - [ ] Schedule post-incident review meeting
+    validations:
+      required: false
+
+  - type: textarea
+    id: runbook-reference
+    attributes:
+      label: Runbook Reference
+      description: Which runbook section was followed?
+      placeholder: "e.g., RUNBOOK.md#fm-1-database-initialization-failure"
+    validations:
+      required: false

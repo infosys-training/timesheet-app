@@ -1,0 +1,90 @@
+name: "P4 Incident — Low Impact"
+description: "Low-impact issue, cosmetic or non-critical. Response time: 24 hours."
+title: "[P4] "
+labels: ["incident", "P4", "low"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 Incident Report — Low Impact
+        **Response SLA:** 24 hours · **Escalation:** Not required
+        
+        Use this template for low-impact issues such as logging gaps, minor UI glitches, or non-critical warnings.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief description of the issue
+      placeholder: "e.g., Morgan logging not capturing request body for debugging"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: What category does this issue fall into?
+      options:
+        - Logging / Observability Gap
+        - Minor UI Glitch
+        - Non-critical Warning
+        - Documentation Gap
+        - Configuration Issue
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the impact (low by definition for P4)
+      value: |
+        **Affected Users:** [None / Minimal]
+        **User-Visible:** [Yes/No]
+        **Workaround:** [Describe if applicable]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Discovery Timeline
+      description: When was this noticed?
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue discovered |
+        | | Fix planned/applied |
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Detailed Description
+      description: Provide details about the issue
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Proposed Resolution
+      description: How should this be fixed?
+      value: |
+        1. 
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-up Actions
+      value: |
+        - [ ] Fix applied
+        - [ ] Verified in production
+    validations:
+      required: false
