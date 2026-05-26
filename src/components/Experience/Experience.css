@@ -1,0 +1,125 @@
+.experience__content {
+  display: flex;
+  gap: 40px;
+  max-width: 800px;
+}
+
+.experience__tabs {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  border-left: 2px solid var(--border-color);
+}
+
+.experience__tab {
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  height: 42px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+  text-align: left;
+}
+
+.experience__tab:hover {
+  background: rgba(108, 99, 255, 0.1);
+  color: var(--primary);
+}
+
+.experience__tab--active {
+  color: var(--primary);
+}
+
+.experience__tab-indicator {
+  position: absolute;
+  top: 0;
+  left: -2px;
+  width: 2px;
+  height: 42px;
+  background: var(--primary);
+  transition: transform 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+.experience__panel {
+  min-height: 300px;
+}
+
+.experience__title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-highlight);
+  margin-bottom: 4px;
+}
+
+.experience__company {
+  color: var(--primary);
+  transition: var(--transition);
+}
+
+.experience__company:hover {
+  text-decoration: underline;
+}
+
+.experience__period {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.experience__points {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.experience__point {
+  position: relative;
+  padding-left: 24px;
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.experience__point::before {
+  content: '▹';
+  position: absolute;
+  left: 0;
+  color: var(--primary);
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .experience__content {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .experience__tabs {
+    flex-direction: row;
+    border-left: none;
+    border-bottom: 2px solid var(--border-color);
+    overflow-x: auto;
+    min-width: unset;
+  }
+
+  .experience__tab {
+    padding: 10px 16px;
+  }
+
+  .experience__tab-indicator {
+    top: auto;
+    bottom: -2px;
+    left: 0;
+    width: 120px;
+    height: 2px;
+    transform: translateX(0) !important;
+  }
+}
