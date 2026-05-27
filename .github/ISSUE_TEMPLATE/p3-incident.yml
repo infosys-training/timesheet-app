@@ -1,0 +1,107 @@
+name: "P3 Incident - Medium"
+description: "Minor feature issue or degradation affecting a subset of users. Response within 4 hours."
+title: "[P3] "
+labels: ["incident", "P3-medium"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 - Medium Severity Incident
+        **Response SLA:** Acknowledge within 4 hours. Fix within 1 business day.
+        **Examples:** Non-critical feature broken, intermittent errors for a subset of users, minor performance degradation, UI rendering issues.
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reporter
+      description: "Who reported or detected this incident?"
+      placeholder: "e.g., Jane Doe / monitoring alert"
+    validations:
+      required: true
+
+  - type: input
+    id: detection-time
+    attributes:
+      label: Detection Time
+      description: "When was the incident first detected? (UTC)"
+      placeholder: "YYYY-MM-DD HH:MM UTC"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected Component(s)
+      description: "Which part of the system is impacted?"
+      multiple: true
+      options:
+        - Backend API (Express)
+        - Frontend (React/Vite)
+        - Database (SQLite)
+        - Authentication
+        - Report Generation (PDF/CSV)
+        - Docker / Infrastructure
+        - CI/CD Pipeline
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: "Describe the impact. Is there a workaround?"
+      placeholder: |
+        - Affected users: (count or percentage)
+        - Affected functionality: (specific feature)
+        - Workaround: (describe if available)
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms
+      description: "What symptoms are observed?"
+      placeholder: |
+        - Error messages or behavior
+        - Steps to reproduce
+        - Frequency (constant / intermittent)
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: "Key events in chronological order."
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | HH:MM | Issue detected |
+        | HH:MM | Investigation started |
+        | HH:MM | Fix applied |
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: "What caused the issue?"
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: "How was this resolved?"
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Follow-up Actions
+      description: "Preventive measures or improvements."
+      placeholder: |
+        - [ ] Add test coverage for this scenario
+        - [ ] Update documentation

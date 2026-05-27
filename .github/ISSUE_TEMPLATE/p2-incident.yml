@@ -1,0 +1,126 @@
+name: "P2 Incident - High"
+description: "Major feature degradation affecting many users. Requires urgent response within 1 hour."
+title: "[P2] "
+labels: ["incident", "P2-high"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 - High Severity Incident
+        **Response SLA:** Acknowledge within 1 hour. Dedicated responder assigned.
+        **Examples:** Major feature broken (e.g., report export failing, auth intermittent), significant performance degradation, partial data loss.
+
+  - type: input
+    id: incident-lead
+    attributes:
+      label: Incident Lead
+      description: "Name of the person leading the response."
+      placeholder: "e.g., Jane Doe"
+    validations:
+      required: true
+
+  - type: input
+    id: detection-time
+    attributes:
+      label: Detection Time
+      description: "When was the incident first detected? (UTC)"
+      placeholder: "YYYY-MM-DD HH:MM UTC"
+    validations:
+      required: true
+
+  - type: input
+    id: start-time
+    attributes:
+      label: Estimated Start Time
+      description: "When did the incident likely begin? (UTC)"
+      placeholder: "YYYY-MM-DD HH:MM UTC"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected Component(s)
+      description: "Which part of the system is impacted?"
+      multiple: true
+      options:
+        - Backend API (Express)
+        - Frontend (React/Vite)
+        - Database (SQLite)
+        - Authentication
+        - Report Generation (PDF/CSV)
+        - Docker / Infrastructure
+        - CI/CD Pipeline
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: "Describe the user-facing impact."
+      placeholder: |
+        - Number of affected users: estimated count or percentage
+        - Affected functionality: (e.g., CSV export, specific API endpoint)
+        - Workaround available: Yes / No
+        - Data integrity: Intact / Partially affected
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms
+      description: "What observable symptoms indicate this incident?"
+      placeholder: |
+        - Specific error messages or HTTP status codes
+        - Performance metrics (response time, error rate)
+        - User reports
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: "Chronological record of events."
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | HH:MM | Incident detected |
+        | HH:MM | Investigation started |
+        | HH:MM | Root cause identified |
+        | HH:MM | Fix deployed |
+        | HH:MM | Service restored |
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: "What caused the incident?"
+      placeholder: "e.g., Rate limiter misconfiguration blocking legitimate bulk operations."
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: "What was done to resolve the incident?"
+      placeholder: |
+        1. Diagnosed using health check script
+        2. Identified root cause in application logs
+        3. Applied fix per RUNBOOK.md
+        4. Verified resolution
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention / Follow-up Actions
+      description: "What changes will prevent this from recurring?"
+      placeholder: |
+        - [ ] Add monitoring for the affected component
+        - [ ] Update RUNBOOK.md with new procedure
+        - [ ] Create automated test for this scenario
