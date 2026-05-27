@@ -1,0 +1,92 @@
+name: "P4 - Low Severity Incident"
+description: "Cosmetic issue or single user affected with workaround. Response time: Next business day."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 Low Severity Incident Report
+        Use this template for cosmetic issues, non-critical feature degradation, or single-user issues with available workarounds. **Response time: Next business day. Escalation after 48 hours.**
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief one-line summary of the issue
+      placeholder: "e.g., Date picker shows wrong timezone for users in UTC+12"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: Type of issue
+      options:
+        - "UI/Cosmetic"
+        - "Performance (minor)"
+        - "Non-critical feature degraded"
+        - "Documentation/Configuration"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the impact
+      value: |
+        **Users Affected:** [Count - typically 1 or few]
+        **Feature Impacted:** [Specific feature]
+        **Workaround:** [Describe the workaround]
+        **Urgency:** [Low - no immediate business impact]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When was this reported and resolved?
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue reported |
+        | YYYY-MM-DD HH:MM | Fix deployed |
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Issue Description & Reproduction
+      description: Detailed description and steps to reproduce
+      placeholder: |
+        **Description:**
+        
+        **Steps to Reproduce:**
+        1. 
+        2. 
+        3. 
+        
+        **Expected Behavior:**
+        
+        **Actual Behavior:**
+        
+        **Screenshots/Logs:**
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: How was it resolved?
+      value: |
+        **Fix Applied:** 
+        **PR/Commit:** 
+    validations:
+      required: false

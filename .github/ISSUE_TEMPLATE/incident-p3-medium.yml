@@ -1,0 +1,106 @@
+name: "P3 - Medium Severity Incident"
+description: "Minor feature broken or small user group affected with workaround available. Response time: 4 hours."
+title: "[P3] "
+labels: ["incident", "P3-medium"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 Medium Severity Incident Report
+        Use this template for incidents where a minor feature is broken, a workaround is available, or a small number of users are affected. **Response time: 4 hours. Escalation after 8 hours.**
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief one-line summary of the incident
+      placeholder: "e.g., CSV export returning empty files for reports with >100 entries"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Select the primary failure mode (reference RUNBOOK.md)
+      options:
+        - "FM-4: Rate Limiting Triggered (429)"
+        - "FM-7: Disk Space Exhaustion"
+        - "FM-10: Frontend Unreachable"
+        - "FM-11: Report Generation Failure (PDF/CSV)"
+        - "FM-12: Dependency / npm Module Failure"
+        - "Other (describe below)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the user and business impact
+      value: |
+        **Users Affected:** [Estimated count]
+        **Feature Impacted:** [Specific feature]
+        **Workaround:** [Describe the workaround]
+        **Business Impact:** [Low / Medium]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Document key timestamps (use UTC)
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Incident reported |
+        | YYYY-MM-DD HH:MM | Investigation started |
+        | YYYY-MM-DD HH:MM | Fix deployed |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Reproduction Steps
+      description: How to reproduce the issue and what symptoms were observed
+      placeholder: |
+        1. Steps to reproduce
+        2. Expected behavior
+        3. Actual behavior
+        4. Error messages or logs
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What caused the incident?
+      placeholder: "Describe the underlying cause"
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: How was it fixed?
+      value: |
+        **Fix Applied:** 
+        **PR/Commit:** 
+        **Deployed At:** 
+    validations:
+      required: false
+
+  - type: textarea
+    id: action-items
+    attributes:
+      label: Follow-up Action Items
+      description: Preventive measures
+      value: |
+        - [ ] Action item (Owner: @, Due: YYYY-MM-DD)
+    validations:
+      required: false

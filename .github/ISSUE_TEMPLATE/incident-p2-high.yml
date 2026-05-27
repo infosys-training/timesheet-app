@@ -1,0 +1,124 @@
+name: "P2 - High Severity Incident"
+description: "Major feature unusable or significant user impact. Response time: 1 hour."
+title: "[P2] "
+labels: ["incident", "P2-high", "priority:high"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 High Severity Incident Report
+        Use this template for incidents where a major feature is unusable, performance is severely degraded, or a significant subset of users is affected. **Response time: 1 hour. Escalation after 2 hours.**
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief one-line summary of the incident
+      placeholder: "e.g., Authentication failing for all new users"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Select the primary failure mode (reference RUNBOOK.md)
+      options:
+        - "FM-3: API 5xx Errors"
+        - "FM-5: Authentication Failures"
+        - "FM-7: Disk Space Exhaustion"
+        - "FM-9: Docker Container Health Check Failure"
+        - "FM-10: Frontend Unreachable"
+        - "FM-12: Dependency / npm Module Failure"
+        - "Other (describe below)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the user and business impact
+      value: |
+        **Users Affected:** [Estimated count or percentage]
+        **Features Impacted:** [List affected features]
+        **Workaround Available:** [Yes/No - describe if yes]
+        **Data Integrity:** [Confirmed OK / Under investigation]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Document key timestamps (use UTC)
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Incident started (estimated) |
+        | YYYY-MM-DD HH:MM | Incident detected |
+        | YYYY-MM-DD HH:MM | First responder acknowledged |
+        | YYYY-MM-DD HH:MM | Mitigation applied |
+        | YYYY-MM-DD HH:MM | Fully resolved |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms Observed
+      description: What alerts or observations triggered this incident?
+      placeholder: |
+        - Error logs
+        - User reports
+        - Monitoring alerts
+        - Performance degradation
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What caused the incident? (Fill in during/after resolution)
+      placeholder: "Describe the underlying cause"
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: What was done to resolve the incident?
+      value: |
+        1. 
+        2. 
+        3. 
+    validations:
+      required: false
+
+  - type: textarea
+    id: action-items
+    attributes:
+      label: Follow-up Action Items
+      description: Preventive measures to avoid recurrence
+      value: |
+        - [ ] Action item 1 (Owner: @, Due: YYYY-MM-DD)
+        - [ ] Action item 2 (Owner: @, Due: YYYY-MM-DD)
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Deployment environment where the incident occurred
+      value: |
+        **Environment:** [Production / Staging]
+        **Container ID:** 
+        **Node.js Version:** 
+        **Docker Image Tag:** 
+        **Last Deployment:** 
+    validations:
+      required: false
