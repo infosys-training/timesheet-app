@@ -1,0 +1,132 @@
+name: "P1 — Critical Incident"
+description: "Complete service outage, data loss, or security breach requiring immediate response."
+title: "[P1] "
+labels: ["incident", "P1-critical"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 — Critical Incident
+        **Response time: 15 minutes.** Notify on-call engineer and engineering lead immediately.
+
+  - type: input
+    id: detected_at
+    attributes:
+      label: Detection Time
+      description: "When was this incident first detected? (UTC)"
+      placeholder: "2025-01-15 14:30 UTC"
+    validations:
+      required: true
+
+  - type: input
+    id: detected_by
+    attributes:
+      label: Detected By
+      description: "Person, monitoring system, or alert that detected the issue."
+      placeholder: "e.g., Docker health check, user report, Datadog alert"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure_mode
+    attributes:
+      label: Failure Mode
+      description: "Which failure mode best matches this incident? (See RUNBOOK.md)"
+      options:
+        - "FM-1: Database Initialization Failure"
+        - "FM-2: In-Memory Data Loss on Restart"
+        - "FM-8: Frontend Cannot Reach Backend"
+        - "FM-9: Memory Exhaustion"
+        - "Security Breach"
+        - "Other (describe below)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: "Describe the scope and severity of impact."
+      value: |
+        **Users affected:** 
+        **Functionality broken:** 
+        **Data loss (if any):** 
+        **Revenue / SLA impact:** 
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms
+      description: "What symptoms are being observed? Include error messages, HTTP status codes, log excerpts."
+      placeholder: |
+        - /health returns 503
+        - Users cannot log in
+        - Logs show: "Error opening database: ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: "Chronological record of events, actions taken, and status changes."
+      value: |
+        | Time (UTC) | Event |
+        |---|---|
+        |  | Incident detected |
+        |  | Investigation started |
+        |  | Root cause identified |
+        |  | Mitigation applied |
+        |  | Service restored |
+    validations:
+      required: true
+
+  - type: textarea
+    id: root_cause
+    attributes:
+      label: Root Cause
+      description: "What caused this incident? (Fill in once identified.)"
+      placeholder: "e.g., SQLite database file became corrupted due to unclean container shutdown"
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: "What was done to resolve the incident?"
+      value: |
+        **Immediate mitigation:** 
+        **Permanent fix:** 
+        **Deployment/PR link:** 
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow_up
+    attributes:
+      label: Follow-Up Actions
+      description: "What needs to happen to prevent recurrence?"
+      value: |
+        - [ ] Root cause analysis completed
+        - [ ] Permanent fix deployed
+        - [ ] Monitoring/alerting improved
+        - [ ] Runbook updated
+        - [ ] Post-incident review scheduled
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: "Where did this occur?"
+      value: |
+        **Environment:** production / staging / development
+        **Docker image/tag:** 
+        **Node.js version:** 
+        **Commit SHA:** 
+    validations:
+      required: false
