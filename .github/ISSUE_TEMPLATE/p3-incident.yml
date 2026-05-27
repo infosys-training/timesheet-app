@@ -1,0 +1,82 @@
+name: "P3 Incident - Medium"
+description: "Minor feature degraded, workaround available. Response time: 4 hours."
+title: "[P3] "
+labels: ["incident", "P3-medium"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 - Medium Severity Incident
+        Use this template for **minor feature degradation** where a **workaround exists** and the issue affects a limited number of users.
+        **Expected response time: 4 hours. Handled by: Assigned engineer.**
+
+  - type: input
+    id: assignee
+    attributes:
+      label: Assigned Engineer
+      description: Who is responsible for investigating and resolving?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Select the primary failure mode (refer to RUNBOOK.md).
+      options:
+        - "FM-8: PDF/CSV Report Generation Failure"
+        - "FM-10: Dependency Vulnerability (known, not exploited)"
+        - "Performance Degradation"
+        - "UI/UX Issue"
+        - "Other (describe below)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the user and business impact.
+      value: |
+        **Users affected:** [number or description]
+        **Functionality degraded:** [which specific feature]
+        **Workaround:** [describe the workaround]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Record key events with timestamps (UTC).
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue reported |
+        | YYYY-MM-DD HH:MM | Investigation started |
+        | YYYY-MM-DD HH:MM | Fix deployed |
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Issue Description
+      description: Provide a detailed description of the issue.
+      placeholder: "Describe what is happening, expected behavior, and steps to reproduce."
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: How was the issue resolved?
+      value: |
+        **Root cause:**
+
+        **Fix applied:**
+
+        **Follow-up actions:**
+        - [ ] Action item — Owner: @username — Due: YYYY-MM-DD
