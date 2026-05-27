@@ -1,0 +1,74 @@
+name: "P4 Incident - Low"
+description: "Cosmetic issue or minor inconvenience. Scheduled for next sprint."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 - Low Severity Incident
+        Use this template for **cosmetic issues**, **minor inconveniences**, or **improvement requests** discovered during incident investigation.
+        **Resolution timeline: Next sprint. Added to backlog.**
+
+  - type: input
+    id: assignee
+    attributes:
+      label: Assigned Engineer
+      description: Who should pick this up?
+      placeholder: "@username"
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: What type of issue is this?
+      options:
+        - "Cosmetic / UI Issue"
+        - "Minor Performance Issue"
+        - "Logging / Monitoring Gap"
+        - "Documentation Gap"
+        - "Technical Debt"
+        - "Dependency Update (non-critical)"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the impact (even if minimal).
+      value: |
+        **Users affected:** [none / minimal / specific scenario]
+        **Current behavior:** [what happens now]
+        **Expected behavior:** [what should happen]
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Issue Description
+      description: Provide details about the issue.
+      placeholder: "Describe the issue, how to reproduce it, and any relevant context."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-fix
+    attributes:
+      label: Proposed Fix
+      description: Suggest how to resolve this (if known).
+      placeholder: |
+        - Update CSS for button alignment
+        - Add missing log statement in error handler
+        - Bump lodash from 4.17.20 to 4.17.21
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When should this be addressed?
+      value: |
+        **Target sprint:** [next sprint / backlog]
+        **Estimated effort:** [small / medium / large]

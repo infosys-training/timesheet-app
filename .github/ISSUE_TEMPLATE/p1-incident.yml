@@ -1,0 +1,112 @@
+name: "P1 Incident - Critical"
+description: "Complete service outage or data loss affecting all users. Response time: 15 minutes."
+title: "[P1] "
+labels: ["incident", "P1-critical"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 - Critical Incident
+        Use this template for **complete service outages**, **data loss**, or **security breaches** affecting all users.
+        **Expected response time: 15 minutes. Escalation: On-call -> Team Lead -> VP Engineering.**
+
+  - type: input
+    id: incident-commander
+    attributes:
+      label: Incident Commander
+      description: Who is leading the incident response?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Select the primary failure mode (refer to RUNBOOK.md).
+      options:
+        - "FM-1: Database Connection Failure"
+        - "FM-2: Database Corruption / Schema Errors"
+        - "FM-3: API Unresponsive (Express Server Down)"
+        - "FM-11: Disk Space Exhaustion"
+        - "FM-10: Active Security Exploit"
+        - "Other (describe below)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the user and business impact.
+      value: |
+        **Users affected:** [all / percentage / specific group]
+        **Functionality broken:** [all API endpoints / database writes / authentication / etc.]
+        **Data loss:** [yes - describe / no / unknown]
+        **Revenue impact:** [estimated or N/A]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Record all key events with timestamps (UTC).
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Incident detected by [monitoring/user report/etc.] |
+        | YYYY-MM-DD HH:MM | Incident commander assigned |
+        | YYYY-MM-DD HH:MM | Root cause identified |
+        | YYYY-MM-DD HH:MM | Fix deployed |
+        | YYYY-MM-DD HH:MM | Service restored |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Observed Symptoms
+      description: What symptoms triggered this incident?
+      placeholder: |
+        - Health check failing
+        - All API responses returning 500
+        - Docker container in restart loop
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What was the underlying cause? (Fill in during or after investigation.)
+      placeholder: "e.g., SQLite database file corrupted after unclean shutdown"
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: What steps were taken to resolve the incident?
+      value: |
+        1. 
+        2. 
+        3. 
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention / Follow-up Actions
+      description: What changes will prevent this from happening again?
+      value: |
+        - [ ] Action item 1 — Owner: @username — Due: YYYY-MM-DD
+        - [ ] Action item 2 — Owner: @username — Due: YYYY-MM-DD
+
+  - type: textarea
+    id: communication
+    attributes:
+      label: Communication Log
+      description: Record stakeholder notifications sent during the incident.
+      placeholder: |
+        - Notified #engineering Slack channel at HH:MM UTC
+        - Status page updated at HH:MM UTC
+        - Customer communication sent at HH:MM UTC

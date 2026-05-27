@@ -1,0 +1,102 @@
+name: "P2 Incident - High"
+description: "Major feature degraded or partial outage. Response time: 1 hour."
+title: "[P2] "
+labels: ["incident", "P2-high"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 - High Severity Incident
+        Use this template for **major feature degradation**, **partial outages**, or issues affecting a **significant portion of users**.
+        **Expected response time: 1 hour. Escalation: On-call -> Team Lead.**
+
+  - type: input
+    id: incident-commander
+    attributes:
+      label: Incident Commander
+      description: Who is leading the incident response?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Select the primary failure mode (refer to RUNBOOK.md).
+      options:
+        - "FM-4: High Memory Usage / Memory Leak"
+        - "FM-5: Rate Limiting Blocking Legitimate Traffic"
+        - "FM-6: CORS Misconfiguration"
+        - "FM-7: Frontend Build / Serving Failure"
+        - "FM-9: Authentication Middleware Failure"
+        - "FM-12: Docker Health Check Failure"
+        - "Other (describe below)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the user and business impact.
+      value: |
+        **Users affected:** [percentage / specific group / specific region]
+        **Functionality degraded:** [which features are impacted]
+        **Workaround available:** [yes - describe / no]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Record all key events with timestamps (UTC).
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue first reported |
+        | YYYY-MM-DD HH:MM | Investigation started |
+        | YYYY-MM-DD HH:MM | Root cause identified |
+        | YYYY-MM-DD HH:MM | Fix deployed |
+        | YYYY-MM-DD HH:MM | Verified resolved |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Observed Symptoms
+      description: What symptoms triggered this incident?
+      placeholder: |
+        - Users receiving 429 rate limit errors
+        - Frontend showing CORS errors
+        - Authentication failing intermittently
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What was the underlying cause? (Fill in during or after investigation.)
+      placeholder: "e.g., FRONTEND_URL environment variable not updated after domain migration"
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: What steps were taken to resolve the incident?
+      value: |
+        1. 
+        2. 
+        3. 
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention / Follow-up Actions
+      description: What changes will prevent this from happening again?
+      value: |
+        - [ ] Action item 1 — Owner: @username — Due: YYYY-MM-DD
+        - [ ] Action item 2 — Owner: @username — Due: YYYY-MM-DD
