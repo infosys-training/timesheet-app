@@ -1,0 +1,84 @@
+name: "P4 - Low Severity Incident"
+description: "Cosmetic issue, minor bug, or improvement. Response next business day."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 - Low Severity Incident Report
+        **Response SLA: Next business day** — Address during normal sprint work.
+
+        Use this template for cosmetic issues, minor bugs, or small improvements identified during incident response.
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reporter
+      description: Who is reporting this issue?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: What category best describes this issue?
+      options:
+        - UI/cosmetic issue
+        - Minor bug (no data impact)
+        - Performance improvement opportunity
+        - Documentation gap
+        - Monitoring/alerting improvement
+        - Dependency update needed
+        - Code quality / tech debt
+        - Runbook improvement
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: What is the impact of this issue?
+      placeholder: |
+        - Users affected: none / minimal
+        - Functional impact: cosmetic only / minor inconvenience
+        - Workaround: not needed / simple workaround exists
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the issue in detail.
+      placeholder: |
+        What is happening vs. what is expected?
+        Steps to reproduce (if applicable):
+        1. ...
+        2. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When was this noticed?
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue noticed |
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Proposed Fix
+      description: Do you have a suggested fix or approach?
+    validations:
+      required: false

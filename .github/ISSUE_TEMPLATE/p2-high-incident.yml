@@ -1,0 +1,121 @@
+name: "P2 - High Severity Incident"
+description: "Major feature broken with significant user impact. Requires response within 1 hour."
+title: "[P2] "
+labels: ["incident", "P2-high"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 - High Severity Incident Report
+        **Response SLA: 1 hour** — Notify on-call engineer.
+
+        Use this template when a major feature is broken (e.g., authentication, report exports) but the application is still partially functional.
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reporter
+      description: Who is reporting this incident?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: What category of failure is this?
+      options:
+        - Authentication / login broken for subset of users
+        - Report export failures (CSV/PDF)
+        - Client management (CRUD) errors
+        - Work entry tracking errors
+        - Rate limiting blocking legitimate users
+        - API errors (5xx) on specific routes
+        - Frontend not loading for some users
+        - Performance degradation (high latency)
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Describe the scope and severity of user impact.
+      placeholder: |
+        - Number of users affected: estimated count or percentage
+        - Features broken: list affected features
+        - Workaround available: yes / no
+        - Business impact: blocked time tracking / reporting delayed
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: Provide a chronological timeline of the incident.
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue first detected |
+        | YYYY-MM-DD HH:MM | Investigation started |
+        | YYYY-MM-DD HH:MM | Root cause identified |
+        | YYYY-MM-DD HH:MM | Fix applied |
+        | YYYY-MM-DD HH:MM | Issue resolved |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Error Messages
+      description: What errors are users seeing? Include log excerpts if available.
+      placeholder: |
+        - HTTP status codes returned
+        - Error messages from API responses
+        - Browser console errors
+        - Relevant backend log lines
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What caused the incident? (Fill in during or after investigation.)
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: What steps were taken to resolve the incident?
+      placeholder: |
+        1. Diagnosis steps
+        2. Mitigation applied
+        3. Permanent fix (if different from mitigation)
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention / Follow-up Actions
+      description: What changes will prevent this from happening again?
+      placeholder: |
+        - [ ] Action item 1
+        - [ ] Action item 2
+    validations:
+      required: false
+
+  - type: textarea
+    id: runbook-reference
+    attributes:
+      label: Runbook Reference
+      description: Which RUNBOOK.md section was used?
+      placeholder: "e.g., Section 5 - Authentication / Login Failures"
+    validations:
+      required: false
