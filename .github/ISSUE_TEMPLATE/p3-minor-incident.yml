@@ -1,0 +1,83 @@
+name: "P3 - Minor Incident"
+description: "Minor feature issue affecting some users"
+title: "[P3] "
+labels: ["incident", "P3-minor"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 Minor Incident Report
+        This template is for minor feature issues affecting some users.
+        Refer to the [RUNBOOK.md](../../RUNBOOK.md) for resolution procedures.
+  - type: input
+    id: incident-start
+    attributes:
+      label: "Incident Start Time"
+      description: "When did the incident begin? (UTC)"
+      placeholder: "YYYY-MM-DD HH:MM UTC"
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: "Environment"
+      options:
+        - Production
+        - Staging
+        - Development
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: "Impact Assessment"
+      description: "Number of users affected, business impact"
+      placeholder: "Describe the impact..."
+    validations:
+      required: true
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: "Failure Mode"
+      options:
+        - CORS Errors
+        - Validation Errors
+        - UI Rendering Issues
+        - Slow Response Times
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: "Symptoms"
+      description: "What errors/behaviors are observed?"
+    validations:
+      required: true
+  - type: textarea
+    id: timeline
+    attributes:
+      label: "Timeline"
+      description: "Chronological sequence of events"
+      value: |
+        - **Detected**: 
+        - **Acknowledged**: 
+        - **Mitigated**: 
+        - **Resolved**: 
+  - type: textarea
+    id: resolution
+    attributes:
+      label: "Resolution / Current Actions"
+      description: "Steps taken or being taken to resolve"
+    validations:
+      required: true
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: "Root Cause (if known)"
+      description: "Preliminary root cause analysis"
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: "Follow-up Actions"
+      description: "Post-incident tasks to prevent recurrence"
