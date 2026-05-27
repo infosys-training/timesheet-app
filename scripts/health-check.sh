@@ -11,7 +11,7 @@
 #   HEALTH_CHECK_EMAIL=me@co.com ./scripts/health-check.sh  # custom test email
 #
 
-set -euo pipefail
+set -uo pipefail
 
 BASE_URL="${1:-http://localhost:3001}"
 TEST_EMAIL="${HEALTH_CHECK_EMAIL:-healthcheck@timesheet-app.example.com}"
