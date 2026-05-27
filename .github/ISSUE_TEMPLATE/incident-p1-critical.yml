@@ -1,0 +1,139 @@
+name: "P1 - Critical Incident"
+description: "Application down, data loss, or all users affected. Response time: 15 minutes."
+title: "[P1] "
+labels: ["incident", "P1-critical", "priority:urgent"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 Critical Incident Report
+        Use this template for incidents where the application is completely down, data is lost or corrupted, or all users are affected. **Response time: 15 minutes. Escalation after 30 minutes.**
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief one-line summary of the incident
+      placeholder: "e.g., Database unavailable - all API requests returning 500"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Select the primary failure mode (reference RUNBOOK.md)
+      options:
+        - "FM-1: Database Unavailable"
+        - "FM-2: Database Corruption"
+        - "FM-3: API 5xx Errors"
+        - "FM-6: Memory Leak / OOM"
+        - "FM-8: Node.js Process Crash"
+        - "FM-9: Docker Container Health Check Failure"
+        - "Other (describe below)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the user and business impact
+      value: |
+        **Users Affected:** [All / Percentage / Specific group]
+        **Features Impacted:** [List affected features]
+        **Data Loss:** [Yes/No - describe if yes]
+        **Revenue Impact:** [Estimated if applicable]
+        **External Communication Required:** [Yes/No]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Document key timestamps (use UTC)
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Incident started (estimated) |
+        | YYYY-MM-DD HH:MM | Incident detected |
+        | YYYY-MM-DD HH:MM | First responder acknowledged |
+        | YYYY-MM-DD HH:MM | Mitigation applied |
+        | YYYY-MM-DD HH:MM | Service restored |
+        | YYYY-MM-DD HH:MM | Root cause identified |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms Observed
+      description: What alerts or observations triggered this incident?
+      placeholder: |
+        - Health check failures
+        - Error logs
+        - User reports
+        - Monitoring alerts
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What caused the incident? (Fill in during/after resolution)
+      placeholder: "Describe the underlying cause, not just the trigger"
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: What was done to resolve the incident?
+      value: |
+        1. 
+        2. 
+        3. 
+    validations:
+      required: false
+
+  - type: textarea
+    id: action-items
+    attributes:
+      label: Follow-up Action Items
+      description: Preventive measures to avoid recurrence
+      value: |
+        - [ ] Action item 1 (Owner: @, Due: YYYY-MM-DD)
+        - [ ] Action item 2 (Owner: @, Due: YYYY-MM-DD)
+        - [ ] Action item 3 (Owner: @, Due: YYYY-MM-DD)
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Deployment environment where the incident occurred
+      value: |
+        **Environment:** [Production / Staging]
+        **Container ID:** 
+        **Node.js Version:** 
+        **Docker Image Tag:** 
+        **Last Deployment:** 
+    validations:
+      required: false
+
+  - type: textarea
+    id: communication
+    attributes:
+      label: Communication Log
+      description: Record of stakeholder communications during the incident
+      placeholder: |
+        - Who was notified and when
+        - Status page updates
+        - Customer communications
+    validations:
+      required: false
