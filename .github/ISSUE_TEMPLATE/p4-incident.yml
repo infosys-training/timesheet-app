@@ -1,0 +1,91 @@
+name: "P4 Incident - Low"
+description: "Cosmetic issue or minor inconvenience. No immediate user impact. Fix in next sprint."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 - Low Severity Incident
+        **Response SLA:** Acknowledge within 1 business day. Schedule fix in next sprint.
+        **Examples:** Cosmetic UI issues, minor logging errors, non-user-facing warnings, documentation gaps, minor dependency updates.
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reporter
+      description: "Who reported this issue?"
+      placeholder: "e.g., Jane Doe / automated scan"
+    validations:
+      required: true
+
+  - type: input
+    id: detection-time
+    attributes:
+      label: Detection Time
+      description: "When was the issue detected? (UTC)"
+      placeholder: "YYYY-MM-DD HH:MM UTC"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected Component(s)
+      description: "Which part of the system is impacted?"
+      multiple: true
+      options:
+        - Backend API (Express)
+        - Frontend (React/Vite)
+        - Database (SQLite)
+        - Authentication
+        - Report Generation (PDF/CSV)
+        - Docker / Infrastructure
+        - CI/CD Pipeline
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: "Describe the impact. This should be minimal for P4."
+      placeholder: |
+        - User-facing impact: None / Cosmetic only
+        - Workaround: Not needed / (describe)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: "Describe the issue in detail."
+      placeholder: |
+        - What is happening?
+        - Steps to reproduce (if applicable)
+        - Expected vs actual behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Proposed Fix
+      description: "How should this be resolved?"
+      placeholder: |
+        - Suggested code change or configuration update
+        - Reference to RUNBOOK.md section if applicable
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-up Actions
+      description: "Any additional improvements to make."
+      placeholder: |
+        - [ ] Fix the cosmetic issue
+        - [ ] Update documentation
+        - [ ] Add to tech debt backlog

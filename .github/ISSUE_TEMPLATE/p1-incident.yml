@@ -1,0 +1,137 @@
+name: "P1 Incident - Critical"
+description: "Complete service outage or data loss affecting all users. Requires immediate response."
+title: "[P1] "
+labels: ["incident", "P1-critical", "urgent"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 - Critical Incident
+        **Response SLA:** Acknowledge within 15 minutes. All hands on deck.
+        **Examples:** Full service outage, data loss/corruption, security breach.
+
+  - type: input
+    id: incident-commander
+    attributes:
+      label: Incident Commander
+      description: "Name of the person leading the incident response."
+      placeholder: "e.g., Jane Doe"
+    validations:
+      required: true
+
+  - type: input
+    id: detection-time
+    attributes:
+      label: Detection Time
+      description: "When was the incident first detected? (UTC)"
+      placeholder: "YYYY-MM-DD HH:MM UTC"
+    validations:
+      required: true
+
+  - type: input
+    id: start-time
+    attributes:
+      label: Estimated Start Time
+      description: "When did the incident likely begin? (UTC)"
+      placeholder: "YYYY-MM-DD HH:MM UTC"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected Component(s)
+      description: "Which part of the system is impacted?"
+      multiple: true
+      options:
+        - Backend API (Express)
+        - Frontend (React/Vite)
+        - Database (SQLite)
+        - Authentication
+        - Report Generation (PDF/CSV)
+        - Docker / Infrastructure
+        - CI/CD Pipeline
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: "Describe the user-facing impact. How many users are affected? What functionality is broken?"
+      placeholder: |
+        - Number of affected users: All / Subset (estimated count)
+        - Affected functionality: (e.g., login, data entry, report export)
+        - Data loss: Yes / No / Unknown
+        - Revenue/SLA impact: (if applicable)
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms
+      description: "What observable symptoms indicate this incident?"
+      placeholder: |
+        - Health check endpoint returning 5xx
+        - Error messages seen in logs
+        - User reports / support tickets
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: "Chronological record of events. Update this as the incident progresses."
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | HH:MM | Incident detected via (monitoring/user report/etc.) |
+        | HH:MM | Incident commander assigned |
+        | HH:MM | Investigation started |
+        | HH:MM | Root cause identified |
+        | HH:MM | Fix deployed |
+        | HH:MM | Service restored |
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: "What caused the incident? (Fill in during or after investigation)"
+      placeholder: "e.g., Database corruption due to disk space exhaustion on the data volume."
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: "What was done to resolve the incident? Reference RUNBOOK.md sections if applicable."
+      placeholder: |
+        1. Identified root cause via logs
+        2. Applied fix per RUNBOOK.md section "Database Failures"
+        3. Verified service recovery via health check script
+        4. Confirmed no data loss
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention / Follow-up Actions
+      description: "What changes will prevent this from recurring?"
+      placeholder: |
+        - [ ] Add disk space monitoring alert
+        - [ ] Implement automated database backups
+        - [ ] Schedule blameless post-mortem
+
+  - type: textarea
+    id: communication
+    attributes:
+      label: Communication Log
+      description: "Record of stakeholder notifications."
+      placeholder: |
+        - HH:MM - Notified engineering team via Slack
+        - HH:MM - Status page updated
+        - HH:MM - Customer communication sent
