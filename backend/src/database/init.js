@@ -27,6 +27,9 @@ async function initializeDatabase() {
   
   return new Promise((resolve, reject) => {
     database.serialize(() => {
+      // Enable WAL mode for better concurrent read/write performance
+      database.run('PRAGMA journal_mode=WAL');
+
       // Create users table
       database.run(`
         CREATE TABLE IF NOT EXISTS users (

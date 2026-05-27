@@ -8,22 +8,61 @@ const router = express.Router();
 // All routes require authentication
 router.use(authenticateUser);
 
-// Get all clients for authenticated user
+// Get clients for authenticated user (with optional pagination)
 router.get('/', (req, res) => {
   const db = getDatabase();
-  
-  db.all(
-    'SELECT id, name, description, department, email, created_at, updated_at FROM clients WHERE user_email = ? ORDER BY name',
-    [req.userEmail],
-    (err, rows) => {
-      if (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({ error: 'Internal server error' });
+  const page = parseInt(req.query.page) || null;
+  const limit = Math.min(parseInt(req.query.limit) || 50, 200);
+  const offset = page ? (page - 1) * limit : 0;
+
+  if (page) {
+    // Paginated response
+    db.get(
+      'SELECT COUNT(*) as total FROM clients WHERE user_email = ?',
+      [req.userEmail],
+      (err, countRow) => {
+        if (err) {
+          console.error('Database error:', err);
+          return res.status(500).json({ error: 'Internal server error' });
+        }
+
+        db.all(
+          'SELECT id, name, description, department, email, created_at, updated_at FROM clients WHERE user_email = ? ORDER BY name LIMIT ? OFFSET ?',
+          [req.userEmail, limit, offset],
+          (err, rows) => {
+            if (err) {
+              console.error('Database error:', err);
+              return res.status(500).json({ error: 'Internal server error' });
+            }
+
+            res.json({
+              clients: rows,
+              pagination: {
+                page,
+                limit,
+                total: countRow.total,
+                totalPages: Math.ceil(countRow.total / limit)
+              }
+            });
+          }
+        );
       }
-      
-      res.json({ clients: rows });
-    }
-  );
+    );
+  } else {
+    // Unpaginated response (backward compatible)
+    db.all(
+      'SELECT id, name, description, department, email, created_at, updated_at FROM clients WHERE user_email = ? ORDER BY name',
+      [req.userEmail],
+      (err, rows) => {
+        if (err) {
+          console.error('Database error:', err);
+          return res.status(500).json({ error: 'Internal server error' });
+        }
+
+        res.json({ clients: rows });
+      }
+    );
+  }
 });
 
 // Get specific client
