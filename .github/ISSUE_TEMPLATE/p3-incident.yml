@@ -1,0 +1,110 @@
+name: "P3 — Medium Severity Incident"
+description: "Non-critical degradation — rate limiting, report failures, CORS issues, or build problems."
+title: "[P3] "
+labels: ["incident", "P3-medium"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 — Medium Severity Incident
+        **Response time: 4 hours.** Notify engineering team.
+
+  - type: input
+    id: detected_at
+    attributes:
+      label: Detection Time
+      description: "When was this incident first detected? (UTC)"
+      placeholder: "2025-01-15 14:30 UTC"
+    validations:
+      required: true
+
+  - type: input
+    id: detected_by
+    attributes:
+      label: Detected By
+      description: "Person, monitoring system, or alert that detected the issue."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure_mode
+    attributes:
+      label: Failure Mode
+      description: "Which failure mode best matches this incident? (See RUNBOOK.md)"
+      options:
+        - "FM-5: Rate Limiting Blocking Legitimate Users"
+        - "FM-7: Report Generation Failures (CSV/PDF)"
+        - "FM-11: Dependency / Build Failures"
+        - "FM-12: CORS Errors"
+        - "Other (describe below)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: "Describe the scope and severity of impact."
+      value: |
+        **Users affected:** 
+        **Functionality degraded:** 
+        **Workaround available:** yes / no
+        **Workaround description:** 
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms
+      description: "What symptoms are being observed?"
+      placeholder: |
+        - HTTP 429 on all endpoints
+        - CSV export returns 500
+        - CORS errors in browser console
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: "Chronological record of events."
+      value: |
+        | Time (UTC) | Event |
+        |---|---|
+        |  | Incident detected |
+        |  | Investigation started |
+        |  | Resolution applied |
+    validations:
+      required: true
+
+  - type: textarea
+    id: root_cause
+    attributes:
+      label: Root Cause
+      description: "What caused this incident?"
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: "What was done to resolve the incident?"
+      value: |
+        **Fix applied:** 
+        **PR link:** 
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow_up
+    attributes:
+      label: Follow-Up Actions
+      value: |
+        - [ ] Root cause documented
+        - [ ] Fix deployed
+        - [ ] Runbook updated if needed
+    validations:
+      required: false

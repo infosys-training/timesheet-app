@@ -1,0 +1,96 @@
+name: "P4 — Low Severity Incident"
+description: "Minor issues — UI glitches, non-critical dependency updates, cosmetic problems."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 — Low Severity Incident
+        **Response time: Next business day.** Handled via normal ticket queue.
+
+  - type: input
+    id: detected_at
+    attributes:
+      label: Detection Time
+      description: "When was this incident first detected? (UTC)"
+      placeholder: "2025-01-15 14:30 UTC"
+    validations:
+      required: true
+
+  - type: input
+    id: detected_by
+    attributes:
+      label: Detected By
+      description: "Person or system that detected the issue."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: "What type of issue is this?"
+      options:
+        - "UI / UX issue"
+        - "Non-critical dependency update"
+        - "Documentation gap"
+        - "Performance (non-critical)"
+        - "Cosmetic / styling"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: "Describe the impact. Who is affected and how?"
+      value: |
+        **Users affected:** 
+        **Severity:** Minor / Cosmetic
+        **Workaround:** 
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: "Describe the issue in detail."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: "If applicable, provide steps to reproduce the issue."
+      placeholder: |
+        1. Navigate to ...
+        2. Click on ...
+        3. Observe ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Proposed Resolution
+      description: "Suggested fix or approach."
+      value: |
+        **Fix:** 
+        **PR link:** 
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      value: |
+        **Browser:** 
+        **OS:** 
+        **Environment:** production / staging / development
+    validations:
+      required: false

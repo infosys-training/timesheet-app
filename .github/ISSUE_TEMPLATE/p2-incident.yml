@@ -1,0 +1,128 @@
+name: "P2 — High Severity Incident"
+description: "Major functionality degraded — database errors, auth failures, or partial outage."
+title: "[P2] "
+labels: ["incident", "P2-high"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 — High Severity Incident
+        **Response time: 1 hour.** Notify on-call engineer.
+
+  - type: input
+    id: detected_at
+    attributes:
+      label: Detection Time
+      description: "When was this incident first detected? (UTC)"
+      placeholder: "2025-01-15 14:30 UTC"
+    validations:
+      required: true
+
+  - type: input
+    id: detected_by
+    attributes:
+      label: Detected By
+      description: "Person, monitoring system, or alert that detected the issue."
+      placeholder: "e.g., error rate spike, user report, health check script"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure_mode
+    attributes:
+      label: Failure Mode
+      description: "Which failure mode best matches this incident? (See RUNBOOK.md)"
+      options:
+        - "FM-3: SQLite Errors During Queries"
+        - "FM-4: API 500 Internal Server Errors"
+        - "FM-6: Authentication Failures"
+        - "FM-10: Docker Health Check Failures"
+        - "Other (describe below)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: "Describe the scope and severity of impact."
+      value: |
+        **Users affected:** 
+        **Functionality degraded:** 
+        **Workaround available:** yes / no
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms
+      description: "What symptoms are being observed? Include error messages, HTTP status codes, log excerpts."
+      placeholder: |
+        - HTTP 500 on /api/clients
+        - Logs show: "SQLITE_BUSY" errors
+        - Authentication middleware returning 500
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: "Chronological record of events, actions taken, and status changes."
+      value: |
+        | Time (UTC) | Event |
+        |---|---|
+        |  | Incident detected |
+        |  | Investigation started |
+        |  | Root cause identified |
+        |  | Mitigation applied |
+        |  | Service restored |
+    validations:
+      required: true
+
+  - type: textarea
+    id: root_cause
+    attributes:
+      label: Root Cause
+      description: "What caused this incident? (Fill in once identified.)"
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: "What was done to resolve the incident?"
+      value: |
+        **Immediate mitigation:** 
+        **Permanent fix:** 
+        **Deployment/PR link:** 
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow_up
+    attributes:
+      label: Follow-Up Actions
+      description: "What needs to happen to prevent recurrence?"
+      value: |
+        - [ ] Root cause analysis completed
+        - [ ] Permanent fix deployed
+        - [ ] Monitoring/alerting improved
+        - [ ] Runbook updated
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: "Where did this occur?"
+      value: |
+        **Environment:** production / staging / development
+        **Docker image/tag:** 
+        **Node.js version:** 
+        **Commit SHA:** 
+    validations:
+      required: false
