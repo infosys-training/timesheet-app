@@ -1,0 +1,112 @@
+name: "P3 - Minor Incident"
+description: "Minor feature degraded with workaround available. Response time: 2 hours."
+title: "[P3] "
+labels: ["incident", "P3-minor"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 Minor Incident Report
+        **Response Time SLA:** 2 hours | **Resolution Target:** 24 hours
+
+        A P3 incident means a minor feature is degraded but a workaround is available.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief description of the incident
+      placeholder: "e.g., CSV export includes incorrect date format"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Primary category of the failure (see RUNBOOK.md for details)
+      options:
+        - Database Failure
+        - API / Express Server Failure
+        - Memory Leak / Resource Exhaustion
+        - Authentication Failure
+        - Dependency / Third-Party Failure
+        - Report Generation Failure (PDF/CSV)
+        - Frontend Application Failure
+        - Docker / Deployment Failure
+        - Rate Limiting / CORS Issue
+        - Data Loss (In-Memory Database)
+        - Other / Unknown
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the scope and impact
+      value: |
+        **Users Affected:** [few / specific group]
+        **Features Affected:** [list affected features]
+        **Workaround:** [describe available workaround]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Record key timestamps
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue reported |
+        | YYYY-MM-DD HH:MM | Investigation started |
+        | YYYY-MM-DD HH:MM | Fix applied |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms Observed
+      description: What symptoms are being observed?
+      placeholder: |
+        - Describe the degraded behavior
+        - Error messages if any
+        - Steps to reproduce
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: Steps taken or planned to resolve the incident
+      value: |
+        ### Fix Applied
+        - [ ] Description of fix:
+        - [ ] Verified fix works:
+        - [ ] No regressions:
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Which environment is affected?
+      placeholder: "production / staging / development"
+    validations:
+      required: true
+
+  - type: textarea
+    id: action-items
+    attributes:
+      label: Follow-Up Action Items
+      description: Tasks to prevent recurrence
+      value: |
+        - [ ] Action item 1 - Owner: @username - Due: YYYY-MM-DD
+    validations:
+      required: false

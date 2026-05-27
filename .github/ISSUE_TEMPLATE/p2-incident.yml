@@ -1,0 +1,140 @@
+name: "P2 - Major Incident"
+description: "Major feature broken or significant user impact. Response time: 30 minutes."
+title: "[P2] "
+labels: ["incident", "P2-major"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 Major Incident Report
+        **Response Time SLA:** 30 minutes | **Resolution Target:** 4 hours
+
+        A P2 incident means a major feature is broken or there is significant user impact.
+        Notify the on-call engineer and update the team.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief description of the incident
+      placeholder: "e.g., PDF report export failing for all clients"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Primary category of the failure (see RUNBOOK.md for details)
+      options:
+        - Database Failure
+        - API / Express Server Failure
+        - Memory Leak / Resource Exhaustion
+        - Authentication Failure
+        - Dependency / Third-Party Failure
+        - Report Generation Failure (PDF/CSV)
+        - Frontend Application Failure
+        - Docker / Deployment Failure
+        - Rate Limiting / CORS Issue
+        - Data Loss (In-Memory Database)
+        - Other / Unknown
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the scope and business impact of this incident
+      value: |
+        **Users Affected:** [percentage / specific group]
+        **Features Affected:** [list affected features]
+        **Business Impact:** [describe impact on operations]
+        **Workaround Available:** [yes/no - describe if yes]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Record key timestamps as the incident progresses
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue first detected |
+        | YYYY-MM-DD HH:MM | Investigation started |
+        | YYYY-MM-DD HH:MM | Root cause identified |
+        | YYYY-MM-DD HH:MM | Fix applied |
+        | YYYY-MM-DD HH:MM | Incident resolved |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms Observed
+      description: What symptoms are being observed?
+      placeholder: |
+        - HTTP status codes returned
+        - Error messages in logs
+        - User-reported behavior
+        - Affected endpoints
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause Analysis
+      description: What is the root cause? (Update as investigation progresses)
+      placeholder: "Describe the underlying cause once identified..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: Steps taken or planned to resolve the incident
+      value: |
+        ### Immediate Mitigation
+        - [ ] Step 1:
+        - [ ] Step 2:
+
+        ### Permanent Fix
+        - [ ] Step 1:
+        - [ ] Step 2:
+
+        ### Verification
+        - [ ] Affected feature tested and working
+        - [ ] No regression in related features
+        - [ ] Monitoring confirms normal behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Which environment is affected?
+      value: |
+        **Environment:** [production / staging / development]
+        **Deployment Method:** [Docker / bare metal / other]
+        **Last Deployment:** [date/time of last deploy]
+        **Recent Changes:** [any recent code or config changes]
+    validations:
+      required: true
+
+  - type: textarea
+    id: action-items
+    attributes:
+      label: Post-Incident Action Items
+      description: Follow-up tasks to prevent recurrence (complete after resolution)
+      value: |
+        - [ ] Action item 1 - Owner: @username - Due: YYYY-MM-DD
+        - [ ] Action item 2 - Owner: @username - Due: YYYY-MM-DD
+        - [ ] Update RUNBOOK.md if applicable
+    validations:
+      required: false

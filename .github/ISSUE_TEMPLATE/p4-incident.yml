@@ -1,0 +1,92 @@
+name: "P4 - Low-Impact Incident"
+description: "Cosmetic or low-impact issue. Response time: 1 business day."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 Low-Impact Incident Report
+        **Response Time SLA:** 1 business day | **Resolution Target:** 1 week
+
+        A P4 incident is a cosmetic or low-impact issue that does not significantly affect users.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief description of the issue
+      placeholder: "e.g., Dashboard chart label misaligned on mobile"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Category
+      description: Category of the issue
+      options:
+        - UI / Cosmetic Issue
+        - Performance Degradation
+        - Minor API Inconsistency
+        - Documentation Gap
+        - Logging / Monitoring Gap
+        - Configuration Issue
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the impact
+      value: |
+        **Users Affected:** [minimal / none]
+        **Description:** [describe the issue]
+        **Workaround:** [describe workaround if applicable]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When was the issue discovered?
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue discovered |
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: How can this issue be reproduced?
+      placeholder: |
+        1. Navigate to...
+        2. Click on...
+        3. Observe...
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Proposed Fix
+      description: Suggested resolution approach
+      placeholder: "Describe the proposed fix..."
+    validations:
+      required: false
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Which environment is affected?
+      placeholder: "production / staging / development"
+    validations:
+      required: true

@@ -1,0 +1,142 @@
+name: "P1 - Critical Incident"
+description: "Service completely down or all users affected. Response time: 15 minutes."
+title: "[P1] "
+labels: ["incident", "P1-critical", "urgent"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 Critical Incident Report
+        **Response Time SLA:** 15 minutes | **Resolution Target:** 1 hour
+
+        A P1 incident means the service is completely down or all users are affected.
+        Notify the on-call engineer and post in `#incident-response` immediately.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief description of the incident
+      placeholder: "e.g., Timesheet API returning 500 errors for all users"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Primary category of the failure (see RUNBOOK.md for details)
+      options:
+        - Database Failure
+        - API / Express Server Failure
+        - Memory Leak / Resource Exhaustion
+        - Authentication Failure
+        - Dependency / Third-Party Failure
+        - Report Generation Failure (PDF/CSV)
+        - Frontend Application Failure
+        - Docker / Deployment Failure
+        - Rate Limiting / CORS Issue
+        - Data Loss (In-Memory Database)
+        - Other / Unknown
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the scope and business impact of this incident
+      value: |
+        **Users Affected:** [all / percentage / specific group]
+        **Features Affected:** [list affected features]
+        **Business Impact:** [revenue loss, SLA breach, data loss, etc.]
+        **External Communication Required:** [yes/no]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Record key timestamps as the incident progresses
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue first detected by [alert/user/monitoring] |
+        | YYYY-MM-DD HH:MM | Incident commander assigned |
+        | YYYY-MM-DD HH:MM | Root cause identified |
+        | YYYY-MM-DD HH:MM | Mitigation applied |
+        | YYYY-MM-DD HH:MM | Service restored |
+        | YYYY-MM-DD HH:MM | Incident resolved |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms Observed
+      description: What symptoms are being observed?
+      placeholder: |
+        - HTTP status codes returned
+        - Error messages in logs
+        - User-reported behavior
+        - Monitoring alerts triggered
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause Analysis
+      description: What is the root cause? (Update as investigation progresses)
+      placeholder: "Describe the underlying cause once identified..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: Steps taken or planned to resolve the incident
+      value: |
+        ### Immediate Mitigation
+        - [ ] Step 1:
+        - [ ] Step 2:
+
+        ### Permanent Fix
+        - [ ] Step 1:
+        - [ ] Step 2:
+
+        ### Verification
+        - [ ] Health check passing
+        - [ ] Affected endpoints responding correctly
+        - [ ] User confirmation of service restoration
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Which environment is affected?
+      value: |
+        **Environment:** [production / staging / development]
+        **Deployment Method:** [Docker / bare metal / other]
+        **Last Deployment:** [date/time of last deploy]
+        **Recent Changes:** [any recent code or config changes]
+    validations:
+      required: true
+
+  - type: textarea
+    id: action-items
+    attributes:
+      label: Post-Incident Action Items
+      description: Follow-up tasks to prevent recurrence (complete after resolution)
+      value: |
+        - [ ] Action item 1 - Owner: @username - Due: YYYY-MM-DD
+        - [ ] Action item 2 - Owner: @username - Due: YYYY-MM-DD
+        - [ ] Schedule post-incident review meeting
+        - [ ] Update RUNBOOK.md if new procedures were discovered
+    validations:
+      required: false
