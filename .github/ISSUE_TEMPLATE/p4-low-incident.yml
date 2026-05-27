@@ -1,0 +1,81 @@
+name: "P4 - Low Priority Issue"
+description: "Cosmetic or minor issues with workarounds available"
+title: "[P4] "
+labels: ["incident", "P4-low"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 Low Priority Issue Report
+        This template is for cosmetic or minor issues with workarounds available.
+        Refer to the [RUNBOOK.md](../../RUNBOOK.md) for general troubleshooting.
+  - type: input
+    id: incident-start
+    attributes:
+      label: "Incident Start Time"
+      description: "When did the issue begin? (UTC)"
+      placeholder: "YYYY-MM-DD HH:MM UTC"
+  - type: dropdown
+    id: environment
+    attributes:
+      label: "Environment"
+      options:
+        - Production
+        - Staging
+        - Development
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: "Impact Assessment"
+      description: "How many users are affected? Is there a workaround?"
+      placeholder: "Describe the impact and any available workarounds..."
+    validations:
+      required: true
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: "Failure Mode"
+      options:
+        - UI Cosmetic Issue
+        - Log Noise
+        - Documentation Gap
+        - Minor Performance
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: "Symptoms"
+      description: "What errors/behaviors are observed?"
+    validations:
+      required: true
+  - type: textarea
+    id: timeline
+    attributes:
+      label: "Timeline"
+      description: "Chronological sequence of events (optional)"
+      value: |
+        - **Detected**: 
+        - **Acknowledged**: 
+        - **Mitigated**: 
+        - **Resolved**: 
+  - type: textarea
+    id: resolution
+    attributes:
+      label: "Resolution / Workaround"
+      description: "Steps taken or workaround being used"
+    validations:
+      required: true
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: "Root Cause (if known)"
+      description: "Preliminary root cause analysis"
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: "Follow-up Actions"
+      description: "Tasks to address in a future sprint"

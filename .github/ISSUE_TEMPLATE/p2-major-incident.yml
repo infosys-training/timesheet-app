@@ -1,0 +1,86 @@
+name: "P2 - Major Incident"
+description: "Significant feature degradation affecting many users"
+title: "[P2] "
+labels: ["incident", "P2-major"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 Major Incident Report
+        This template is for significant feature degradation affecting many users.
+        Refer to the [RUNBOOK.md](../../RUNBOOK.md) for resolution procedures.
+  - type: input
+    id: incident-start
+    attributes:
+      label: "Incident Start Time"
+      description: "When did the incident begin? (UTC)"
+      placeholder: "YYYY-MM-DD HH:MM UTC"
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: "Environment"
+      options:
+        - Production
+        - Staging
+        - Development
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: "Impact Assessment"
+      description: "Number of users affected, business impact, feature degradation scope"
+      placeholder: "Describe the impact..."
+    validations:
+      required: true
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: "Failure Mode"
+      options:
+        - API Errors (5xx)
+        - Performance Degradation
+        - Report Export Failures
+        - Rate Limiting Issues
+        - Partial Service Outage
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: "Symptoms"
+      description: "What errors/behaviors are observed?"
+    validations:
+      required: true
+  - type: textarea
+    id: timeline
+    attributes:
+      label: "Timeline"
+      description: "Chronological sequence of events"
+      value: |
+        - **Detected**: 
+        - **Acknowledged**: 
+        - **Mitigated**: 
+        - **Resolved**: 
+    validations:
+      required: true
+  - type: textarea
+    id: resolution
+    attributes:
+      label: "Resolution / Current Actions"
+      description: "Steps taken or being taken to resolve"
+    validations:
+      required: true
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: "Root Cause (if known)"
+      description: "Preliminary root cause analysis"
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: "Follow-up Actions"
+      description: "Post-incident tasks to prevent recurrence"
