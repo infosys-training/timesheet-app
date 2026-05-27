@@ -1,0 +1,125 @@
+name: "P2 - Major Incident"
+description: "Significant degradation affecting core functionality. Response time: 1 hour."
+title: "[P2] "
+labels: ["incident", "P2-major"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 — Major Incident
+        Use this template for significant degradation of core features (auth failures, API errors, frontend not loading, high memory usage).
+        **Expected response time: 1 hour.**
+
+  - type: input
+    id: incident-owner
+    attributes:
+      label: Incident Owner
+      description: Name of the engineer responsible for resolution.
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-category
+    attributes:
+      label: Failure Category
+      description: What type of failure is this?
+      options:
+        - API 500 Errors (INC-04)
+        - Authentication Failures (INC-05)
+        - Frontend Not Loading (INC-08)
+        - High Memory Usage / Memory Leak (INC-09)
+        - Disk Space Exhaustion (INC-10)
+        - Data Loss After Restart (INC-03)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the scope and impact of this incident.
+      value: |
+        **Users affected:** [subset / percentage]
+        **Features impacted:** [list affected functionality]
+        **Workaround available:** [yes/no — describe if yes]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Record key timestamps as the incident progresses.
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Incident detected |
+        | | Investigation started |
+        | | Root cause identified |
+        | | Fix applied |
+        | | Verified resolved |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms Observed
+      description: What errors or behavior indicate the issue?
+      placeholder: |
+        - Specific HTTP error codes
+        - Error messages from logs
+        - User-reported symptoms
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnosis
+    attributes:
+      label: Diagnosis Steps Taken
+      description: What investigation was done? Reference RUNBOOK.md procedures if applicable.
+      placeholder: |
+        - Ran health check: result
+        - Checked logs: findings
+        - Tested specific endpoint: result
+    validations:
+      required: false
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: Fill in once identified.
+      placeholder: "Describe the root cause."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution & Verification
+      description: Document the fix and how it was verified.
+      value: |
+        ### Fix Applied
+        - [ ] Describe fix
+
+        ### Verification
+        - [ ] Affected endpoint(s) returning 200
+        - [ ] No new errors in logs
+        - [ ] User confirmed resolution
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention & Follow-up
+      description: What changes will prevent recurrence?
+      value: |
+        - [ ] Code fix (PR link: )
+        - [ ] Monitoring improvement
+        - [ ] Runbook update needed
+    validations:
+      required: false

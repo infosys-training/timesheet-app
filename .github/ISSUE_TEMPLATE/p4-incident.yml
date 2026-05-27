@@ -1,0 +1,92 @@
+name: "P4 - Low Priority Issue"
+description: "Cosmetic or minor issue with no functional impact. Response time: next sprint."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 — Low Priority Issue
+        Use this template for cosmetic issues, minor bugs, or improvement requests with no immediate functional impact.
+        **Expected response time: next sprint / backlog triage.**
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reported By
+      description: Who reported this issue?
+      placeholder: "@username or email"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: What type of issue is this?
+      options:
+        - UI/UX cosmetic issue
+        - Non-critical performance degradation
+        - Documentation gap
+        - Configuration improvement
+        - Dependency update needed
+        - Minor bug with easy workaround
+        - Observability / logging improvement
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Describe the impact. Since this is P4, impact should be minimal.
+      value: |
+        **Users affected:** [none / negligible]
+        **Functional impact:** [cosmetic / minor]
+        **Workaround:** [describe or N/A]
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Issue Description
+      description: Describe the issue and how to reproduce it (if applicable).
+      placeholder: |
+        Describe the issue in detail.
+        Include steps to reproduce if it's a bug.
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When was the issue identified?
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue identified |
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-fix
+    attributes:
+      label: Proposed Fix
+      description: Suggest a fix if you have one in mind.
+      placeholder: "Describe the proposed solution or link to relevant code."
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: How will we know this is fixed?
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+    validations:
+      required: false

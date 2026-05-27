@@ -1,0 +1,130 @@
+name: "P1 - Critical Incident"
+description: "Complete service outage or data loss affecting all users. Response time: 15 minutes."
+title: "[P1] "
+labels: ["incident", "P1-critical"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 — Critical Incident
+        Use this template for complete service outages, data loss, or security breaches affecting all users.
+        **Expected response time: 15 minutes.**
+
+  - type: input
+    id: incident-commander
+    attributes:
+      label: Incident Commander
+      description: Name of the person leading the incident response.
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-category
+    attributes:
+      label: Failure Category
+      description: What type of failure is this?
+      options:
+        - Application Not Starting (INC-01)
+        - Database Failure (INC-02)
+        - Data Loss (INC-03)
+        - Docker Container Failure (INC-11)
+        - Security Breach
+        - Full Service Outage
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the scope and business impact of this incident.
+      value: |
+        **Users affected:** [all / percentage / specific group]
+        **Features impacted:** [list affected functionality]
+        **Data at risk:** [yes/no — describe if yes]
+        **Revenue impact:** [estimated if applicable]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Record key timestamps as the incident progresses.
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Incident detected |
+        | | First responder engaged |
+        | | Root cause identified |
+        | | Mitigation applied |
+        | | Service restored |
+        | | Incident closed |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms Observed
+      description: What errors, alerts, or user reports indicate the issue?
+      placeholder: |
+        - Health check returning non-200
+        - Error messages in logs
+        - User reports
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause Analysis
+      description: Fill this in once the root cause is identified.
+      placeholder: "Describe the underlying cause of the incident."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution & Recovery Steps
+      description: Document the steps taken to resolve the incident.
+      value: |
+        ### Immediate Actions
+        - [ ] Step 1
+
+        ### Verification
+        - [ ] Health check passing
+        - [ ] All API endpoints responding
+        - [ ] Users can log in
+        - [ ] Data integrity verified
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention & Follow-up
+      description: What changes will prevent this from happening again?
+      value: |
+        - [ ] Code fix (PR link: )
+        - [ ] Monitoring/alerting improvement
+        - [ ] Runbook update
+        - [ ] Post-mortem scheduled (date: )
+    validations:
+      required: false
+
+  - type: textarea
+    id: communication
+    attributes:
+      label: Communication Log
+      description: Track stakeholder notifications.
+      value: |
+        - [ ] Engineering team notified
+        - [ ] Users/customers notified
+        - [ ] Management informed
+        - [ ] Status page updated
+    validations:
+      required: false

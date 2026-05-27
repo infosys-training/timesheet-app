@@ -1,0 +1,99 @@
+name: "P3 - Minor Incident"
+description: "Non-critical degradation with workaround available. Response time: 4 hours."
+title: "[P3] "
+labels: ["incident", "P3-minor"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 — Minor Incident
+        Use this template for non-critical issues that have a workaround (rate limiting, report export failures, CORS issues, slow responses).
+        **Expected response time: 4 hours (business hours).**
+
+  - type: input
+    id: assignee
+    attributes:
+      label: Assigned To
+      description: Engineer assigned to investigate.
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-category
+    attributes:
+      label: Failure Category
+      description: What type of issue is this?
+      options:
+        - Rate Limiting Blocking Users (INC-06)
+        - Report Generation Failures (INC-07)
+        - Dependency / npm Install Failures (INC-12)
+        - CORS Errors (INC-13)
+        - Slow Response Times (INC-14)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe who is affected and what functionality is degraded.
+      value: |
+        **Users affected:** [few / specific users]
+        **Feature impacted:** [specific feature]
+        **Workaround:** [describe available workaround]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When was the issue first reported and key milestones.
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue reported |
+        | | Investigation started |
+        | | Fix applied |
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Issue Description
+      description: Detailed description of the issue including steps to reproduce.
+      placeholder: |
+        1. Navigate to...
+        2. Click on...
+        3. Observe error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: Document the fix applied.
+      value: |
+        ### Fix
+        - [ ] Describe fix applied
+
+        ### Verified
+        - [ ] Issue no longer reproducible
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-up Actions
+      description: Any improvements to prevent recurrence.
+      placeholder: |
+        - Adjust configuration
+        - Update documentation
+        - Add monitoring
+    validations:
+      required: false
