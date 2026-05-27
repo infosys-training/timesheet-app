@@ -1,0 +1,100 @@
+name: "P3 - Medium Severity Incident"
+description: "Minor feature degraded with a workaround available. Response within 4 hours."
+title: "[P3] "
+labels: ["incident", "P3-medium"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 - Medium Severity Incident Report
+        **Response SLA: 4 hours** — File and assign during business hours.
+
+        Use this template when a feature is degraded but a workaround exists and most users are unaffected.
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reporter
+      description: Who is reporting this issue?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: What category best describes this issue?
+      options:
+        - Intermittent API errors on a single endpoint
+        - Slow response times on specific operations
+        - Export produces incorrect data formatting
+        - Frontend UI rendering issue (partial)
+        - Validation rejecting valid input
+        - CORS or proxy misconfiguration
+        - Logging or monitoring gap
+        - Temp file cleanup failure
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: What is the user-facing impact?
+      placeholder: |
+        - Users affected: few / some
+        - Severity: annoying / degraded functionality
+        - Workaround: describe the workaround
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When was this first noticed and what has happened since?
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue first noticed |
+        | YYYY-MM-DD HH:MM | Investigation started |
+        | YYYY-MM-DD HH:MM | Resolution |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Reproduction Steps
+      description: How can this issue be reproduced?
+      placeholder: |
+        1. Navigate to ...
+        2. Perform action ...
+        3. Observe error ...
+
+        Error messages or logs:
+        ```
+        paste relevant errors here
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Root Cause & Resolution
+      description: What was the cause and how was it resolved?
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Follow-up Actions
+      description: Any improvements to prevent recurrence?
+      placeholder: |
+        - [ ] Action item
+    validations:
+      required: false

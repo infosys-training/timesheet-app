@@ -1,0 +1,121 @@
+name: "P1 - Critical Incident"
+description: "Application completely down or data corruption. Requires immediate response (15 min SLA)."
+title: "[P1] "
+labels: ["incident", "P1-critical"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 - Critical Incident Report
+        **Response SLA: 15 minutes** — Page on-call immediately.
+
+        Use this template when the application is completely unavailable in production or data corruption has occurred.
+
+  - type: input
+    id: incident-commander
+    attributes:
+      label: Incident Commander
+      description: Who is leading the response?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: What category of failure is this?
+      options:
+        - Application completely down
+        - Database corruption / data loss
+        - Authentication system failure (all users affected)
+        - Infrastructure failure (server/container unreachable)
+        - Security breach / unauthorized access
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Describe the scope and severity of user impact.
+      placeholder: |
+        - Number of users affected: ALL / subset
+        - Features broken: all endpoints / specific features
+        - Data impact: no data loss / potential data loss / confirmed data loss
+        - Revenue impact: none / estimated amount
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: Provide a chronological timeline of the incident.
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue first detected |
+        | YYYY-MM-DD HH:MM | On-call paged |
+        | YYYY-MM-DD HH:MM | Investigation started |
+        | YYYY-MM-DD HH:MM | Root cause identified |
+        | YYYY-MM-DD HH:MM | Fix applied |
+        | YYYY-MM-DD HH:MM | Service restored |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Detection
+      description: How was the incident detected? What symptoms were observed?
+      placeholder: |
+        - Health check endpoint returning errors
+        - User reports of login failures
+        - Monitoring alert triggered
+        - Error logs showing specific errors
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What caused the incident? (Fill in during or after investigation.)
+      placeholder: "Describe the root cause. Reference the RUNBOOK.md section if applicable."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: What steps were taken to resolve the incident?
+      placeholder: |
+        1. Step taken to diagnose
+        2. Step taken to mitigate
+        3. Step taken to fully resolve
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention / Follow-up Actions
+      description: What changes will prevent this from happening again?
+      placeholder: |
+        - [ ] Action item 1
+        - [ ] Action item 2
+        - [ ] Schedule post-mortem meeting
+    validations:
+      required: false
+
+  - type: textarea
+    id: runbook-reference
+    attributes:
+      label: Runbook Reference
+      description: Which RUNBOOK.md section was used? Was it helpful?
+      placeholder: "e.g., Section 2 - Backend Not Starting. The runbook was helpful / needs updating."
+    validations:
+      required: false
