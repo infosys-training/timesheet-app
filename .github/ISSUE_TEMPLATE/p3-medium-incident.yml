@@ -1,0 +1,118 @@
+name: "P3 - Medium Severity Incident"
+description: "Minor feature degradation or issue affecting a subset of users. Response time: 4 hours."
+title: "[P3] "
+labels: ["incident", "P3-medium"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 - Medium Severity Incident Report
+        Use this template for: slow responses, intermittent errors, CORS issues, minor UI bugs affecting functionality, or configuration problems.
+        **Expected response time: 4 hours.**
+
+  - type: input
+    id: incident-id
+    attributes:
+      label: Incident ID
+      description: "Format: INC-YYYY-MM-DD-NNN"
+      placeholder: "INC-2025-01-15-003"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Failure Category
+      options:
+        - "Slow Response Times"
+        - "Intermittent API Errors"
+        - "CORS / Network Configuration"
+        - "Rate Limiting Misconfiguration"
+        - "Frontend Rendering Issues"
+        - "Validation Errors (Incorrect Rejections)"
+        - "Logging / Monitoring Gap"
+        - "Other Medium Issue"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: "Who and what is affected?"
+      placeholder: |
+        - Affected users: How many / which users
+        - Affected functionality: Which feature(s)
+        - Workaround available: Yes / No
+        - User-facing impact: Describe what users experience
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: "When was the issue detected and key investigation milestones."
+      placeholder: |
+        - YYYY-MM-DD HH:MM UTC - Issue detected
+        - YYYY-MM-DD HH:MM UTC - Investigation started
+        - YYYY-MM-DD HH:MM UTC - Resolution applied
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms Observed
+      description: "Describe the symptoms, including logs and error messages."
+      placeholder: |
+        - What the user sees:
+        - API responses:
+        - Relevant logs:
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: "What caused the issue?"
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: "Steps taken to resolve."
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention / Follow-up Actions
+      placeholder: |
+        - [ ] Action item 1
+        - [ ] Action item 2
+    validations:
+      required: false
+
+  - type: input
+    id: responders
+    attributes:
+      label: Incident Responders
+      placeholder: "@username1"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Production
+        - Staging
+        - Development
+    validations:
+      required: true
