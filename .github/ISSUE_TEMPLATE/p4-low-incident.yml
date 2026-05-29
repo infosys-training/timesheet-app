@@ -1,0 +1,94 @@
+name: "P4 - Low Severity Incident"
+description: "Minor issue with minimal user impact. Response time: next business day."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 - Low Severity Incident Report
+        Use this template for: cosmetic UI issues, minor logging anomalies, non-critical warnings, or improvement suggestions surfaced during operations.
+        **Expected response time: next business day.**
+
+  - type: input
+    id: incident-id
+    attributes:
+      label: Incident ID
+      description: "Format: INC-YYYY-MM-DD-NNN"
+      placeholder: "INC-2025-01-15-004"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Failure Category
+      options:
+        - "UI / Cosmetic Issue"
+        - "Non-Critical Warning in Logs"
+        - "Documentation Gap"
+        - "Minor Performance Optimization"
+        - "Stale Cache / Outdated Assets"
+        - "Dependency Update Needed"
+        - "Monitoring / Alerting Improvement"
+        - "Other Minor Issue"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: "Describe the impact. What is affected and how?"
+      placeholder: |
+        - Affected users: None / minimal
+        - Affected functionality: Describe
+        - Workaround: Describe if applicable
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: "When was this noticed?"
+      placeholder: |
+        - YYYY-MM-DD HH:MM UTC - Issue noticed
+    validations:
+      required: false
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Description
+      description: "Describe the issue in detail."
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Suggested Resolution
+      description: "Any ideas on how to fix this?"
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Follow-up Actions
+      placeholder: |
+        - [ ] Action item 1
+    validations:
+      required: false
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Production
+        - Staging
+        - Development
+    validations:
+      required: true

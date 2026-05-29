@@ -1,0 +1,127 @@
+name: "P2 - High Severity Incident"
+description: "Major feature broken or significant degradation affecting many users. Response time: 1 hour."
+title: "[P2] "
+labels: ["incident", "P2-high"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 - High Severity Incident Report
+        Use this template for: authentication broken for some users, export failures, high error rate, or significant performance degradation.
+        **Expected response time: 1 hour.**
+
+  - type: input
+    id: incident-id
+    attributes:
+      label: Incident ID
+      description: "Format: INC-YYYY-MM-DD-NNN"
+      placeholder: "INC-2025-01-15-002"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Failure Category
+      options:
+        - "Authentication / Login Failure"
+        - "CSV/PDF Export Broken"
+        - "High API Error Rate (5xx)"
+        - "Database Errors (Partial)"
+        - "Performance Degradation (>5s responses)"
+        - "Data Integrity Issue"
+        - "Rate Limiting Blocking Legitimate Users"
+        - "Other Major Degradation"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: "Who and what is affected?"
+      placeholder: |
+        - Affected users: Estimate of impacted users / percentage
+        - Affected functionality: Which endpoints or features are broken
+        - Workaround available: Yes / No — describe if yes
+        - Business impact: Describe operational consequences
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: "Chronological sequence of events."
+      placeholder: |
+        - YYYY-MM-DD HH:MM UTC - Issue first reported / detected
+        - YYYY-MM-DD HH:MM UTC - Investigation started
+        - YYYY-MM-DD HH:MM UTC - Root cause identified
+        - YYYY-MM-DD HH:MM UTC - Fix deployed
+        - YYYY-MM-DD HH:MM UTC - Service restored
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms Observed
+      description: "What are the visible symptoms?"
+      placeholder: |
+        - Endpoints affected:
+        - Error messages / status codes:
+        - Relevant log snippets:
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: "What caused the incident?"
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: "What was done to resolve the incident?"
+      placeholder: |
+        1. Diagnosis steps
+        2. Mitigation steps
+        3. Resolution steps
+        4. Verification
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention / Follow-up Actions
+      description: "What changes are needed to prevent recurrence?"
+      placeholder: |
+        - [ ] Action item 1
+        - [ ] Action item 2
+    validations:
+      required: false
+
+  - type: input
+    id: responders
+    attributes:
+      label: Incident Responders
+      description: "Who is responding to this incident?"
+      placeholder: "@username1, @username2"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Production
+        - Staging
+        - Development
+    validations:
+      required: true

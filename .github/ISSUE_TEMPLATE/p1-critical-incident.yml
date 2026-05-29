@@ -1,0 +1,128 @@
+name: "P1 - Critical Incident"
+description: "Complete service outage or data loss affecting all users. Response time: 15 minutes."
+title: "[P1] "
+labels: ["incident", "P1-critical"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 - Critical Incident Report
+        Use this template for: server down, data loss, all users unable to access the application, or security breaches.
+        **Expected response time: 15 minutes.**
+
+  - type: input
+    id: incident-id
+    attributes:
+      label: Incident ID
+      description: "Format: INC-YYYY-MM-DD-NNN"
+      placeholder: "INC-2025-01-15-001"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Failure Category
+      options:
+        - "Server Down / Process Crash"
+        - "Database Failure / Data Loss"
+        - "Complete Authentication Outage"
+        - "Security Breach"
+        - "Data Corruption"
+        - "Other Critical Failure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: "Who and what is affected? Include number of users impacted."
+      placeholder: |
+        - Affected users: All users / specific group
+        - Affected functionality: All endpoints / specific feature
+        - Business impact: Users cannot log time, reports unavailable, etc.
+        - Revenue/SLA impact: Describe any contractual implications
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: "Chronological sequence of events. Update as the incident progresses."
+      placeholder: |
+        - YYYY-MM-DD HH:MM UTC - Issue first detected (monitoring alert / user report)
+        - YYYY-MM-DD HH:MM UTC - Incident declared, responder paged
+        - YYYY-MM-DD HH:MM UTC - Investigation started
+        - YYYY-MM-DD HH:MM UTC - Root cause identified
+        - YYYY-MM-DD HH:MM UTC - Fix deployed
+        - YYYY-MM-DD HH:MM UTC - Service restored and verified
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms Observed
+      description: "What are the visible symptoms? Include error messages, HTTP status codes, and log snippets."
+      placeholder: |
+        - Health check (GET /health) returning: 
+        - Error messages in logs:
+        - HTTP status codes observed:
+        - User-visible behavior:
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: "What caused the incident? Fill in once identified."
+      placeholder: "Describe the root cause once identified during investigation."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: "What was done to resolve the incident? Include exact commands run."
+      placeholder: |
+        1. Step taken to diagnose
+        2. Step taken to mitigate
+        3. Step taken to resolve
+        4. Verification steps performed
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention / Follow-up Actions
+      description: "What changes are needed to prevent recurrence?"
+      placeholder: |
+        - [ ] Action item 1
+        - [ ] Action item 2
+    validations:
+      required: false
+
+  - type: input
+    id: responders
+    attributes:
+      label: Incident Responders
+      description: "Who is responding to this incident?"
+      placeholder: "@username1, @username2"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Production
+        - Staging
+        - Development
+    validations:
+      required: true
