@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 
+const API_URL = 'http://localhost:3001';
 const TEST_EMAIL = 'e2e-test@example.com';
 const CLIENT_NAME = 'E2E Test Client';
 const WORK_ENTRY = {
@@ -18,6 +19,12 @@ test.describe('Work Entries Workflow', () => {
     await page.getByRole('button', { name: 'Log In' }).click();
     await page.waitForURL('**/dashboard');
     await expect(page.getByText(TEST_EMAIL)).toBeVisible();
+  });
+
+  test.afterEach(async ({ request }) => {
+    await request.delete(`${API_URL}/api/clients`, {
+      headers: { 'x-user-email': TEST_EMAIL },
+    });
   });
 
   test('full CRUD workflow: create client, add work entry, verify, edit, delete', async ({ page }) => {
