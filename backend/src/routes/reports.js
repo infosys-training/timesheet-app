@@ -282,4 +282,206 @@ router.get('/export/pdf/:clientId', (req, res) => {
   );
 });
 
+// Export dashboard as CSV
+router.get('/export/dashboard/csv', (req, res) => {
+  const db = getDatabase();
+
+  // Get summary stats
+  db.get(
+    'SELECT COUNT(*) as client_count FROM clients WHERE user_email = ?',
+    [req.userEmail],
+    (err, clientRow) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+
+      db.all(
+        `SELECT effort_category, SUM(hours) as total_hours, COUNT(*) as entry_count
+         FROM work_entries
+         WHERE user_email = ?
+         GROUP BY effort_category
+         ORDER BY total_hours DESC`,
+        [req.userEmail],
+        (err, rows) => {
+          if (err) {
+            console.error('Database error:', err);
+            return res.status(500).json({ error: 'Internal server error' });
+          }
+
+          const breakdown = EFFORT_CATEGORIES.map((category) => {
+            const row = rows.find((r) => r.effort_category === category);
+            return {
+              category,
+              total_hours: row ? parseFloat(row.total_hours).toFixed(2) : '0.00',
+              entry_count: row ? row.entry_count : 0,
+            };
+          });
+
+          const grandTotalHours = rows.reduce((sum, r) => sum + parseFloat(r.total_hours), 0);
+
+          // Add percentage
+          const records = breakdown.map((item) => ({
+            ...item,
+            percentage: grandTotalHours > 0
+              ? ((parseFloat(item.total_hours) / grandTotalHours) * 100).toFixed(1) + '%'
+              : '0.0%',
+          }));
+
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+          const filename = `dashboard_report_${timestamp}.csv`;
+          const tempPath = path.join(__dirname, '../../temp', filename);
+
+          const tempDir = path.dirname(tempPath);
+          if (!fs.existsSync(tempDir)) {
+            fs.mkdirSync(tempDir, { recursive: true });
+          }
+
+          const csvWriter = createCsvWriter({
+            path: tempPath,
+            header: [
+              { id: 'category', title: 'Category' },
+              { id: 'total_hours', title: 'Total Hours' },
+              { id: 'entry_count', title: 'Entry Count' },
+              { id: 'percentage', title: 'Percentage' },
+            ],
+          });
+
+          csvWriter.writeRecords(records)
+            .then(() => {
+              res.download(tempPath, filename, (err) => {
+                if (err) {
+                  console.error('Error sending file:', err);
+                }
+                fs.unlink(tempPath, (unlinkErr) => {
+                  if (unlinkErr) {
+                    console.error('Error deleting temp file:', unlinkErr);
+                  }
+                });
+              });
+            })
+            .catch((error) => {
+              console.error('Error creating CSV:', error);
+              res.status(500).json({ error: 'Failed to generate dashboard CSV report' });
+            });
+        }
+      );
+    }
+  );
+});
+
+// Export dashboard as PDF
+router.get('/export/dashboard/pdf', (req, res) => {
+  const db = getDatabase();
+
+  db.get(
+    'SELECT COUNT(*) as client_count FROM clients WHERE user_email = ?',
+    [req.userEmail],
+    (err, clientRow) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+
+      db.get(
+        'SELECT COUNT(*) as entry_count, COALESCE(SUM(hours), 0) as total_hours FROM work_entries WHERE user_email = ?',
+        [req.userEmail],
+        (err, entryRow) => {
+          if (err) {
+            console.error('Database error:', err);
+            return res.status(500).json({ error: 'Internal server error' });
+          }
+
+          db.all(
+            `SELECT effort_category, SUM(hours) as total_hours, COUNT(*) as entry_count
+             FROM work_entries
+             WHERE user_email = ?
+             GROUP BY effort_category
+             ORDER BY total_hours DESC`,
+            [req.userEmail],
+            (err, rows) => {
+              if (err) {
+                console.error('Database error:', err);
+                return res.status(500).json({ error: 'Internal server error' });
+              }
+
+              const grandTotalHours = rows.reduce((sum, r) => sum + parseFloat(r.total_hours), 0);
+
+              const doc = new PDFDocument();
+              const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+              const filename = `dashboard_report_${timestamp}.pdf`;
+
+              res.setHeader('Content-Type', 'application/pdf');
+              res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+              doc.pipe(res);
+
+              // Title
+              doc.fontSize(20).text('Dashboard Report', { align: 'center' });
+              doc.moveDown();
+              doc.fontSize(10).text(`Generated: ${new Date().toLocaleString()}`, { align: 'center' });
+              doc.moveDown(2);
+
+              // Summary Stats
+              doc.fontSize(16).text('Summary', { underline: true });
+              doc.moveDown(0.5);
+              doc.fontSize(12).text(`Total Clients: ${clientRow.client_count}`);
+              doc.text(`Total Work Entries: ${entryRow.entry_count}`);
+              doc.text(`Total Hours: ${parseFloat(entryRow.total_hours).toFixed(2)}`);
+              doc.moveDown(2);
+
+              // Effort Breakdown
+              doc.fontSize(16).text('Effort Breakdown', { underline: true });
+              doc.moveDown();
+
+              // Table header
+              doc.fontSize(11);
+              const startX = 50;
+              doc.text('Category', startX, doc.y, { width: 160 });
+              doc.text('Hours', startX + 160, doc.y - 15, { width: 80 });
+              doc.text('Entries', startX + 240, doc.y - 15, { width: 80 });
+              doc.text('Percentage', startX + 320, doc.y - 15, { width: 100 });
+              doc.moveDown();
+
+              doc.moveTo(startX, doc.y).lineTo(startX + 420, doc.y).stroke();
+              doc.moveDown(0.5);
+
+              // Category rows
+              EFFORT_CATEGORIES.forEach((category) => {
+                const row = rows.find((r) => r.effort_category === category);
+                const hours = row ? parseFloat(row.total_hours).toFixed(2) : '0.00';
+                const count = row ? row.entry_count : 0;
+                const pct = grandTotalHours > 0
+                  ? ((row ? parseFloat(row.total_hours) : 0) / grandTotalHours * 100).toFixed(1) + '%'
+                  : '0.0%';
+
+                const y = doc.y;
+                doc.text(category, startX, y, { width: 160 });
+                doc.text(hours, startX + 160, y, { width: 80 });
+                doc.text(count.toString(), startX + 240, y, { width: 80 });
+                doc.text(pct, startX + 320, y, { width: 100 });
+                doc.moveDown();
+              });
+
+              // Total row
+              doc.moveDown(0.5);
+              doc.moveTo(startX, doc.y).lineTo(startX + 420, doc.y).stroke();
+              doc.moveDown(0.5);
+              const totalY = doc.y;
+              doc.font('Helvetica-Bold');
+              doc.text('Total', startX, totalY, { width: 160 });
+              doc.text(grandTotalHours.toFixed(2), startX + 160, totalY, { width: 80 });
+              doc.text(entryRow.entry_count.toString(), startX + 240, totalY, { width: 80 });
+              doc.text('100%', startX + 320, totalY, { width: 100 });
+              doc.font('Helvetica');
+
+              doc.end();
+            }
+          );
+        }
+      );
+    }
+  );
+});
+
 module.exports = router;

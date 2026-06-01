@@ -19,6 +19,9 @@ import {
   ManageAccounts as ManageAccountsIcon,
   Code as CodeIcon,
   BugReport as BugReportIcon,
+  Print as PrintIcon,
+  PictureAsPdf as PdfIcon,
+  TableChart as CsvIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -58,6 +61,42 @@ const DashboardPage: React.FC = () => {
   const totalHours = workEntries.reduce((sum: number, entry: { hours: number }) => sum + entry.hours, 0);
   const recentEntries = workEntries.slice(0, 5);
 
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleExportPdf = async () => {
+    try {
+      const blob = await apiClient.exportDashboardPdf();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `dashboard_report_${new Date().toISOString().replace(/[:.]/g, '-')}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to export PDF:', error);
+    }
+  };
+
+  const handleExportCsv = async () => {
+    try {
+      const blob = await apiClient.exportDashboardCsv();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `dashboard_report_${new Date().toISOString().replace(/[:.]/g, '-')}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to export CSV:', error);
+    }
+  };
+
   const statsCards = [
     {
       title: 'Total Clients',
@@ -84,9 +123,37 @@ const DashboardPage: React.FC = () => {
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom>
-        Dashboard
-      </Typography>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} flexWrap="wrap" gap={1}>
+        <Typography variant="h4">
+          Dashboard
+        </Typography>
+        <Box display="flex" gap={1} className="no-print">
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<PrintIcon />}
+            onClick={handlePrint}
+          >
+            Print
+          </Button>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<PdfIcon />}
+            onClick={handleExportPdf}
+          >
+            Export PDF
+          </Button>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<CsvIcon />}
+            onClick={handleExportCsv}
+          >
+            Export CSV
+          </Button>
+        </Box>
+      </Box>
 
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {statsCards.map((stat, index) => (
@@ -234,7 +301,7 @@ const DashboardPage: React.FC = () => {
         </Grid>
 
         {/* @ts-expect-error - MUI Grid item prop type issue */}
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={4} className="quick-actions-section">
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" mb={2}>
               Quick Actions

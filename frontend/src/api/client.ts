@@ -138,6 +138,20 @@ class ApiClient {
     return response.data;
   }
 
+  async exportDashboardCsv() {
+    const response = await this.client.get('/api/reports/export/dashboard/csv', {
+      responseType: 'blob',
+    });
+    return response.data;
+  }
+
+  async exportDashboardPdf() {
+    const response = await this.client.get('/api/reports/export/dashboard/pdf', {
+      responseType: 'blob',
+    });
+    return response.data;
+  }
+
   // Health check
   async healthCheck() {
     const response = await this.client.get('/health');
