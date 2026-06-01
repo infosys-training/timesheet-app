@@ -15,7 +15,7 @@ router.get('/', (req, res) => {
   
   let query = `
     SELECT we.id, we.client_id, we.hours, we.description, we.date, 
-           we.created_at, we.updated_at, c.name as client_name
+           we.effort_category, we.created_at, we.updated_at, c.name as client_name
     FROM work_entries we
     JOIN clients c ON we.client_id = c.id
     WHERE we.user_email = ?
@@ -56,7 +56,7 @@ router.get('/:id', (req, res) => {
   
   db.get(
     `SELECT we.id, we.client_id, we.hours, we.description, we.date, 
-            we.created_at, we.updated_at, c.name as client_name
+            we.effort_category, we.created_at, we.updated_at, c.name as client_name
      FROM work_entries we
      JOIN clients c ON we.client_id = c.id
      WHERE we.id = ? AND we.user_email = ?`,
@@ -84,7 +84,7 @@ router.post('/', (req, res, next) => {
       return next(error);
     }
 
-    const { clientId, hours, description, date } = value;
+    const { clientId, hours, description, date, effortCategory } = value;
     const db = getDatabase();
 
     // Verify client exists and belongs to user
@@ -103,8 +103,8 @@ router.post('/', (req, res, next) => {
 
         // Create work entry
         db.run(
-          'INSERT INTO work_entries (client_id, user_email, hours, description, date) VALUES (?, ?, ?, ?, ?)',
-          [clientId, req.userEmail, hours, description || null, date],
+          'INSERT INTO work_entries (client_id, user_email, hours, description, date, effort_category) VALUES (?, ?, ?, ?, ?, ?)',
+          [clientId, req.userEmail, hours, description || null, date, effortCategory || 'Development'],
           function(err) {
             if (err) {
               console.error('Database error:', err);
@@ -114,7 +114,7 @@ router.post('/', (req, res, next) => {
             // Return the created work entry with client name
             db.get(
               `SELECT we.id, we.client_id, we.hours, we.description, we.date, 
-                      we.created_at, we.updated_at, c.name as client_name
+                      we.effort_category, we.created_at, we.updated_at, c.name as client_name
                FROM work_entries we
                JOIN clients c ON we.client_id = c.id
                WHERE we.id = ?`,
@@ -217,6 +217,11 @@ router.put('/:id', (req, res, next) => {
             values.push(value.date);
           }
 
+          if (value.effortCategory !== undefined) {
+            updates.push('effort_category = ?');
+            values.push(value.effortCategory);
+          }
+
           updates.push('updated_at = CURRENT_TIMESTAMP');
           values.push(workEntryId, req.userEmail);
 
@@ -231,7 +236,7 @@ router.put('/:id', (req, res, next) => {
             // Return updated work entry with client name
             db.get(
               `SELECT we.id, we.client_id, we.hours, we.description, we.date, 
-                      we.created_at, we.updated_at, c.name as client_name
+                      we.effort_category, we.created_at, we.updated_at, c.name as client_name
                FROM work_entries we
                JOIN clients c ON we.client_id = c.id
                WHERE we.id = ?`,

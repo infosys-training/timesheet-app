@@ -98,12 +98,12 @@ class ApiClient {
     return response.data;
   }
 
-  async createWorkEntry(entryData: { clientId: number; hours: number; description?: string; date: string }) {
+  async createWorkEntry(entryData: { clientId: number; hours: number; description?: string; date: string; effortCategory?: string }) {
     const response = await this.client.post('/api/work-entries', entryData);
     return response.data;
   }
 
-  async updateWorkEntry(id: number, entryData: { clientId?: number; hours?: number; description?: string; date?: string }) {
+  async updateWorkEntry(id: number, entryData: { clientId?: number; hours?: number; description?: string; date?: string; effortCategory?: string }) {
     const response = await this.client.put(`/api/work-entries/${id}`, entryData);
     return response.data;
   }
@@ -114,6 +114,11 @@ class ApiClient {
   }
 
   // Report endpoints
+  async getEffortBreakdown() {
+    const response = await this.client.get('/api/reports/effort-breakdown');
+    return response.data;
+  }
+
   async getClientReport(clientId: number) {
     const response = await this.client.get(`/api/reports/client/${clientId}`);
     return response.data;
@@ -128,6 +133,20 @@ class ApiClient {
 
   async exportClientReportPdf(clientId: number) {
     const response = await this.client.get(`/api/reports/export/pdf/${clientId}`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  }
+
+  async exportDashboardCsv() {
+    const response = await this.client.get('/api/reports/export/dashboard/csv', {
+      responseType: 'blob',
+    });
+    return response.data;
+  }
+
+  async exportDashboardPdf() {
+    const response = await this.client.get('/api/reports/export/dashboard/pdf', {
       responseType: 'blob',
     });
     return response.data;
