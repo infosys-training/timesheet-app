@@ -1,0 +1,132 @@
+name: "P1 - Critical Incident"
+description: "Complete service outage or data loss affecting all users"
+title: "[P1] "
+labels: ["incident", "P1-critical", "urgent"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 - Critical Incident Report
+        Use this template for incidents causing **complete service outage**, **data loss**, or **security breaches** affecting all users.
+        **Expected response time: 15 minutes**
+
+  - type: input
+    id: incident-start
+    attributes:
+      label: Incident Start Time
+      description: When did the incident begin? (UTC)
+      placeholder: "2024-01-15 14:30 UTC"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Primary category of the failure
+      options:
+        - Database - Data loss / corruption
+        - Database - Initialization failure
+        - API - Server crash / unresponsive
+        - API - All endpoints returning errors
+        - Authentication - Complete auth failure
+        - Infrastructure - Container/service down
+        - Security - Potential breach
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the impact on users and business operations
+      placeholder: |
+        - Number of affected users:
+        - Business operations impacted:
+        - Data loss (if any):
+        - Revenue impact (if applicable):
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Observations
+      description: What symptoms are being observed?
+      placeholder: |
+        - Error messages seen:
+        - Health check status:
+        - User reports:
+        - Monitoring alerts:
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Chronological sequence of events
+      placeholder: |
+        - HH:MM UTC - First alert received
+        - HH:MM UTC - Investigation started
+        - HH:MM UTC - Root cause identified
+        - HH:MM UTC - Mitigation applied
+        - HH:MM UTC - Service restored
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause (if known)
+      description: What caused the incident?
+      placeholder: Describe the root cause or state "Under investigation"
+    validations:
+      required: false
+
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Mitigation Steps Taken
+      description: What actions were taken to resolve or mitigate?
+      placeholder: |
+        1. Step taken
+        2. Step taken
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution & Recovery
+      description: How was the incident resolved? Include verification steps.
+      placeholder: |
+        - Resolution action:
+        - Service restoration confirmed at:
+        - Data recovery status:
+    validations:
+      required: false
+
+  - type: textarea
+    id: followup
+    attributes:
+      label: Follow-up Actions
+      description: What needs to happen to prevent recurrence?
+      placeholder: |
+        - [ ] Action item 1
+        - [ ] Action item 2
+    validations:
+      required: false
+
+  - type: textarea
+    id: communication
+    attributes:
+      label: Communication Log
+      description: Record of stakeholder communications
+      placeholder: |
+        - HH:MM - Notified [team/stakeholder]
+        - HH:MM - Status update sent to [audience]
+    validations:
+      required: false
