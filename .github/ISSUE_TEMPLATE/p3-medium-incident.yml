@@ -1,0 +1,103 @@
+name: "P3 - Medium Severity Incident"
+description: "Minor feature degradation or issue affecting some users"
+title: "[P3] "
+labels: ["incident", "P3-medium"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 - Medium Severity Incident Report
+        Use this template for incidents causing **minor feature degradation**, **intermittent errors**, or **non-critical issues** affecting some users.
+        **Expected response time: 4 hours**
+
+  - type: input
+    id: incident-start
+    attributes:
+      label: Incident Start Time
+      description: When was the issue first observed? (UTC)
+      placeholder: "2024-01-15 14:30 UTC"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Primary category of the failure
+      options:
+        - API - Intermittent errors on specific endpoint
+        - API - Slow response times
+        - Frontend - UI rendering issue
+        - Frontend - Stale assets / cache issue
+        - Validation - Unexpected rejection of valid input
+        - Export - Partial export failure
+        - Rate Limiting - False positive blocks
+        - Authentication - Intermittent auth issues
+        - Performance - Gradual degradation
+        - Dependency - Version incompatibility
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe who and what is affected
+      placeholder: |
+        - Affected feature(s):
+        - Number of affected users (estimate):
+        - Workaround available:
+        - User-facing impact:
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Reproduction Steps
+      description: Describe the symptoms and how to reproduce
+      placeholder: |
+        1. Step to reproduce
+        2. Expected behavior
+        3. Actual behavior
+        
+        Error messages / logs:
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When did this start and key events
+      placeholder: |
+        - First observed:
+        - Investigation started:
+        - Fix deployed:
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: How was/will this be fixed?
+      placeholder: |
+        - Root cause:
+        - Fix applied:
+        - Verification:
+    validations:
+      required: false
+
+  - type: textarea
+    id: followup
+    attributes:
+      label: Follow-up Actions
+      description: Any preventive measures needed?
+      placeholder: |
+        - [ ] Action item 1
+        - [ ] Action item 2
+    validations:
+      required: false

@@ -1,0 +1,125 @@
+name: "P2 - High Severity Incident"
+description: "Major feature degradation or partial outage affecting many users"
+title: "[P2] "
+labels: ["incident", "P2-high"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 - High Severity Incident Report
+        Use this template for incidents causing **major feature degradation**, **partial outage**, or **significant performance issues** affecting many users.
+        **Expected response time: 1 hour**
+
+  - type: input
+    id: incident-start
+    attributes:
+      label: Incident Start Time
+      description: When did the incident begin? (UTC)
+      placeholder: "2024-01-15 14:30 UTC"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Primary category of the failure
+      options:
+        - Database - Lock contention / slow queries
+        - Database - Connection issues
+        - API - Specific endpoints failing
+        - API - High latency / timeouts
+        - Memory - High usage / near OOM
+        - Export - PDF/CSV generation failing
+        - Rate Limiting - Legitimate traffic blocked
+        - Infrastructure - Health check failures
+        - Infrastructure - Disk space issues
+        - Frontend - Cannot reach backend
+        - Dependency - Build/install failure
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the scope and impact of the issue
+      placeholder: |
+        - Affected feature(s):
+        - Approximate number of affected users:
+        - Workaround available (yes/no):
+        - Business impact:
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Observations
+      description: What symptoms are being observed?
+      placeholder: |
+        - Error messages:
+        - Affected endpoints:
+        - Monitoring data:
+        - User-reported behavior:
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Chronological sequence of events
+      placeholder: |
+        - HH:MM UTC - Issue first noticed
+        - HH:MM UTC - Investigation started
+        - HH:MM UTC - Mitigation applied
+        - HH:MM UTC - Issue resolved
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What caused the incident?
+      placeholder: Describe the root cause or state "Under investigation"
+    validations:
+      required: false
+
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Mitigation & Resolution
+      description: Steps taken to mitigate and resolve the issue
+      placeholder: |
+        1. Immediate mitigation:
+        2. Root cause fix:
+        3. Verification:
+    validations:
+      required: true
+
+  - type: textarea
+    id: followup
+    attributes:
+      label: Follow-up Actions
+      description: Preventive measures and improvements
+      placeholder: |
+        - [ ] Action item 1
+        - [ ] Action item 2
+    validations:
+      required: false
+
+  - type: dropdown
+    id: recurrence-risk
+    attributes:
+      label: Recurrence Risk
+      description: How likely is this to happen again without follow-up?
+      options:
+        - High - Will recur without action
+        - Medium - May recur under certain conditions
+        - Low - Unlikely to recur
+    validations:
+      required: false

@@ -1,0 +1,82 @@
+name: "P4 - Low Severity Incident"
+description: "Cosmetic issue, minor bug, or improvement opportunity identified during operations"
+title: "[P4] "
+labels: ["incident", "P4-low"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 - Low Severity Incident Report
+        Use this template for **cosmetic issues**, **minor bugs**, or **operational improvement opportunities** with no significant user impact.
+        **Expected response time: Next business day**
+
+  - type: input
+    id: incident-start
+    attributes:
+      label: Date Observed
+      description: When was the issue observed? (UTC)
+      placeholder: "2024-01-15"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Category
+      description: Primary category of the issue
+      options:
+        - UI/UX - Cosmetic defect
+        - Logging - Missing or excessive logs
+        - Performance - Minor optimization opportunity
+        - Documentation - Outdated or missing docs
+        - Monitoring - Alert tuning needed
+        - Configuration - Non-critical misconfiguration
+        - Dependency - Non-critical update available
+        - Technical Debt - Code quality improvement
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Describe the (minimal) impact
+      placeholder: |
+        - What is affected:
+        - User impact (if any):
+        - Frequency of occurrence:
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Detailed description of the issue
+      placeholder: |
+        Describe what you observed and why it should be addressed.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-fix
+    attributes:
+      label: Proposed Fix / Improvement
+      description: Suggested resolution if known
+      placeholder: |
+        - Suggested approach:
+        - Estimated effort:
+        - Priority justification:
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Any additional context, screenshots, or log snippets
+      placeholder: Add any relevant context here
+    validations:
+      required: false
