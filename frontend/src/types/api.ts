@@ -13,15 +13,48 @@ export interface Client {
   updated_at: string;
 }
 
+export interface ActivityCode {
+  id: number;
+  code: string;
+  name: string;
+  category: string;
+  description: string | null;
+  created_at: string;
+}
+
 export interface WorkEntry {
   id: number;
   client_id: number;
   hours: number;
   description: string | null;
   date: string;
+  activity_code_id: number | null;
+  activity_code?: string;
+  activity_name?: string;
+  activity_category?: string;
   created_at: string;
   updated_at: string;
   client_name?: string;
+}
+
+export interface ActivityCodeSummary {
+  activity_code_id: number;
+  code: string;
+  activity_name: string;
+  category: string;
+  total_hours: number;
+  entry_count: number;
+}
+
+export interface CategorySummary {
+  category: string;
+  total_hours: number;
+  entry_count: number;
+}
+
+export interface ActivityCodeDashboardData {
+  byActivityCode: ActivityCodeSummary[];
+  byCategory: CategorySummary[];
 }
 
 export interface WorkEntryWithClient extends WorkEntry {
@@ -54,6 +87,7 @@ export interface CreateWorkEntryRequest {
   hours: number;
   description?: string;
   date: string;
+  activityCodeId?: number | null;
 }
 
 export interface UpdateWorkEntryRequest {
@@ -61,6 +95,7 @@ export interface UpdateWorkEntryRequest {
   hours?: number;
   description?: string;
   date?: string;
+  activityCodeId?: number | null;
 }
 
 export interface LoginRequest {

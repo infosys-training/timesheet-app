@@ -98,18 +98,34 @@ class ApiClient {
     return response.data;
   }
 
-  async createWorkEntry(entryData: { clientId: number; hours: number; description?: string; date: string }) {
+  async createWorkEntry(entryData: { clientId: number; hours: number; description?: string; date: string; activityCodeId?: number | null }) {
     const response = await this.client.post('/api/work-entries', entryData);
     return response.data;
   }
 
-  async updateWorkEntry(id: number, entryData: { clientId?: number; hours?: number; description?: string; date?: string }) {
+  async updateWorkEntry(id: number, entryData: { clientId?: number; hours?: number; description?: string; date?: string; activityCodeId?: number | null }) {
     const response = await this.client.put(`/api/work-entries/${id}`, entryData);
     return response.data;
   }
 
   async deleteWorkEntry(id: number) {
     const response = await this.client.delete(`/api/work-entries/${id}`);
+    return response.data;
+  }
+
+  // Activity code endpoints
+  async getActivityCodes() {
+    const response = await this.client.get('/api/activity-codes');
+    return response.data;
+  }
+
+  async getActivityCodesByCategory() {
+    const response = await this.client.get('/api/activity-codes/by-category');
+    return response.data;
+  }
+
+  async getActivityCodeDashboard() {
+    const response = await this.client.get('/api/activity-codes/dashboard/drilldown');
     return response.data;
   }
 
