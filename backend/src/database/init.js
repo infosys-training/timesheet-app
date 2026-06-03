@@ -50,6 +50,18 @@ async function initializeDatabase() {
         )
       `);
 
+      // Create activity_codes table
+      database.run(`
+        CREATE TABLE IF NOT EXISTS activity_codes (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          code TEXT NOT NULL UNIQUE,
+          name TEXT NOT NULL,
+          category TEXT NOT NULL,
+          description TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+
       // Create work_entries table
       database.run(`
         CREATE TABLE IF NOT EXISTS work_entries (
@@ -59,10 +71,12 @@ async function initializeDatabase() {
           hours DECIMAL(5,2) NOT NULL,
           description TEXT,
           date DATE NOT NULL,
+          activity_code_id INTEGER,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (client_id) REFERENCES clients (id) ON DELETE CASCADE,
-          FOREIGN KEY (user_email) REFERENCES users (email) ON DELETE CASCADE
+          FOREIGN KEY (user_email) REFERENCES users (email) ON DELETE CASCADE,
+          FOREIGN KEY (activity_code_id) REFERENCES activity_codes (id) ON DELETE SET NULL
         )
       `);
 
@@ -71,6 +85,31 @@ async function initializeDatabase() {
       database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_client_id ON work_entries (client_id)`);
       database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_user_email ON work_entries (user_email)`);
       database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_date ON work_entries (date)`);
+      database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_activity_code ON work_entries (activity_code_id)`);
+      database.run(`CREATE INDEX IF NOT EXISTS idx_activity_codes_category ON activity_codes (category)`);
+
+      // Seed default activity codes
+      const defaultActivityCodes = [
+        ['DEV', 'Development', 'Engineering', 'Software development and coding'],
+        ['QA', 'Quality Assurance', 'Engineering', 'Testing and quality assurance'],
+        ['DESIGN', 'Design', 'Engineering', 'UI/UX and graphic design'],
+        ['MEETING', 'Meetings', 'Management', 'Internal and external meetings'],
+        ['PLAN', 'Planning', 'Management', 'Project planning and estimation'],
+        ['REVIEW', 'Code Review', 'Engineering', 'Reviewing pull requests and code'],
+        ['DOCS', 'Documentation', 'Support', 'Writing and updating documentation'],
+        ['SUPPORT', 'Client Support', 'Support', 'Client communication and support'],
+        ['DEPLOY', 'Deployment', 'Operations', 'Release and deployment activities'],
+        ['MAINT', 'Maintenance', 'Operations', 'Bug fixes and system maintenance'],
+        ['TRAIN', 'Training', 'Management', 'Training and knowledge sharing'],
+        ['ADMIN', 'Administration', 'Management', 'Administrative tasks'],
+      ];
+
+      for (const [code, name, category, description] of defaultActivityCodes) {
+        database.run(
+          `INSERT OR IGNORE INTO activity_codes (code, name, category, description) VALUES (?, ?, ?, ?)`,
+          [code, name, category, description]
+        );
+      }
 
       console.log('Database tables created successfully');
       resolve();

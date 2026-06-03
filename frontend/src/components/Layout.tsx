@@ -22,6 +22,7 @@ import {
   Assignment as AssignmentIcon,
   Assessment as AssessmentIcon,
   Logout as LogoutIcon,
+  Code as CodeIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -47,6 +48,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { text: 'Clients', icon: <BusinessIcon />, path: '/clients' },
     { text: 'Work Entries', icon: <AssignmentIcon />, path: '/work-entries' },
     { text: 'Reports', icon: <AssessmentIcon />, path: '/reports' },
+    { text: 'Activity Codes', icon: <CodeIcon />, path: '/activity-codes' },
   ];
 
   const drawer = (

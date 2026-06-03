@@ -23,6 +23,7 @@ import {
   Select,
   MenuItem,
   Chip,
+  ListSubheader,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -34,7 +35,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import apiClient from '../api/client';
-import { type WorkEntry } from '../types/api';
+import { type WorkEntry, type ActivityCode } from '../types/api';
 
 const WorkEntriesPage: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -44,6 +45,7 @@ const WorkEntriesPage: React.FC = () => {
     hours: '',
     description: '',
     date: new Date(),
+    activityCodeId: 0,
   });
   const [error, setError] = useState('');
 
@@ -59,8 +61,13 @@ const WorkEntriesPage: React.FC = () => {
     queryFn: () => apiClient.getClients(),
   });
 
+  const { data: activityCodesData } = useQuery({
+    queryKey: ['activityCodes'],
+    queryFn: () => apiClient.getActivityCodes(),
+  });
+
   const createMutation = useMutation({
-    mutationFn: (entryData: { clientId: number; hours: number; description?: string; date: string }) =>
+    mutationFn: (entryData: { clientId: number; hours: number; description?: string; date: string; activityCodeId?: number | null }) =>
       apiClient.createWorkEntry(entryData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workEntries'] });
@@ -73,7 +80,7 @@ const WorkEntriesPage: React.FC = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: { clientId?: number; hours?: number; description?: string; date?: string } }) =>
+    mutationFn: ({ id, data }: { id: number; data: { clientId?: number; hours?: number; description?: string; date?: string; activityCodeId?: number | null } }) =>
       apiClient.updateWorkEntry(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workEntries'] });
@@ -98,6 +105,16 @@ const WorkEntriesPage: React.FC = () => {
 
   const workEntries = workEntriesData?.workEntries || [];
   const clients = clientsData?.clients || [];
+  const activityCodes: ActivityCode[] = activityCodesData?.activityCodes || [];
+
+  // Group activity codes by category for the dropdown
+  const groupedActivityCodes = activityCodes.reduce<Record<string, ActivityCode[]>>((acc, ac) => {
+    if (!acc[ac.category]) {
+      acc[ac.category] = [];
+    }
+    acc[ac.category].push(ac);
+    return acc;
+  }, {});
 
   const handleOpen = (entry?: WorkEntry) => {
     if (entry) {
@@ -107,6 +124,7 @@ const WorkEntriesPage: React.FC = () => {
         hours: entry.hours.toString(),
         description: entry.description || '',
         date: new Date(entry.date),
+        activityCodeId: entry.activity_code_id || 0,
       });
     } else {
       setEditingEntry(null);
@@ -115,6 +133,7 @@ const WorkEntriesPage: React.FC = () => {
         hours: '',
         description: '',
         date: new Date(),
+        activityCodeId: 0,
       });
     }
     setError('');
@@ -129,6 +148,7 @@ const WorkEntriesPage: React.FC = () => {
       hours: '',
       description: '',
       date: new Date(),
+      activityCodeId: 0,
     });
     setError('');
   };
@@ -158,6 +178,7 @@ const WorkEntriesPage: React.FC = () => {
       hours,
       description: formData.description || undefined,
       date: formData.date.toISOString().split('T')[0],
+      activityCodeId: formData.activityCodeId || null,
     };
 
     if (editingEntry) {
@@ -216,6 +237,7 @@ const WorkEntriesPage: React.FC = () => {
                 <TableHead>
                   <TableRow>
                     <TableCell>Client</TableCell>
+                    <TableCell>Activity Code</TableCell>
                     <TableCell>Date</TableCell>
                     <TableCell>Hours</TableCell>
                     <TableCell>Description</TableCell>
@@ -230,6 +252,18 @@ const WorkEntriesPage: React.FC = () => {
                           <Typography variant="subtitle1" fontWeight="medium">
                             {entry.client_name}
                           </Typography>
+                        </TableCell>
+                        <TableCell>
+                          {entry.activity_code ? (
+                            <Chip
+                              label={`${entry.activity_code} - ${entry.activity_name}`}
+                              size="small"
+                              color="secondary"
+                              variant="outlined"
+                            />
+                          ) : (
+                            <Chip label="None" size="small" variant="outlined" />
+                          )}
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">
@@ -272,7 +306,7 @@ const WorkEntriesPage: React.FC = () => {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={5} align="center">
+                      <TableCell colSpan={6} align="center">
                         <Typography color="text.secondary" sx={{ py: 3 }}>
                           No work entries found. Add your first work entry to get started.
                         </Typography>
@@ -303,6 +337,25 @@ const WorkEntriesPage: React.FC = () => {
                       {client.name}
                     </MenuItem>
                   ))}
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth margin="dense">
+                <InputLabel>Activity Code</InputLabel>
+                <Select
+                  value={formData.activityCodeId}
+                  onChange={(e) => setFormData({ ...formData, activityCodeId: Number(e.target.value) })}
+                  disabled={createMutation.isPending || updateMutation.isPending}
+                >
+                  <MenuItem value={0}><em>None</em></MenuItem>
+                  {Object.entries(groupedActivityCodes).map(([category, codes]) => [
+                    <ListSubheader key={`header-${category}`}>{category}</ListSubheader>,
+                    ...codes.map((ac) => (
+                      <MenuItem key={ac.id} value={ac.id}>
+                        {ac.code} - {ac.name}
+                      </MenuItem>
+                    )),
+                  ])}
                 </Select>
               </FormControl>
 
