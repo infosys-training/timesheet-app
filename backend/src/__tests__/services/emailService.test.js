@@ -5,15 +5,18 @@ jest.mock('nodemailer', () => {
   });
 
   return {
-    createTransport: jest.fn(() => ({
-      sendMail: sendMailMock
-    })),
+    createTransport: jest.fn(() => ({ sendMail: sendMailMock })),
     __sendMailMock: sendMailMock
   };
 });
 
 const nodemailer = require('nodemailer');
 const { sendEmail, createTransporter } = require('../../services/emailService');
+
+function setSmtpEnv(overrides = {}) {
+  const defaults = { SMTP_HOST: 'smtp.example.com', SMTP_PORT: '587', SMTP_USER: 'user@example.com', SMTP_PASS: 'password' };
+  Object.assign(process.env, defaults, overrides);
+}
 
 describe('EmailService', () => {
   const originalEnv = process.env;
@@ -36,27 +39,17 @@ describe('EmailService', () => {
     });
 
     test('should create transporter when SMTP is configured', () => {
-      process.env.SMTP_HOST = 'smtp.example.com';
-      process.env.SMTP_PORT = '587';
-      process.env.SMTP_USER = 'user@example.com';
-      process.env.SMTP_PASS = 'password';
-
+      setSmtpEnv();
       const transporter = createTransporter();
       expect(transporter).not.toBeNull();
       expect(nodemailer.createTransport).toHaveBeenCalledWith({
-        host: 'smtp.example.com',
-        port: 587,
-        secure: false,
+        host: 'smtp.example.com', port: 587, secure: false,
         auth: { user: 'user@example.com', pass: 'password' }
       });
     });
 
     test('should use secure connection for port 465', () => {
-      process.env.SMTP_HOST = 'smtp.example.com';
-      process.env.SMTP_PORT = '465';
-      process.env.SMTP_USER = 'user@example.com';
-      process.env.SMTP_PASS = 'password';
-
+      setSmtpEnv({ SMTP_PORT: '465' });
       createTransporter();
       expect(nodemailer.createTransport).toHaveBeenCalledWith(
         expect.objectContaining({ secure: true })
@@ -69,43 +62,25 @@ describe('EmailService', () => {
       delete process.env.SMTP_HOST;
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 
-      const result = await sendEmail({
-        to: 'test@example.com',
-        subject: 'Test',
-        html: '<p>Test</p>'
-      });
+      const result = await sendEmail({ to: 'test@example.com', subject: 'Test', html: '<p>Test</p>' });
 
       expect(result.accepted).toEqual(['test@example.com']);
       expect(result.messageId).toBe('console-fallback');
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('SMTP not configured')
-      );
-
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('SMTP not configured'));
       consoleSpy.mockRestore();
     });
 
     test('should send email when SMTP is configured', async () => {
-      process.env.SMTP_HOST = 'smtp.example.com';
-      process.env.SMTP_USER = 'sender@example.com';
-      process.env.SMTP_PASS = 'password';
-      process.env.SMTP_FROM = 'noreply@example.com';
-
+      setSmtpEnv({ SMTP_USER: 'sender@example.com', SMTP_FROM: 'noreply@example.com' });
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 
-      const result = await sendEmail({
-        to: 'test@example.com',
-        subject: 'Test Subject',
-        html: '<p>Test body</p>'
-      });
+      const result = await sendEmail({ to: 'test@example.com', subject: 'Test Subject', html: '<p>Test body</p>' });
 
       expect(result.messageId).toBe('mock-id-123');
       expect(nodemailer.__sendMailMock).toHaveBeenCalledWith({
-        from: 'noreply@example.com',
-        to: 'test@example.com',
-        subject: 'Test Subject',
-        html: '<p>Test body</p>'
+        from: 'noreply@example.com', to: 'test@example.com',
+        subject: 'Test Subject', html: '<p>Test body</p>'
       });
-
       consoleSpy.mockRestore();
     });
   });
