@@ -1,0 +1,68 @@
+name: "P4 Incident — Low"
+description: "Minor issue, cosmetic bug, or improvement needed"
+title: "[P4] "
+labels: ["incident", "P4", "low"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 — Low Priority Incident
+        **Response SLA: Next sprint** | **Escalation: Backlog**
+        Minor issue with no immediate user impact. Cosmetic bugs, log noise, or small improvements.
+
+  - type: input
+    id: incident-start
+    attributes:
+      label: Date Reported
+      description: When was this issue noticed?
+      placeholder: "2024-01-15"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Category
+      description: Type of issue
+      options:
+        - Log Noise / Unnecessary Warnings
+        - Minor UX Bug
+        - Performance Improvement Opportunity
+        - Documentation Gap
+        - Monitoring Gap
+        - Code Quality / Tech Debt
+        - Dependency Update Needed
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: What is the effect of this issue?
+      placeholder: |
+        - User impact (if any):
+        - Operational impact:
+        - Risk if not addressed:
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the issue in detail
+      placeholder: "What is happening and what should happen instead?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-fix
+    attributes:
+      label: Proposed Fix
+      description: Suggested resolution (if known)
+      placeholder: "Describe the proposed solution"
+    validations:
+      required: false
