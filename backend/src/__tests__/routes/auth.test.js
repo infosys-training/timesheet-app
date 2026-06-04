@@ -76,20 +76,11 @@ describe('Auth Routes', () => {
       );
     });
 
-    test('should return 400 for invalid email', async () => {
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({ email: 'invalid-email' });
-
-      expect(response.status).toBe(400);
-      expect(response.body.error).toBe('Validation error');
-    });
-
-    test('should return 400 for missing email', async () => {
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({});
-
+    test.each([
+      ['invalid email', { email: 'invalid-email' }],
+      ['missing email', {}],
+    ])('should return 400 for %s', async (_, body) => {
+      const response = await request(app).post('/api/auth/login').send(body);
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('Validation error');
     });
@@ -165,14 +156,15 @@ describe('Auth Routes', () => {
       expect(response.body).toEqual({ error: 'Authentication required' });
     });
 
-    test('should return 404 if user not found', async () => {
+    test.each([
+      ['should return 404 if user not found', null, null, 404, { error: 'User not found' }],
+      ['should handle database error', new Error('Database error'), null, 500, { error: 'Internal server error' }],
+    ])('%s', async (_, meError, meResult, expectedStatus, expectedBody) => {
       mockDb.get.mockImplementation((query, params, callback) => {
         if (query.includes('SELECT email FROM users WHERE email = ?')) {
-          // Auth middleware check
           callback(null, { email: 'test@example.com' });
         } else {
-          // /me endpoint check
-          callback(null, null);
+          callback(meError, meResult);
         }
       });
 
@@ -180,25 +172,8 @@ describe('Auth Routes', () => {
         .get('/api/auth/me')
         .set('x-user-email', 'test@example.com');
 
-      expect(response.status).toBe(404);
-      expect(response.body).toEqual({ error: 'User not found' });
-    });
-
-    test('should handle database error', async () => {
-      mockDb.get.mockImplementation((query, params, callback) => {
-        if (query.includes('SELECT email FROM users WHERE email = ?')) {
-          callback(null, { email: 'test@example.com' });
-        } else {
-          callback(new Error('Database error'), null);
-        }
-      });
-
-      const response = await request(app)
-        .get('/api/auth/me')
-        .set('x-user-email', 'test@example.com');
-
-      expect(response.status).toBe(500);
-      expect(response.body).toEqual({ error: 'Internal server error' });
+      expect(response.status).toBe(expectedStatus);
+      expect(response.body).toEqual(expectedBody);
     });
   });
 });

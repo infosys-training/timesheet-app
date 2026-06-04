@@ -72,29 +72,11 @@ describe('Error Handler Middleware', () => {
       });
     });
 
-    test('should handle SQLITE_CONSTRAINT error', () => {
-      const sqliteError = {
-        code: 'SQLITE_CONSTRAINT',
-        message: 'UNIQUE constraint failed'
-      };
-
-      errorHandler(sqliteError, req, res, next);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({
-        error: 'Database error',
-        message: 'An error occurred while processing your request'
-      });
-    });
-
-    test('should handle SQLITE_ERROR', () => {
-      const sqliteError = {
-        code: 'SQLITE_ERROR',
-        message: 'SQL error'
-      };
-
-      errorHandler(sqliteError, req, res, next);
-
+    test.each([
+      ['SQLITE_CONSTRAINT', 'UNIQUE constraint failed'],
+      ['SQLITE_ERROR', 'SQL error'],
+    ])('should handle %s error as 500', (code, message) => {
+      errorHandler({ code, message }, req, res, next);
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
         error: 'Database error',
@@ -104,42 +86,14 @@ describe('Error Handler Middleware', () => {
   });
 
   describe('Generic Errors', () => {
-    test('should handle error with custom status', () => {
-      const customError = {
-        status: 403,
-        message: 'Forbidden access'
-      };
-
-      errorHandler(customError, req, res, next);
-
-      expect(res.status).toHaveBeenCalledWith(403);
-      expect(res.json).toHaveBeenCalledWith({
-        error: 'Forbidden access'
-      });
-    });
-
-    test('should default to 500 status if not specified', () => {
-      const genericError = {
-        message: 'Something went wrong'
-      };
-
-      errorHandler(genericError, req, res, next);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({
-        error: 'Something went wrong'
-      });
-    });
-
-    test('should use default message if none provided', () => {
-      const emptyError = {};
-
-      errorHandler(emptyError, req, res, next);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({
-        error: 'Internal server error'
-      });
+    test.each([
+      ['custom status', { status: 403, message: 'Forbidden access' }, 403, { error: 'Forbidden access' }],
+      ['default 500 status', { message: 'Something went wrong' }, 500, { error: 'Something went wrong' }],
+      ['default message', {}, 500, { error: 'Internal server error' }],
+    ])('should handle %s', (_, err, expectedStatus, expectedBody) => {
+      errorHandler(err, req, res, next);
+      expect(res.status).toHaveBeenCalledWith(expectedStatus);
+      expect(res.json).toHaveBeenCalledWith(expectedBody);
     });
   });
 
