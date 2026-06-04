@@ -4,69 +4,33 @@ const { authenticateUser } = require('../middleware/auth');
 const PDFDocument = require('pdfkit');
 
 const router = express.Router();
-
-// All routes require authentication
 router.use(authenticateUser);
 
 const MAX_ENTRIES = 10000;
 
-function buildDateFilteredQuery(baseQuery, baseCountQuery, req) {
+function appendDateFilters(query, params, req) {
   const { startDate, endDate } = req.query;
-  const params = [parseInt(req.params.clientId), req.userEmail];
-  let countQuery = baseCountQuery;
-  let dataQuery = baseQuery;
-
   if (startDate) {
-    countQuery += ' AND date >= ?';
-    dataQuery += ' AND date >= ?';
+    query += ' AND date >= ?';
     params.push(startDate);
   }
   if (endDate) {
-    countQuery += ' AND date <= ?';
-    dataQuery += ' AND date <= ?';
+    query += ' AND date <= ?';
     params.push(endDate);
   }
-
-  return { countQuery, dataQuery, params };
+  return query;
 }
 
-function verifyClientOwnership(db, clientId, userEmail, callback) {
-  db.get(
-    'SELECT id, name FROM clients WHERE id = ? AND user_email = ?',
-    [clientId, userEmail],
-    callback
-  );
-}
-
-function checkEntryCountAndFetch(db, countQuery, dataQuery, params, callback) {
-  db.get(countQuery, params, (err, result) => {
-    if (err) {
-      return callback(err, null, null);
-    }
-    if (result.count > MAX_ENTRIES) {
-      return callback(null, null, result.count);
-    }
-    db.all(dataQuery, params, (err, entries) => {
-      if (err) {
-        return callback(err, null, null);
-      }
-      callback(null, entries, result.count);
-    });
-  });
-}
-
-// Get hourly report for specific client
-router.get('/client/:clientId', (req, res) => {
+function withClientAndEntries(req, res, columns, callback) {
   const clientId = parseInt(req.params.clientId);
   if (isNaN(clientId)) {
     return res.status(400).json({ error: 'Invalid client ID' });
   }
 
   const db = getDatabase();
-  const limit = Math.min(parseInt(req.query.limit) || 100, 500);
-  const offset = parseInt(req.query.offset) || 0;
+  const params = [clientId, req.userEmail];
 
-  verifyClientOwnership(db, clientId, req.userEmail, (err, client) => {
+  db.get('SELECT id, name FROM clients WHERE id = ? AND user_email = ?', params, (err, client) => {
     if (err) {
       console.error('Database error:', err);
       return res.status(500).json({ error: 'Internal server error' });
@@ -75,38 +39,57 @@ router.get('/client/:clientId', (req, res) => {
       return res.status(404).json({ error: 'Client not found' });
     }
 
-    const baseCount = 'SELECT COUNT(*) as count FROM work_entries WHERE client_id = ? AND user_email = ?';
-    const baseData = `SELECT id, hours, description, date, created_at, updated_at
-       FROM work_entries WHERE client_id = ? AND user_email = ?`;
-    const { countQuery, dataQuery, params } = buildDateFilteredQuery(baseData, baseCount, req);
+    let countQuery = appendDateFilters(
+      'SELECT COUNT(*) as count FROM work_entries WHERE client_id = ? AND user_email = ?',
+      [...params], req
+    );
+    const countParams = [clientId, req.userEmail];
+    if (req.query.startDate) countParams.push(req.query.startDate);
+    if (req.query.endDate) countParams.push(req.query.endDate);
 
-    const paginatedQuery = dataQuery + ' ORDER BY date DESC LIMIT ? OFFSET ?';
-    const dataParams = [...params, limit, offset];
-
-    db.get(countQuery, params, (err, result) => {
+    db.get(countQuery, countParams, (err, result) => {
       if (err) {
         console.error('Database error:', err);
         return res.status(500).json({ error: 'Internal server error' });
       }
       if (result.count > MAX_ENTRIES) {
         return res.status(400).json({
-          error: 'Too many entries (' + result.count + '). Please filter by date range using startDate and endDate query parameters.'
+          error: `Too many entries (${result.count}). Please filter by date range using startDate and endDate query parameters.`
         });
       }
 
-      db.all(paginatedQuery, dataParams, (err, workEntries) => {
-        if (err) {
-          console.error('Database error:', err);
-          return res.status(500).json({ error: 'Internal server error' });
-        }
-        const totalHours = workEntries.reduce((sum, entry) => sum + parseFloat(entry.hours), 0);
-        res.json({
-          client: client,
-          workEntries: workEntries,
-          totalHours: totalHours,
-          entryCount: workEntries.length,
-          totalCount: result.count
-        });
+      const dataParams = [clientId, req.userEmail];
+      let dataQuery = `SELECT ${columns} FROM work_entries WHERE client_id = ? AND user_email = ?`;
+      dataQuery = appendDateFilters(dataQuery, dataParams, req);
+      dataQuery += ' ORDER BY date DESC';
+
+      callback(db, client, dataQuery, dataParams, result.count);
+    });
+  });
+}
+
+// Get hourly report for specific client
+router.get('/client/:clientId', (req, res) => {
+  const columns = 'id, hours, description, date, created_at, updated_at';
+
+  withClientAndEntries(req, res, columns, (db, client, dataQuery, dataParams, totalCount) => {
+    const limit = Math.min(parseInt(req.query.limit) || 100, 500);
+    const offset = parseInt(req.query.offset) || 0;
+    const paginatedQuery = dataQuery + ' LIMIT ? OFFSET ?';
+    dataParams.push(limit, offset);
+
+    db.all(paginatedQuery, dataParams, (err, workEntries) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+      const totalHours = workEntries.reduce((sum, entry) => sum + parseFloat(entry.hours), 0);
+      res.json({
+        client,
+        workEntries,
+        totalHours,
+        entryCount: workEntries.length,
+        totalCount: totalCount
       });
     });
   });
@@ -114,42 +97,17 @@ router.get('/client/:clientId', (req, res) => {
 
 // Export client report as CSV (streamed directly)
 router.get('/export/csv/:clientId', (req, res) => {
-  const clientId = parseInt(req.params.clientId);
-  if (isNaN(clientId)) {
-    return res.status(400).json({ error: 'Invalid client ID' });
-  }
+  const columns = 'hours, description, date, created_at';
 
-  const db = getDatabase();
-
-  verifyClientOwnership(db, clientId, req.userEmail, (err, client) => {
-    if (err) {
-      console.error('Database error:', err);
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-    if (!client) {
-      return res.status(404).json({ error: 'Client not found' });
-    }
-
-    const baseCount = 'SELECT COUNT(*) as count FROM work_entries WHERE client_id = ? AND user_email = ?';
-    const baseData = `SELECT hours, description, date, created_at
-       FROM work_entries WHERE client_id = ? AND user_email = ?`;
-    const { countQuery, dataQuery, params } = buildDateFilteredQuery(baseData, baseCount, req);
-    const orderedQuery = dataQuery + ' ORDER BY date DESC';
-
-    checkEntryCountAndFetch(db, countQuery, orderedQuery, params, (err, workEntries, count) => {
+  withClientAndEntries(req, res, columns, (db, client, dataQuery, dataParams) => {
+    db.all(dataQuery, dataParams, (err, workEntries) => {
       if (err) {
         console.error('Database error:', err);
         return res.status(500).json({ error: 'Internal server error' });
       }
-      if (!workEntries) {
-        return res.status(400).json({
-          error: 'Too many entries (' + count + '). Please filter by date range using startDate and endDate query parameters.'
-        });
-      }
 
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const filename = `${client.name.replace(/[^a-zA-Z0-9]/g, '_')}_report_${timestamp}.csv`;
-
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
       res.write('Date,Hours,Description,Created At\n');
@@ -159,7 +117,6 @@ router.get('/export/csv/:clientId', (req, res) => {
         const createdAt = (entry.created_at || '').replace(/"/g, '""');
         res.write(`"${entry.date}","${entry.hours}","${desc}","${createdAt}"\n`);
       });
-
       res.end();
     });
   });
@@ -167,37 +124,13 @@ router.get('/export/csv/:clientId', (req, res) => {
 
 // Export client report as PDF
 router.get('/export/pdf/:clientId', (req, res) => {
-  const clientId = parseInt(req.params.clientId);
-  if (isNaN(clientId)) {
-    return res.status(400).json({ error: 'Invalid client ID' });
-  }
+  const columns = 'hours, description, date, created_at';
 
-  const db = getDatabase();
-
-  verifyClientOwnership(db, clientId, req.userEmail, (err, client) => {
-    if (err) {
-      console.error('Database error:', err);
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-    if (!client) {
-      return res.status(404).json({ error: 'Client not found' });
-    }
-
-    const baseCount = 'SELECT COUNT(*) as count FROM work_entries WHERE client_id = ? AND user_email = ?';
-    const baseData = `SELECT hours, description, date, created_at
-       FROM work_entries WHERE client_id = ? AND user_email = ?`;
-    const { countQuery, dataQuery, params } = buildDateFilteredQuery(baseData, baseCount, req);
-    const orderedQuery = dataQuery + ' ORDER BY date DESC';
-
-    checkEntryCountAndFetch(db, countQuery, orderedQuery, params, (err, workEntries, count) => {
+  withClientAndEntries(req, res, columns, (db, client, dataQuery, dataParams) => {
+    db.all(dataQuery, dataParams, (err, workEntries) => {
       if (err) {
         console.error('Database error:', err);
         return res.status(500).json({ error: 'Internal server error' });
-      }
-      if (!workEntries) {
-        return res.status(400).json({
-          error: 'Too many entries (' + count + '). Please filter by date range using startDate and endDate query parameters.'
-        });
       }
 
       const doc = new PDFDocument();
@@ -225,10 +158,8 @@ router.get('/export/pdf/:clientId', (req, res) => {
       doc.moveDown(0.5);
 
       workEntries.forEach((entry, index) => {
+        if (doc.y > 700) doc.addPage();
         const y = doc.y;
-        if (y > 700) {
-          doc.addPage();
-        }
         doc.text(entry.date, 50, doc.y, { width: 100 });
         doc.text(entry.hours.toString(), 150, y, { width: 80 });
         doc.text(entry.description || 'No description', 230, y, { width: 300 });
