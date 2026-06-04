@@ -46,6 +46,24 @@ describe('Report Routes', () => {
     jest.clearAllMocks();
   });
 
+  // Helper: mock client found + count + entries
+  function mockClientWithEntries(client, count, entries) {
+    let getCallCount = 0;
+    mockDb.get.mockImplementation((query, params, callback) => {
+      getCallCount++;
+      if (getCallCount === 1) {
+        callback(null, client);
+      } else {
+        callback(null, { count });
+      }
+    });
+    if (entries !== undefined) {
+      mockDb.all.mockImplementation((query, params, callback) => {
+        callback(null, entries);
+      });
+    }
+  }
+
   describe('GET /api/reports/client/:clientId', () => {
     test('should return client report with work entries', async () => {
       const mockClient = { id: 1, name: 'Test Client' };
@@ -53,21 +71,7 @@ describe('Report Routes', () => {
         { id: 1, hours: 5.5, description: 'Work 1', date: '2024-01-01' },
         { id: 2, hours: 3.0, description: 'Work 2', date: '2024-01-02' }
       ];
-
-      let getCallCount = 0;
-      mockDb.get.mockImplementation((query, params, callback) => {
-        getCallCount++;
-        if (getCallCount === 1) {
-          callback(null, mockClient);
-        } else {
-          // COUNT query
-          callback(null, { count: 2 });
-        }
-      });
-
-      mockDb.all.mockImplementation((query, params, callback) => {
-        callback(null, mockWorkEntries);
-      });
+      mockClientWithEntries(mockClient, 2, mockWorkEntries);
 
       const response = await request(app).get('/api/reports/client/1');
 
@@ -79,21 +83,7 @@ describe('Report Routes', () => {
     });
 
     test('should return report with zero hours for client with no entries', async () => {
-      const mockClient = { id: 1, name: 'Empty Client' };
-
-      let getCallCount = 0;
-      mockDb.get.mockImplementation((query, params, callback) => {
-        getCallCount++;
-        if (getCallCount === 1) {
-          callback(null, mockClient);
-        } else {
-          callback(null, { count: 0 });
-        }
-      });
-
-      mockDb.all.mockImplementation((query, params, callback) => {
-        callback(null, []);
-      });
+      mockClientWithEntries({ id: 1, name: 'Empty Client' }, 0, []);
 
       const response = await request(app).get('/api/reports/client/1');
 
@@ -141,7 +131,6 @@ describe('Report Routes', () => {
           callback(null, { count: 1 });
         }
       });
-
       mockDb.all.mockImplementation((query, params, callback) => {
         callback(new Error('Database error'), null);
       });
@@ -153,19 +142,7 @@ describe('Report Routes', () => {
     });
 
     test('should filter work entries by user email', async () => {
-      let getCallCount = 0;
-      mockDb.get.mockImplementation((query, params, callback) => {
-        getCallCount++;
-        if (getCallCount === 1) {
-          callback(null, { id: 1, name: 'Test Client' });
-        } else {
-          callback(null, { count: 0 });
-        }
-      });
-
-      mockDb.all.mockImplementation((query, params, callback) => {
-        callback(null, []);
-      });
+      mockClientWithEntries({ id: 1, name: 'Test Client' }, 0, []);
 
       await request(app).get('/api/reports/client/1');
 
@@ -177,15 +154,7 @@ describe('Report Routes', () => {
     });
 
     test('should return 400 when entry count exceeds 10000', async () => {
-      let getCallCount = 0;
-      mockDb.get.mockImplementation((query, params, callback) => {
-        getCallCount++;
-        if (getCallCount === 1) {
-          callback(null, { id: 1, name: 'Test Client' });
-        } else {
-          callback(null, { count: 15000 });
-        }
-      });
+      mockClientWithEntries({ id: 1, name: 'Test Client' }, 15000);
 
       const response = await request(app).get('/api/reports/client/1');
 
@@ -194,23 +163,10 @@ describe('Report Routes', () => {
     });
 
     test('should support startDate and endDate query params', async () => {
-      let getCallCount = 0;
-      mockDb.get.mockImplementation((query, params, callback) => {
-        getCallCount++;
-        if (getCallCount === 1) {
-          callback(null, { id: 1, name: 'Test Client' });
-        } else {
-          callback(null, { count: 2 });
-        }
-      });
-
-      mockDb.all.mockImplementation((query, params, callback) => {
-        callback(null, []);
-      });
+      mockClientWithEntries({ id: 1, name: 'Test Client' }, 2, []);
 
       await request(app).get('/api/reports/client/1?startDate=2024-01-01&endDate=2024-01-31');
 
-      // Verify the count query includes date params
       const countCall = mockDb.get.mock.calls[1];
       expect(countCall[0]).toContain('date >= ?');
       expect(countCall[0]).toContain('date <= ?');
@@ -250,24 +206,10 @@ describe('Report Routes', () => {
     });
 
     test('should stream CSV response directly', async () => {
-      const mockClient = { id: 1, name: 'Test Client' };
       const mockWorkEntries = [
         { date: '2024-01-01', hours: 5, description: 'Work 1', created_at: '2024-01-01T00:00:00Z' }
       ];
-
-      let getCallCount = 0;
-      mockDb.get.mockImplementation((query, params, callback) => {
-        getCallCount++;
-        if (getCallCount === 1) {
-          callback(null, mockClient);
-        } else {
-          callback(null, { count: 1 });
-        }
-      });
-
-      mockDb.all.mockImplementation((query, params, callback) => {
-        callback(null, mockWorkEntries);
-      });
+      mockClientWithEntries({ id: 1, name: 'Test Client' }, 1, mockWorkEntries);
 
       const response = await request(app).get('/api/reports/export/csv/1');
 
@@ -288,7 +230,6 @@ describe('Report Routes', () => {
           callback(null, { count: 1 });
         }
       });
-
       mockDb.all.mockImplementation((query, params, callback) => {
         callback(new Error('Database error'), null);
       });
@@ -300,15 +241,7 @@ describe('Report Routes', () => {
     });
 
     test('should return 400 when entry count exceeds 10000', async () => {
-      let getCallCount = 0;
-      mockDb.get.mockImplementation((query, params, callback) => {
-        getCallCount++;
-        if (getCallCount === 1) {
-          callback(null, { id: 1, name: 'Test Client' });
-        } else {
-          callback(null, { count: 15000 });
-        }
-      });
+      mockClientWithEntries({ id: 1, name: 'Test Client' }, 15000);
 
       const response = await request(app).get('/api/reports/export/csv/1');
 
@@ -357,7 +290,6 @@ describe('Report Routes', () => {
           callback(null, { count: 1 });
         }
       });
-
       mockDb.all.mockImplementation((query, params, callback) => {
         callback(new Error('Database error'), null);
       });
@@ -371,21 +303,7 @@ describe('Report Routes', () => {
 
   describe('Data Isolation', () => {
     test('should only return data for authenticated user', async () => {
-      let getCallCount = 0;
-      mockDb.get.mockImplementation((query, params, callback) => {
-        getCallCount++;
-        if (getCallCount === 1) {
-          expect(params).toContain('test@example.com');
-          callback(null, { id: 1, name: 'Test Client' });
-        } else {
-          callback(null, { count: 0 });
-        }
-      });
-
-      mockDb.all.mockImplementation((query, params, callback) => {
-        expect(params).toContain('test@example.com');
-        callback(null, []);
-      });
+      mockClientWithEntries({ id: 1, name: 'Test Client' }, 0, []);
 
       await request(app).get('/api/reports/client/1');
 
@@ -399,23 +317,11 @@ describe('Report Routes', () => {
 
   describe('Hours Calculation', () => {
     test('should correctly sum decimal hours', async () => {
-      let getCallCount = 0;
-      mockDb.get.mockImplementation((query, params, callback) => {
-        getCallCount++;
-        if (getCallCount === 1) {
-          callback(null, { id: 1, name: 'Test Client' });
-        } else {
-          callback(null, { count: 3 });
-        }
-      });
-
-      mockDb.all.mockImplementation((query, params, callback) => {
-        callback(null, [
-          { hours: 2.5 },
-          { hours: 3.75 },
-          { hours: 1.25 }
-        ]);
-      });
+      mockClientWithEntries({ id: 1, name: 'Test Client' }, 3, [
+        { hours: 2.5 },
+        { hours: 3.75 },
+        { hours: 1.25 }
+      ]);
 
       const response = await request(app).get('/api/reports/client/1');
 
@@ -423,22 +329,10 @@ describe('Report Routes', () => {
     });
 
     test('should handle integer hours', async () => {
-      let getCallCount = 0;
-      mockDb.get.mockImplementation((query, params, callback) => {
-        getCallCount++;
-        if (getCallCount === 1) {
-          callback(null, { id: 1, name: 'Test Client' });
-        } else {
-          callback(null, { count: 2 });
-        }
-      });
-
-      mockDb.all.mockImplementation((query, params, callback) => {
-        callback(null, [
-          { hours: 8 },
-          { hours: 4 }
-        ]);
-      });
+      mockClientWithEntries({ id: 1, name: 'Test Client' }, 2, [
+        { hours: 8 },
+        { hours: 4 }
+      ]);
 
       const response = await request(app).get('/api/reports/client/1');
 
