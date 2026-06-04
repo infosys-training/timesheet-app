@@ -1,0 +1,118 @@
+name: "P2 — Major Incident"
+description: "Significant degradation affecting many users. Core functionality impaired. Respond within 30 minutes."
+title: "[P2] "
+labels: ["incident", "P2-major"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 — Major Incident
+        **SLA:** Acknowledge within 30 minutes · Mitigate within 4 hours
+        Use this template when core features are broken for a significant portion of users but the app is partially available.
+
+  - type: input
+    id: reported_by
+    attributes:
+      label: Reported By
+      description: Name and contact of the person reporting
+      placeholder: "Jane Doe — jane@example.com"
+    validations:
+      required: true
+
+  - type: input
+    id: detected_at
+    attributes:
+      label: Detection Time
+      description: "When was the incident first detected? (ISO 8601)"
+      placeholder: "2025-06-04T12:00:00Z"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure_mode
+    attributes:
+      label: Failure Mode
+      description: Primary category of failure
+      options:
+        - API errors on critical endpoints
+        - Report generation broken (PDF/CSV)
+        - Authentication failures
+        - Database performance degradation
+        - Rate limiting blocking legitimate users
+        - Frontend not loading
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: |
+        - How many users are affected?
+        - Which features are broken?
+        - Can users work around the issue?
+      placeholder: |
+        ~50% of users unable to export PDF reports.
+        CSV export still works as a workaround.
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Evidence
+      description: "Error messages, HTTP status codes, log snippets, screenshots"
+      placeholder: |
+        - POST /api/work-entries returns 500
+        - Logs show: SQLITE_BUSY: database is locked
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: "Chronological log of events, actions taken, and status changes"
+      placeholder: |
+        - 14:00 UTC — Users report slow responses
+        - 14:15 UTC — On-call begins investigation
+        - 14:30 UTC — Identified database lock contention
+    validations:
+      required: true
+
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Mitigation Steps Taken
+      description: "What was done to restore service?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: root_cause
+    attributes:
+      label: Root Cause
+      description: "Root cause analysis (fill in after resolution)"
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow_up
+    attributes:
+      label: Follow-Up Actions
+      description: "Preventive measures and follow-up tasks"
+      placeholder: |
+        - [ ] Enable WAL mode for SQLite
+        - [ ] Add query timeout monitoring
+    validations:
+      required: false
+
+  - type: textarea
+    id: runbook_ref
+    attributes:
+      label: Runbook Reference
+      description: "Link to the relevant RUNBOOK.md section used during response"
+      placeholder: "RUNBOOK.md#3-api--backend-errors"
+    validations:
+      required: false

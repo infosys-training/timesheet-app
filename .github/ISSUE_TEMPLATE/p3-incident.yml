@@ -1,0 +1,90 @@
+name: "P3 — Minor Incident"
+description: "Partial degradation with workaround available. Limited user impact. Respond within 1 business day."
+title: "[P3] "
+labels: ["incident", "P3-minor"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 — Minor Incident
+        **SLA:** Acknowledge within 1 business day
+        Use this template when a non-critical feature is degraded but a workaround exists.
+
+  - type: input
+    id: reported_by
+    attributes:
+      label: Reported By
+      description: Name and contact of the person reporting
+      placeholder: "Jane Doe — jane@example.com"
+    validations:
+      required: true
+
+  - type: input
+    id: detected_at
+    attributes:
+      label: Detection Time
+      description: "When was the incident first detected? (ISO 8601)"
+      placeholder: "2025-06-04T12:00:00Z"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure_mode
+    attributes:
+      label: Failure Mode
+      description: Primary category of failure
+      options:
+        - Single endpoint returning errors
+        - Slow response times
+        - UI rendering issue
+        - Validation errors on valid input
+        - Temp file accumulation
+        - CORS misconfiguration
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: |
+        - How many users are affected?
+        - Is there a workaround?
+      placeholder: |
+        A few users see slow PDF generation for large clients.
+        Workaround: export CSV instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Evidence
+      description: "Error messages, HTTP status codes, log snippets, screenshots"
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: "Chronological log of events and actions"
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution / Workaround
+      description: "How was the issue resolved or worked around?"
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow_up
+    attributes:
+      label: Follow-Up Actions
+      description: "Preventive measures and follow-up tasks"
+    validations:
+      required: false
