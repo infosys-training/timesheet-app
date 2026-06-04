@@ -1,0 +1,119 @@
+name: "P1 — Critical Incident"
+description: "Complete service outage or data loss affecting all users. Respond within 15 minutes."
+title: "[P1] "
+labels: ["incident", "P1-critical"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 — Critical Incident
+        **SLA:** Acknowledge within 15 minutes · Mitigate within 1 hour
+        Use this template when the application is completely unavailable or data integrity is compromised.
+
+  - type: input
+    id: reported_by
+    attributes:
+      label: Reported By
+      description: Name and contact of the person reporting
+      placeholder: "Jane Doe — jane@example.com"
+    validations:
+      required: true
+
+  - type: input
+    id: detected_at
+    attributes:
+      label: Detection Time
+      description: "When was the incident first detected? (ISO 8601)"
+      placeholder: "2025-06-04T12:00:00Z"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure_mode
+    attributes:
+      label: Failure Mode
+      description: Primary category of failure
+      options:
+        - Application fully down
+        - Database unavailable / corrupted
+        - Data loss
+        - Security breach
+        - Container crash loop
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: |
+        - How many users are affected?
+        - Which features are broken?
+        - Is there financial or compliance impact?
+      placeholder: |
+        All users affected. No one can log in or submit time entries.
+        Potential payroll impact if unresolved before end of day.
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Evidence
+      description: "Error messages, HTTP status codes, log snippets, screenshots"
+      placeholder: |
+        - Health check returns 503
+        - Logs show: SQLITE_CANTOPEN
+        - docker ps shows container restarting every 30s
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: "Chronological log of events, actions taken, and status changes"
+      placeholder: |
+        - 12:00 UTC — Alert triggered by health check failure
+        - 12:05 UTC — On-call acknowledged
+        - 12:10 UTC — Root cause identified as disk full
+        - 12:15 UTC — Temp files cleaned, service restored
+    validations:
+      required: true
+
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Mitigation Steps Taken
+      description: "What was done to restore service?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: root_cause
+    attributes:
+      label: Root Cause
+      description: "Root cause analysis (fill in after resolution)"
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow_up
+    attributes:
+      label: Follow-Up Actions
+      description: "Preventive measures and follow-up tasks"
+      placeholder: |
+        - [ ] Add disk space monitoring alert
+        - [ ] Implement temp file cleanup cron
+    validations:
+      required: false
+
+  - type: textarea
+    id: runbook_ref
+    attributes:
+      label: Runbook Reference
+      description: "Link to the relevant RUNBOOK.md section used during response"
+      placeholder: "RUNBOOK.md#2-database-failures"
+    validations:
+      required: false

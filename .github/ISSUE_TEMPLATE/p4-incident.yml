@@ -1,0 +1,78 @@
+name: "P4 — Low-Priority Incident"
+description: "Cosmetic issue or minor inconvenience. No functional impact. Best-effort response."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 — Low-Priority Incident
+        **SLA:** Best effort
+        Use this template for cosmetic bugs, minor inconveniences, or improvement requests surfaced during incident review.
+
+  - type: input
+    id: reported_by
+    attributes:
+      label: Reported By
+      description: Name and contact of the person reporting
+      placeholder: "Jane Doe — jane@example.com"
+    validations:
+      required: true
+
+  - type: input
+    id: detected_at
+    attributes:
+      label: Detection Time
+      description: "When was the issue noticed? (ISO 8601)"
+      placeholder: "2025-06-04T12:00:00Z"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: failure_mode
+    attributes:
+      label: Failure Mode
+      description: Primary category
+      options:
+        - UI cosmetic issue
+        - Log noise / unnecessary warnings
+        - Documentation gap
+        - Performance improvement opportunity
+        - Dependency update needed
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: "Who is affected and how?"
+      placeholder: |
+        No functional impact. Login page footer is misaligned on mobile.
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Description
+      description: "Detailed description of the issue"
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Proposed Fix
+      description: "Suggested resolution if known"
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow_up
+    attributes:
+      label: Follow-Up Actions
+      description: "Tasks to address this issue"
+    validations:
+      required: false
