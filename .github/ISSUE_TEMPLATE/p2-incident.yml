@@ -1,0 +1,123 @@
+name: "P2 Incident — Major"
+description: "Major feature broken or significant degradation for many users"
+title: "[P2] "
+labels: ["incident", "P2", "major"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 — Major Incident
+        **Response SLA: 1 hour** | **Escalation: On-call → Team Lead**
+        Major feature broken, significant performance degradation, or partial outage.
+
+  - type: input
+    id: incident-start
+    attributes:
+      label: Incident Start Time
+      description: When the incident was first detected (UTC)
+      placeholder: "2024-01-15 14:30 UTC"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Primary category of the failure
+      options:
+        - API Endpoint Failure (500 errors)
+        - Export Feature Broken (PDF/CSV)
+        - Authentication Degraded
+        - Database Performance Issues
+        - Rate Limiting Misconfiguration
+        - Frontend Build/Deploy Failure
+        - Dependency Failure
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Who is affected and how?
+      placeholder: |
+        - Number of users affected:
+        - Features impacted:
+        - Workaround available (yes/no):
+        - Business impact:
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Evidence
+      description: What is being observed? Include error messages, status codes, log snippets.
+      placeholder: |
+        - Affected endpoint(s):
+        - Error messages:
+        - HTTP status codes:
+        - Browser console errors:
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Chronological record of events and actions taken
+      placeholder: |
+        - HH:MM UTC — Issue detected
+        - HH:MM UTC — On-call acknowledged
+        - HH:MM UTC — Diagnosis started
+        - HH:MM UTC — Root cause identified
+        - HH:MM UTC — Fix applied
+        - HH:MM UTC — Service restored
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What caused the incident? (fill in during/after resolution)
+      placeholder: "Describe the root cause once identified"
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution & Recovery Steps
+      description: What was done to resolve the incident?
+      placeholder: |
+        1. Step taken to mitigate
+        2. Step taken to resolve
+        3. Verification performed
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention & Follow-up
+      description: What changes will prevent recurrence?
+      placeholder: |
+        - [ ] Monitoring improvement
+        - [ ] Code fix
+        - [ ] Runbook update
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: post-incident
+    attributes:
+      label: Post-Incident Checklist
+      options:
+        - label: Root cause identified and documented
+        - label: Immediate fix applied and verified
+        - label: Monitoring/alerting gap addressed
+        - label: Post-mortem scheduled
+        - label: Runbook updated

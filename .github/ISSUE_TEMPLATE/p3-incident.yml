@@ -1,0 +1,94 @@
+name: "P3 Incident — Moderate"
+description: "Single feature degraded or minor issue affecting some users"
+title: "[P3] "
+labels: ["incident", "P3", "moderate"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 — Moderate Incident
+        **Response SLA: 4 hours** | **Escalation: Team queue**
+        Single endpoint failing, non-critical feature degraded, or issue affecting subset of users.
+
+  - type: input
+    id: incident-start
+    attributes:
+      label: Incident Start Time
+      description: When the incident was first detected (UTC)
+      placeholder: "2024-01-15 14:30 UTC"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Primary category of the failure
+      options:
+        - Single Endpoint Returning Errors
+        - Slow Response Times
+        - Rate Limit Tuning Needed
+        - CORS Configuration Issue
+        - Validation Errors on Valid Input
+        - Temp File Cleanup Issue
+        - Minor Data Inconsistency
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Who is affected and how?
+      placeholder: |
+        - Number of users affected:
+        - Feature(s) impacted:
+        - Workaround available:
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Evidence
+      description: What is being observed?
+      placeholder: |
+        - Affected endpoint/feature:
+        - Error messages:
+        - Steps to reproduce:
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: When was it detected and what actions were taken?
+      placeholder: |
+        - HH:MM UTC — Issue reported/detected
+        - HH:MM UTC — Investigation started
+        - HH:MM UTC — Fix applied
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: How was it resolved?
+      placeholder: "Describe the fix applied"
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention
+      description: What will prevent recurrence?
+      placeholder: |
+        - [ ] Fix description
+        - [ ] Test added
+    validations:
+      required: false
