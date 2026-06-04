@@ -1,16 +1,8 @@
 const request = require('supertest');
 const express = require('express');
 const { getDatabase } = require('../../database/init');
-const fs = require('fs');
-const path = require('path');
 
 jest.mock('../../database/init');
-jest.mock('fs');
-jest.mock('csv-writer', () => ({
-  createObjectCsvWriter: jest.fn(() => ({
-    writeRecords: jest.fn().mockResolvedValue(undefined)
-  }))
-}));
 jest.mock('pdfkit', () => {
   return jest.fn().mockImplementation(() => ({
     fontSize: jest.fn().mockReturnThis(),
@@ -31,7 +23,8 @@ jest.mock('../../middleware/auth', () => ({
   authenticateUser: (req, res, next) => {
     req.userEmail = 'test@example.com';
     next();
-  }
+  },
+  JWT_SECRET: 'test-secret'
 }));
 
 const app = express();
@@ -47,11 +40,6 @@ describe('Report Routes', () => {
       get: jest.fn()
     };
     getDatabase.mockReturnValue(mockDb);
-    
-    // Mock fs methods
-    fs.existsSync = jest.fn().mockReturnValue(true);
-    fs.mkdirSync = jest.fn();
-    fs.unlink = jest.fn((path, callback) => callback(null));
   });
 
   afterEach(() => {
@@ -66,8 +54,15 @@ describe('Report Routes', () => {
         { id: 2, hours: 3.0, description: 'Work 2', date: '2024-01-02' }
       ];
 
+      let getCallCount = 0;
       mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, mockClient);
+        getCallCount++;
+        if (getCallCount === 1) {
+          callback(null, mockClient);
+        } else {
+          // COUNT query
+          callback(null, { count: 2 });
+        }
       });
 
       mockDb.all.mockImplementation((query, params, callback) => {
@@ -86,8 +81,14 @@ describe('Report Routes', () => {
     test('should return report with zero hours for client with no entries', async () => {
       const mockClient = { id: 1, name: 'Empty Client' };
 
+      let getCallCount = 0;
       mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, mockClient);
+        getCallCount++;
+        if (getCallCount === 1) {
+          callback(null, mockClient);
+        } else {
+          callback(null, { count: 0 });
+        }
       });
 
       mockDb.all.mockImplementation((query, params, callback) => {
@@ -131,8 +132,14 @@ describe('Report Routes', () => {
     });
 
     test('should handle database error when fetching work entries', async () => {
+      let getCallCount = 0;
       mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, { id: 1, name: 'Test Client' });
+        getCallCount++;
+        if (getCallCount === 1) {
+          callback(null, { id: 1, name: 'Test Client' });
+        } else {
+          callback(null, { count: 1 });
+        }
       });
 
       mockDb.all.mockImplementation((query, params, callback) => {
@@ -146,12 +153,17 @@ describe('Report Routes', () => {
     });
 
     test('should filter work entries by user email', async () => {
+      let getCallCount = 0;
       mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, { id: 1, name: 'Test Client' });
+        getCallCount++;
+        if (getCallCount === 1) {
+          callback(null, { id: 1, name: 'Test Client' });
+        } else {
+          callback(null, { count: 0 });
+        }
       });
 
       mockDb.all.mockImplementation((query, params, callback) => {
-        expect(params).toEqual([1, 'test@example.com']);
         callback(null, []);
       });
 
@@ -159,9 +171,51 @@ describe('Report Routes', () => {
 
       expect(mockDb.all).toHaveBeenCalledWith(
         expect.stringContaining('WHERE client_id = ? AND user_email = ?'),
-        [1, 'test@example.com'],
+        expect.arrayContaining([1, 'test@example.com']),
         expect.any(Function)
       );
+    });
+
+    test('should return 400 when entry count exceeds 10000', async () => {
+      let getCallCount = 0;
+      mockDb.get.mockImplementation((query, params, callback) => {
+        getCallCount++;
+        if (getCallCount === 1) {
+          callback(null, { id: 1, name: 'Test Client' });
+        } else {
+          callback(null, { count: 15000 });
+        }
+      });
+
+      const response = await request(app).get('/api/reports/client/1');
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toContain('Too many entries');
+    });
+
+    test('should support startDate and endDate query params', async () => {
+      let getCallCount = 0;
+      mockDb.get.mockImplementation((query, params, callback) => {
+        getCallCount++;
+        if (getCallCount === 1) {
+          callback(null, { id: 1, name: 'Test Client' });
+        } else {
+          callback(null, { count: 2 });
+        }
+      });
+
+      mockDb.all.mockImplementation((query, params, callback) => {
+        callback(null, []);
+      });
+
+      await request(app).get('/api/reports/client/1?startDate=2024-01-01&endDate=2024-01-31');
+
+      // Verify the count query includes date params
+      const countCall = mockDb.get.mock.calls[1];
+      expect(countCall[0]).toContain('date >= ?');
+      expect(countCall[0]).toContain('date <= ?');
+      expect(countCall[1]).toContain('2024-01-01');
+      expect(countCall[1]).toContain('2024-01-31');
     });
   });
 
@@ -195,9 +249,44 @@ describe('Report Routes', () => {
       expect(response.body).toEqual({ error: 'Internal server error' });
     });
 
-    test('should handle database error when fetching work entries', async () => {
+    test('should stream CSV response directly', async () => {
+      const mockClient = { id: 1, name: 'Test Client' };
+      const mockWorkEntries = [
+        { date: '2024-01-01', hours: 5, description: 'Work 1', created_at: '2024-01-01T00:00:00Z' }
+      ];
+
+      let getCallCount = 0;
       mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, { id: 1, name: 'Test Client' });
+        getCallCount++;
+        if (getCallCount === 1) {
+          callback(null, mockClient);
+        } else {
+          callback(null, { count: 1 });
+        }
+      });
+
+      mockDb.all.mockImplementation((query, params, callback) => {
+        callback(null, mockWorkEntries);
+      });
+
+      const response = await request(app).get('/api/reports/export/csv/1');
+
+      expect(response.status).toBe(200);
+      expect(response.headers['content-type']).toContain('text/csv');
+      expect(response.headers['content-disposition']).toContain('attachment');
+      expect(response.text).toContain('Date,Hours,Description,Created At');
+      expect(response.text).toContain('2024-01-01');
+    });
+
+    test('should handle database error when fetching work entries', async () => {
+      let getCallCount = 0;
+      mockDb.get.mockImplementation((query, params, callback) => {
+        getCallCount++;
+        if (getCallCount === 1) {
+          callback(null, { id: 1, name: 'Test Client' });
+        } else {
+          callback(null, { count: 1 });
+        }
       });
 
       mockDb.all.mockImplementation((query, params, callback) => {
@@ -208,6 +297,23 @@ describe('Report Routes', () => {
 
       expect(response.status).toBe(500);
       expect(response.body).toEqual({ error: 'Internal server error' });
+    });
+
+    test('should return 400 when entry count exceeds 10000', async () => {
+      let getCallCount = 0;
+      mockDb.get.mockImplementation((query, params, callback) => {
+        getCallCount++;
+        if (getCallCount === 1) {
+          callback(null, { id: 1, name: 'Test Client' });
+        } else {
+          callback(null, { count: 15000 });
+        }
+      });
+
+      const response = await request(app).get('/api/reports/export/csv/1');
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toContain('Too many entries');
     });
   });
 
@@ -240,13 +346,40 @@ describe('Report Routes', () => {
       expect(response.status).toBe(500);
       expect(response.body).toEqual({ error: 'Internal server error' });
     });
+
+    test('should handle database error when fetching work entries for PDF', async () => {
+      let getCallCount = 0;
+      mockDb.get.mockImplementation((query, params, callback) => {
+        getCallCount++;
+        if (getCallCount === 1) {
+          callback(null, { id: 1, name: 'Test Client' });
+        } else {
+          callback(null, { count: 1 });
+        }
+      });
+
+      mockDb.all.mockImplementation((query, params, callback) => {
+        callback(new Error('Database error'), null);
+      });
+
+      const response = await request(app).get('/api/reports/export/pdf/1');
+
+      expect(response.status).toBe(500);
+      expect(response.body).toEqual({ error: 'Internal server error' });
+    });
   });
 
   describe('Data Isolation', () => {
     test('should only return data for authenticated user', async () => {
+      let getCallCount = 0;
       mockDb.get.mockImplementation((query, params, callback) => {
-        expect(params).toContain('test@example.com');
-        callback(null, { id: 1, name: 'Test Client' });
+        getCallCount++;
+        if (getCallCount === 1) {
+          expect(params).toContain('test@example.com');
+          callback(null, { id: 1, name: 'Test Client' });
+        } else {
+          callback(null, { count: 0 });
+        }
       });
 
       mockDb.all.mockImplementation((query, params, callback) => {
@@ -266,8 +399,14 @@ describe('Report Routes', () => {
 
   describe('Hours Calculation', () => {
     test('should correctly sum decimal hours', async () => {
+      let getCallCount = 0;
       mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, { id: 1, name: 'Test Client' });
+        getCallCount++;
+        if (getCallCount === 1) {
+          callback(null, { id: 1, name: 'Test Client' });
+        } else {
+          callback(null, { count: 3 });
+        }
       });
 
       mockDb.all.mockImplementation((query, params, callback) => {
@@ -284,8 +423,14 @@ describe('Report Routes', () => {
     });
 
     test('should handle integer hours', async () => {
+      let getCallCount = 0;
       mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, { id: 1, name: 'Test Client' });
+        getCallCount++;
+        if (getCallCount === 1) {
+          callback(null, { id: 1, name: 'Test Client' });
+        } else {
+          callback(null, { count: 2 });
+        }
       });
 
       mockDb.all.mockImplementation((query, params, callback) => {
@@ -298,144 +443,6 @@ describe('Report Routes', () => {
       const response = await request(app).get('/api/reports/client/1');
 
       expect(response.body.totalHours).toBe(12);
-    });
-  });
-
-  describe('CSV Export Success Path', () => {
-    test('should handle CSV write error', async () => {
-      const mockClient = { id: 1, name: 'Test Client' };
-      const mockWorkEntries = [
-        { date: '2024-01-01', hours: 5, description: 'Work 1', created_at: '2024-01-01' }
-      ];
-
-      mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, mockClient);
-      });
-
-      mockDb.all.mockImplementation((query, params, callback) => {
-        callback(null, mockWorkEntries);
-      });
-
-      const csvWriter = require('csv-writer');
-      csvWriter.createObjectCsvWriter.mockReturnValue({
-        writeRecords: jest.fn().mockRejectedValue(new Error('Write failed'))
-      });
-
-      const response = await request(app).get('/api/reports/export/csv/1');
-
-      expect(response.status).toBe(500);
-      expect(response.body).toEqual({ error: 'Failed to generate CSV report' });
-    });
-
-    test('should verify CSV export calls correct database queries', async () => {
-      const mockClient = { id: 1, name: 'Test Client' };
-
-      mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, mockClient);
-      });
-
-      mockDb.all.mockImplementation((query, params, callback) => {
-        callback(null, []);
-      });
-
-      const csvWriter = require('csv-writer');
-      csvWriter.createObjectCsvWriter.mockReturnValue({
-        writeRecords: jest.fn().mockRejectedValue(new Error('Write failed'))
-      });
-
-      await request(app).get('/api/reports/export/csv/1');
-
-      expect(mockDb.get).toHaveBeenCalledWith(
-        expect.stringContaining('SELECT id, name FROM clients'),
-        expect.arrayContaining([1, 'test@example.com']),
-        expect.any(Function)
-      );
-    });
-
-    test('should create temp directory if it does not exist', async () => {
-      const mockClient = { id: 1, name: 'Test Client' };
-      const mockWorkEntries = [
-        { date: '2024-01-01', hours: 5, description: 'Work 1', created_at: '2024-01-01' }
-      ];
-
-      mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, mockClient);
-      });
-
-      mockDb.all.mockImplementation((query, params, callback) => {
-        callback(null, mockWorkEntries);
-      });
-
-      fs.existsSync.mockReturnValue(false);
-
-      const csvWriter = require('csv-writer');
-      csvWriter.createObjectCsvWriter.mockReturnValue({
-        writeRecords: jest.fn().mockRejectedValue(new Error('Write failed'))
-      });
-
-      await request(app).get('/api/reports/export/csv/1');
-
-      expect(fs.mkdirSync).toHaveBeenCalledWith(expect.any(String), { recursive: true });
-    });
-
-    test('should not create temp directory if it exists', async () => {
-      const mockClient = { id: 1, name: 'Test Client' };
-      const mockWorkEntries = [];
-
-      mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, mockClient);
-      });
-
-      mockDb.all.mockImplementation((query, params, callback) => {
-        callback(null, mockWorkEntries);
-      });
-
-      fs.existsSync.mockReturnValue(true);
-
-      const csvWriter = require('csv-writer');
-      csvWriter.createObjectCsvWriter.mockReturnValue({
-        writeRecords: jest.fn().mockRejectedValue(new Error('Write failed'))
-      });
-
-      await request(app).get('/api/reports/export/csv/1');
-
-      expect(fs.mkdirSync).not.toHaveBeenCalled();
-    });
-  });
-
-
-  describe('PDF Export Success Path', () => {
-    test('should handle database error when fetching work entries for PDF', async () => {
-      mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, { id: 1, name: 'Test Client' });
-      });
-
-      mockDb.all.mockImplementation((query, params, callback) => {
-        callback(new Error('Database error'), null);
-      });
-
-      const response = await request(app).get('/api/reports/export/pdf/1');
-
-      expect(response.status).toBe(500);
-      expect(response.body).toEqual({ error: 'Internal server error' });
-    });
-
-    test('should verify PDF export calls correct database queries', async () => {
-      mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, { id: 1, name: 'Test Client' });
-      });
-
-      mockDb.all.mockImplementation((query, params, callback) => {
-        callback(new Error('Database error'), null);
-      });
-
-      await request(app).get('/api/reports/export/pdf/1');
-
-      expect(mockDb.get).toHaveBeenCalledWith(
-        expect.stringContaining('SELECT id, name FROM clients'),
-        expect.arrayContaining([1, 'test@example.com']),
-        expect.any(Function)
-      );
     });
   });
 });

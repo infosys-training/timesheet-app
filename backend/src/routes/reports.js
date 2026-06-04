@@ -1,10 +1,7 @@
 const express = require('express');
 const { getDatabase } = require('../database/init');
 const { authenticateUser } = require('../middleware/auth');
-const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const PDFDocument = require('pdfkit');
-const path = require('path');
-const fs = require('fs');
 
 const router = express.Router();
 
@@ -20,6 +17,9 @@ router.get('/client/:clientId', (req, res) => {
   }
   
   const db = getDatabase();
+  const { startDate, endDate } = req.query;
+  const limit = Math.min(parseInt(req.query.limit) || 100, 500);
+  const offset = parseInt(req.query.offset) || 0;
   
   // Verify client belongs to user
   db.get(
@@ -35,14 +35,38 @@ router.get('/client/:clientId', (req, res) => {
         return res.status(404).json({ error: 'Client not found' });
       }
       
-      // Get work entries for this client
-      db.all(
-        `SELECT id, hours, description, date, created_at, updated_at
-         FROM work_entries 
-         WHERE client_id = ? AND user_email = ? 
-         ORDER BY date DESC`,
-        [clientId, req.userEmail],
-        (err, workEntries) => {
+      let countQuery = 'SELECT COUNT(*) as count FROM work_entries WHERE client_id = ? AND user_email = ?';
+      let dataQuery = `SELECT id, hours, description, date, created_at, updated_at
+         FROM work_entries WHERE client_id = ? AND user_email = ?`;
+      const params = [clientId, req.userEmail];
+
+      if (startDate) {
+        countQuery += ' AND date >= ?';
+        dataQuery += ' AND date >= ?';
+        params.push(startDate);
+      }
+      if (endDate) {
+        countQuery += ' AND date <= ?';
+        dataQuery += ' AND date <= ?';
+        params.push(endDate);
+      }
+
+      dataQuery += ' ORDER BY date DESC LIMIT ? OFFSET ?';
+
+      // Check count first
+      db.get(countQuery, params, (err, result) => {
+        if (err) {
+          console.error('Database error:', err);
+          return res.status(500).json({ error: 'Internal server error' });
+        }
+        if (result.count > 10000) {
+          return res.status(400).json({
+            error: 'Too many entries (' + result.count + '). Please filter by date range using startDate and endDate query parameters.'
+          });
+        }
+
+        const dataParams = [...params, limit, offset];
+        db.all(dataQuery, dataParams, (err, workEntries) => {
           if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Internal server error' });
@@ -55,15 +79,16 @@ router.get('/client/:clientId', (req, res) => {
             client: client,
             workEntries: workEntries,
             totalHours: totalHours,
-            entryCount: workEntries.length
+            entryCount: workEntries.length,
+            totalCount: result.count
           });
-        }
-      );
+        });
+      });
     }
   );
 });
 
-// Export client report as CSV
+// Export client report as CSV (streamed directly)
 router.get('/export/csv/:clientId', (req, res) => {
   const clientId = parseInt(req.params.clientId);
   
@@ -72,6 +97,7 @@ router.get('/export/csv/:clientId', (req, res) => {
   }
   
   const db = getDatabase();
+  const { startDate, endDate } = req.query;
   
   // Verify client belongs to user and get data
   db.get(
@@ -87,61 +113,62 @@ router.get('/export/csv/:clientId', (req, res) => {
         return res.status(404).json({ error: 'Client not found' });
       }
       
-      // Get work entries
-      db.all(
-        `SELECT hours, description, date, created_at
-         FROM work_entries 
-         WHERE client_id = ? AND user_email = ? 
-         ORDER BY date DESC`,
-        [clientId, req.userEmail],
-        (err, workEntries) => {
+      let countQuery = 'SELECT COUNT(*) as count FROM work_entries WHERE client_id = ? AND user_email = ?';
+      let dataQuery = `SELECT hours, description, date, created_at
+         FROM work_entries WHERE client_id = ? AND user_email = ?`;
+      const params = [clientId, req.userEmail];
+
+      if (startDate) {
+        countQuery += ' AND date >= ?';
+        dataQuery += ' AND date >= ?';
+        params.push(startDate);
+      }
+      if (endDate) {
+        countQuery += ' AND date <= ?';
+        dataQuery += ' AND date <= ?';
+        params.push(endDate);
+      }
+
+      dataQuery += ' ORDER BY date DESC';
+
+      // Check count first
+      db.get(countQuery, params, (err, result) => {
+        if (err) {
+          console.error('Database error:', err);
+          return res.status(500).json({ error: 'Internal server error' });
+        }
+        if (result.count > 10000) {
+          return res.status(400).json({
+            error: 'Too many entries (' + result.count + '). Please filter by date range using startDate and endDate query parameters.'
+          });
+        }
+
+        // Get work entries
+        db.all(dataQuery, params, (err, workEntries) => {
           if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Internal server error' });
           }
           
-          // Create temporary CSV file
           const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
           const filename = `${client.name.replace(/[^a-zA-Z0-9]/g, '_')}_report_${timestamp}.csv`;
-          const tempPath = path.join(__dirname, '../../temp', filename);
-          
-          // Ensure temp directory exists
-          const tempDir = path.dirname(tempPath);
-          if (!fs.existsSync(tempDir)) {
-            fs.mkdirSync(tempDir, { recursive: true });
-          }
-          
-          const csvWriter = createCsvWriter({
-            path: tempPath,
-            header: [
-              { id: 'date', title: 'Date' },
-              { id: 'hours', title: 'Hours' },
-              { id: 'description', title: 'Description' },
-              { id: 'created_at', title: 'Created At' }
-            ]
+
+          res.setHeader('Content-Type', 'text/csv');
+          res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+          // Write CSV header
+          res.write('Date,Hours,Description,Created At\n');
+
+          // Write each row (escape quotes in description)
+          workEntries.forEach(entry => {
+            const desc = (entry.description || '').replace(/"/g, '""');
+            const createdAt = (entry.created_at || '').replace(/"/g, '""');
+            res.write(`"${entry.date}","${entry.hours}","${desc}","${createdAt}"\n`);
           });
-          
-          csvWriter.writeRecords(workEntries)
-            .then(() => {
-              // Send file and clean up
-              res.download(tempPath, filename, (err) => {
-                if (err) {
-                  console.error('Error sending file:', err);
-                }
-                // Clean up temp file
-                fs.unlink(tempPath, (unlinkErr) => {
-                  if (unlinkErr) {
-                    console.error('Error deleting temp file:', unlinkErr);
-                  }
-                });
-              });
-            })
-            .catch((error) => {
-              console.error('Error creating CSV:', error);
-              res.status(500).json({ error: 'Failed to generate CSV report' });
-            });
-        }
-      );
+
+          res.end();
+        });
+      });
     }
   );
 });
@@ -155,6 +182,7 @@ router.get('/export/pdf/:clientId', (req, res) => {
   }
   
   const db = getDatabase();
+  const { startDate, endDate } = req.query;
   
   // Verify client belongs to user and get data
   db.get(
@@ -170,14 +198,38 @@ router.get('/export/pdf/:clientId', (req, res) => {
         return res.status(404).json({ error: 'Client not found' });
       }
       
-      // Get work entries
-      db.all(
-        `SELECT hours, description, date, created_at
-         FROM work_entries 
-         WHERE client_id = ? AND user_email = ? 
-         ORDER BY date DESC`,
-        [clientId, req.userEmail],
-        (err, workEntries) => {
+      let countQuery = 'SELECT COUNT(*) as count FROM work_entries WHERE client_id = ? AND user_email = ?';
+      let dataQuery = `SELECT hours, description, date, created_at
+         FROM work_entries WHERE client_id = ? AND user_email = ?`;
+      const params = [clientId, req.userEmail];
+
+      if (startDate) {
+        countQuery += ' AND date >= ?';
+        dataQuery += ' AND date >= ?';
+        params.push(startDate);
+      }
+      if (endDate) {
+        countQuery += ' AND date <= ?';
+        dataQuery += ' AND date <= ?';
+        params.push(endDate);
+      }
+
+      dataQuery += ' ORDER BY date DESC';
+
+      // Check count first
+      db.get(countQuery, params, (err, result) => {
+        if (err) {
+          console.error('Database error:', err);
+          return res.status(500).json({ error: 'Internal server error' });
+        }
+        if (result.count > 10000) {
+          return res.status(400).json({
+            error: 'Too many entries (' + result.count + '). Please filter by date range using startDate and endDate query parameters.'
+          });
+        }
+
+        // Get work entries
+        db.all(dataQuery, params, (err, workEntries) => {
           if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Internal server error' });
@@ -238,8 +290,8 @@ router.get('/export/pdf/:clientId', (req, res) => {
           
           // Finalize PDF
           doc.end();
-        }
-      );
+        });
+      });
     }
   );
 });

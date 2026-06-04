@@ -8,7 +8,8 @@ jest.mock('../../middleware/auth', () => ({
   authenticateUser: (req, res, next) => {
     req.userEmail = 'test@example.com';
     next();
-  }
+  },
+  JWT_SECRET: 'test-secret'
 }));
 
 const app = express();

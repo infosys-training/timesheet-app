@@ -9,7 +9,16 @@ function errorHandler(err, req, res, next) {
     });
   }
 
-  // SQLite errors
+  // SQLite busy errors - retryable
+  if (err.code === 'SQLITE_BUSY') {
+    res.setHeader('Retry-After', '1');
+    return res.status(503).json({
+      error: 'Database busy',
+      message: 'Server is under heavy load, please retry'
+    });
+  }
+
+  // Other SQLite errors
   if (err.code && err.code.startsWith('SQLITE_')) {
     return res.status(500).json({
       error: 'Database error',

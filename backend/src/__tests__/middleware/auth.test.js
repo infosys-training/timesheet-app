@@ -1,12 +1,15 @@
-const { authenticateUser } = require('../../middleware/auth');
+const jwt = require('jsonwebtoken');
+const { authenticateUser, JWT_SECRET } = require('../../middleware/auth');
 const { getDatabase } = require('../../database/init');
 
 jest.mock('../../database/init');
 
 describe('Authentication Middleware', () => {
   let req, res, next, mockDb;
+  const originalEnv = process.env.NODE_ENV;
 
   beforeEach(() => {
+    process.env.NODE_ENV = 'test';
     req = {
       headers: {}
     };
@@ -25,16 +28,17 @@ describe('Authentication Middleware', () => {
   });
 
   afterEach(() => {
+    process.env.NODE_ENV = originalEnv;
     jest.clearAllMocks();
   });
 
-  describe('Email Header Validation', () => {
-    test('should return 401 if x-user-email header is missing', () => {
+  describe('Email Header Validation (dev/test mode)', () => {
+    test('should return 401 if no auth provided', () => {
       authenticateUser(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(401);
       expect(res.json).toHaveBeenCalledWith({
-        error: 'User email required in x-user-email header'
+        error: 'Authentication required'
       });
       expect(next).not.toHaveBeenCalled();
     });
@@ -51,7 +55,7 @@ describe('Authentication Middleware', () => {
       expect(next).not.toHaveBeenCalled();
     });
 
-    test('should accept valid email format', () => {
+    test('should accept valid email format via x-user-email header', () => {
       req.headers['x-user-email'] = 'test@example.com';
       
       mockDb.get.mockImplementation((query, params, callback) => {
@@ -61,6 +65,61 @@ describe('Authentication Middleware', () => {
       authenticateUser(req, res, next);
 
       expect(mockDb.get).toHaveBeenCalled();
+    });
+  });
+
+  describe('JWT Authentication', () => {
+    test('should authenticate with valid JWT token', (done) => {
+      const token = jwt.sign({ email: 'jwt@example.com' }, JWT_SECRET, { expiresIn: '1h' });
+      req.headers['authorization'] = `Bearer ${token}`;
+
+      mockDb.get.mockImplementation((query, params, callback) => {
+        callback(null, { email: 'jwt@example.com' });
+      });
+
+      authenticateUser(req, res, next);
+
+      setImmediate(() => {
+        expect(req.userEmail).toBe('jwt@example.com');
+        expect(next).toHaveBeenCalled();
+        done();
+      });
+    });
+
+    test('should return 401 for invalid JWT token', () => {
+      req.headers['authorization'] = 'Bearer invalid-token-here';
+
+      authenticateUser(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.json).toHaveBeenCalledWith({
+        error: 'Invalid or expired token'
+      });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    test('should return 401 for expired JWT token', () => {
+      const token = jwt.sign({ email: 'test@example.com' }, JWT_SECRET, { expiresIn: '-1h' });
+      req.headers['authorization'] = `Bearer ${token}`;
+
+      authenticateUser(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.json).toHaveBeenCalledWith({
+        error: 'Invalid or expired token'
+      });
+    });
+
+    test('should reject x-user-email header in production without JWT', () => {
+      process.env.NODE_ENV = 'production';
+      req.headers['x-user-email'] = 'test@example.com';
+
+      authenticateUser(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.json).toHaveBeenCalledWith({
+        error: 'Authentication required'
+      });
     });
   });
 

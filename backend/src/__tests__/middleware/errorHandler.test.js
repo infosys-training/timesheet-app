@@ -55,6 +55,23 @@ describe('Error Handler Middleware', () => {
   });
 
   describe('SQLite Errors', () => {
+    test('should handle SQLITE_BUSY error with 503 and Retry-After', () => {
+      res.setHeader = jest.fn().mockReturnThis();
+      const busyError = {
+        code: 'SQLITE_BUSY',
+        message: 'Database is locked'
+      };
+
+      errorHandler(busyError, req, res, next);
+
+      expect(res.setHeader).toHaveBeenCalledWith('Retry-After', '1');
+      expect(res.status).toHaveBeenCalledWith(503);
+      expect(res.json).toHaveBeenCalledWith({
+        error: 'Database busy',
+        message: 'Server is under heavy load, please retry'
+      });
+    });
+
     test('should handle SQLITE_CONSTRAINT error', () => {
       const sqliteError = {
         code: 'SQLITE_CONSTRAINT',
