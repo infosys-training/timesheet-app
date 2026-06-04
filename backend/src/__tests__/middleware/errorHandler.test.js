@@ -20,37 +20,13 @@ describe('Error Handler Middleware', () => {
   });
 
   describe('Joi Validation Errors', () => {
-    test('should handle Joi validation error', () => {
-      const joiError = {
-        isJoi: true,
-        details: [
-          { message: 'Field is required' },
-          { message: 'Invalid format' }
-        ]
-      };
-
-      errorHandler(joiError, req, res, next);
-
+    test.each([
+      ['multiple details', [{ message: 'Field is required' }, { message: 'Invalid format' }], ['Field is required', 'Invalid format']],
+      ['single detail', [{ message: 'Name is required' }], ['Name is required']],
+    ])('should handle Joi validation error with %s', (_, details, expectedDetails) => {
+      errorHandler({ isJoi: true, details }, req, res, next);
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({
-        error: 'Validation error',
-        details: ['Field is required', 'Invalid format']
-      });
-    });
-
-    test('should handle single Joi validation error', () => {
-      const joiError = {
-        isJoi: true,
-        details: [{ message: 'Name is required' }]
-      };
-
-      errorHandler(joiError, req, res, next);
-
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({
-        error: 'Validation error',
-        details: ['Name is required']
-      });
+      expect(res.json).toHaveBeenCalledWith({ error: 'Validation error', details: expectedDetails });
     });
   });
 

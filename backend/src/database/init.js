@@ -95,37 +95,19 @@ async function initializeDatabase() {
 }
 
 function closeDatabase() {
-  return new Promise((resolve, reject) => {
-    if (isClosed) {
-      resolve();
-      return;
-    }
-    
+  return new Promise((resolve) => {
+    if (isClosed || !db) { resolve(); return; }
     if (isClosing) {
-      const checkClosed = setInterval(() => {
-        if (isClosed) {
-          clearInterval(checkClosed);
-          resolve();
-        }
-      }, 10);
+      const check = setInterval(() => { if (isClosed) { clearInterval(check); resolve(); } }, 10);
       return;
     }
-    
-    if (!db) {
-      resolve();
-      return;
-    }
-    
     isClosing = true;
     db.close((err) => {
       isClosed = true;
       isClosing = false;
       db = null;
-      if (err) {
-        console.error('Error closing database:', err);
-      } else {
-        console.log('Database connection closed');
-      }
+      if (err) { console.error('Error closing database:', err); }
+      else { console.log('Database connection closed'); }
       resolve();
     });
   });
