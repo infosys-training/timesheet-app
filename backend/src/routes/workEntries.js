@@ -2,6 +2,7 @@ const express = require('express');
 const { getDatabase } = require('../database/init');
 const { authenticateUser } = require('../middleware/auth');
 const { workEntrySchema, updateWorkEntrySchema } = require('../validation/schemas');
+const { checkAndAlert } = require('../services/hoursMonitor');
 
 const router = express.Router();
 
@@ -124,6 +125,11 @@ router.post('/', (req, res, next) => {
                   console.error('Database error:', err);
                   return res.status(500).json({ error: 'Work entry created but failed to retrieve' });
                 }
+
+                // Fire-and-forget weekly hours check
+                checkAndAlert(req.userEmail, row.date).catch((alertErr) =>
+                  console.error('Hours alert check failed:', alertErr)
+                );
 
                 res.status(201).json({
                   message: 'Work entry created successfully',
