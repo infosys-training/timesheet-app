@@ -26,28 +26,15 @@ describe('HoursMonitor', () => {
   });
 
   describe('getWeekBounds', () => {
-    test('should return Monday-Sunday for a Wednesday', () => {
-      const { weekStart, weekEnd } = getWeekBounds('2024-01-10');
-      expect(weekStart).toBe('2024-01-08');
-      expect(weekEnd).toBe('2024-01-14');
-    });
-
-    test('should return correct bounds for a Monday', () => {
-      const { weekStart, weekEnd } = getWeekBounds('2024-01-08');
-      expect(weekStart).toBe('2024-01-08');
-      expect(weekEnd).toBe('2024-01-14');
-    });
-
-    test('should return correct bounds for a Sunday', () => {
-      const { weekStart, weekEnd } = getWeekBounds('2024-01-14');
-      expect(weekStart).toBe('2024-01-08');
-      expect(weekEnd).toBe('2024-01-14');
-    });
-
-    test('should handle week spanning across months', () => {
-      const { weekStart, weekEnd } = getWeekBounds('2024-02-01');
-      expect(weekStart).toBe('2024-01-29');
-      expect(weekEnd).toBe('2024-02-04');
+    test.each([
+      ['Wednesday',  '2024-01-10', '2024-01-08', '2024-01-14'],
+      ['Monday',     '2024-01-08', '2024-01-08', '2024-01-14'],
+      ['Sunday',     '2024-01-14', '2024-01-08', '2024-01-14'],
+      ['cross-month','2024-02-01', '2024-01-29', '2024-02-04'],
+    ])('should compute correct week bounds for %s (%s)', (label, input, expectedStart, expectedEnd) => {
+      const { weekStart, weekEnd } = getWeekBounds(input);
+      expect(weekStart).toBe(expectedStart);
+      expect(weekEnd).toBe(expectedEnd);
     });
   });
 
