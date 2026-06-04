@@ -20,64 +20,39 @@ describe('Error Handler Middleware', () => {
   });
 
   describe('Joi Validation Errors', () => {
-    test('should handle Joi validation error', () => {
-      const joiError = {
-        isJoi: true,
-        details: [
-          { message: 'Field is required' },
-          { message: 'Invalid format' }
-        ]
-      };
-
-      errorHandler(joiError, req, res, next);
-
+    test.each([
+      ['multiple details', [{ message: 'Field is required' }, { message: 'Invalid format' }], ['Field is required', 'Invalid format']],
+      ['single detail', [{ message: 'Name is required' }], ['Name is required']],
+    ])('should handle Joi validation error with %s', (_, details, expectedDetails) => {
+      errorHandler({ isJoi: true, details }, req, res, next);
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({
-        error: 'Validation error',
-        details: ['Field is required', 'Invalid format']
-      });
-    });
-
-    test('should handle single Joi validation error', () => {
-      const joiError = {
-        isJoi: true,
-        details: [{ message: 'Name is required' }]
-      };
-
-      errorHandler(joiError, req, res, next);
-
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({
-        error: 'Validation error',
-        details: ['Name is required']
-      });
+      expect(res.json).toHaveBeenCalledWith({ error: 'Validation error', details: expectedDetails });
     });
   });
 
   describe('SQLite Errors', () => {
-    test('should handle SQLITE_CONSTRAINT error', () => {
-      const sqliteError = {
-        code: 'SQLITE_CONSTRAINT',
-        message: 'UNIQUE constraint failed'
+    test('should handle SQLITE_BUSY error with 503 and Retry-After', () => {
+      res.setHeader = jest.fn().mockReturnThis();
+      const busyError = {
+        code: 'SQLITE_BUSY',
+        message: 'Database is locked'
       };
 
-      errorHandler(sqliteError, req, res, next);
+      errorHandler(busyError, req, res, next);
 
-      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.setHeader).toHaveBeenCalledWith('Retry-After', '1');
+      expect(res.status).toHaveBeenCalledWith(503);
       expect(res.json).toHaveBeenCalledWith({
-        error: 'Database error',
-        message: 'An error occurred while processing your request'
+        error: 'Database busy',
+        message: 'Server is under heavy load, please retry'
       });
     });
 
-    test('should handle SQLITE_ERROR', () => {
-      const sqliteError = {
-        code: 'SQLITE_ERROR',
-        message: 'SQL error'
-      };
-
-      errorHandler(sqliteError, req, res, next);
-
+    test.each([
+      ['SQLITE_CONSTRAINT', 'UNIQUE constraint failed'],
+      ['SQLITE_ERROR', 'SQL error'],
+    ])('should handle %s error as 500', (code, message) => {
+      errorHandler({ code, message }, req, res, next);
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
         error: 'Database error',
@@ -87,42 +62,14 @@ describe('Error Handler Middleware', () => {
   });
 
   describe('Generic Errors', () => {
-    test('should handle error with custom status', () => {
-      const customError = {
-        status: 403,
-        message: 'Forbidden access'
-      };
-
-      errorHandler(customError, req, res, next);
-
-      expect(res.status).toHaveBeenCalledWith(403);
-      expect(res.json).toHaveBeenCalledWith({
-        error: 'Forbidden access'
-      });
-    });
-
-    test('should default to 500 status if not specified', () => {
-      const genericError = {
-        message: 'Something went wrong'
-      };
-
-      errorHandler(genericError, req, res, next);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({
-        error: 'Something went wrong'
-      });
-    });
-
-    test('should use default message if none provided', () => {
-      const emptyError = {};
-
-      errorHandler(emptyError, req, res, next);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({
-        error: 'Internal server error'
-      });
+    test.each([
+      ['custom status', { status: 403, message: 'Forbidden access' }, 403, { error: 'Forbidden access' }],
+      ['default 500 status', { message: 'Something went wrong' }, 500, { error: 'Something went wrong' }],
+      ['default message', {}, 500, { error: 'Internal server error' }],
+    ])('should handle %s', (_, err, expectedStatus, expectedBody) => {
+      errorHandler(err, req, res, next);
+      expect(res.status).toHaveBeenCalledWith(expectedStatus);
+      expect(res.json).toHaveBeenCalledWith(expectedBody);
     });
   });
 
