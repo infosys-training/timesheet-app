@@ -12,6 +12,7 @@ jest.mock('../../middleware/auth', () => ({
 
 const { getDatabase } = require('../../database/init');
 const { sendEmail } = require('../../services/emailService');
+const { underThresholdEntries, overThresholdEntries, createMockDb } = require('../helpers/mockEntries');
 const hoursMonitorRoutes = require('../../routes/hoursMonitor');
 
 const app = express();
@@ -23,38 +24,25 @@ describe('Hours Monitor Routes', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockDb = {
-      all: jest.fn(),
-      get: jest.fn(),
-      run: jest.fn()
-    };
+    mockDb = createMockDb();
     getDatabase.mockReturnValue(mockDb);
     sendEmail.mockResolvedValue({ accepted: ['test@example.com'], messageId: 'mock-id' });
   });
 
   describe('GET /api/hours-monitor/weekly-check', () => {
     test('should return alert=false when under threshold', async () => {
-      mockDb.all.mockImplementation((query, params, callback) => {
-        callback(null, [
-          { hours: 10, description: 'Work', date: '2024-01-08', client_name: 'Client A' }
-        ]);
-      });
+      mockDb.all.mockImplementation((q, p, cb) => cb(null, underThresholdEntries));
 
       const response = await request(app)
         .get('/api/hours-monitor/weekly-check?date=2024-01-10');
 
       expect(response.status).toBe(200);
       expect(response.body.alert).toBe(false);
-      expect(response.body.totalHours).toBe(10);
+      expect(response.body.totalHours).toBe(25);
     });
 
     test('should return alert=true and send email when over threshold', async () => {
-      mockDb.all.mockImplementation((query, params, callback) => {
-        callback(null, [
-          { hours: 25, description: 'Work A', date: '2024-01-08', client_name: 'Client A' },
-          { hours: 20, description: 'Work B', date: '2024-01-09', client_name: 'Client B' }
-        ]);
-      });
+      mockDb.all.mockImplementation((q, p, cb) => cb(null, overThresholdEntries));
 
       const response = await request(app)
         .get('/api/hours-monitor/weekly-check?date=2024-01-10');
@@ -67,9 +55,7 @@ describe('Hours Monitor Routes', () => {
     });
 
     test('should return 500 on database error', async () => {
-      mockDb.all.mockImplementation((query, params, callback) => {
-        callback(new Error('DB error'));
-      });
+      mockDb.all.mockImplementation((q, p, cb) => cb(new Error('DB error')));
 
       const response = await request(app)
         .get('/api/hours-monitor/weekly-check?date=2024-01-10');
@@ -79,9 +65,7 @@ describe('Hours Monitor Routes', () => {
     });
 
     test('should use current date when no date query param', async () => {
-      mockDb.all.mockImplementation((query, params, callback) => {
-        callback(null, []);
-      });
+      mockDb.all.mockImplementation((q, p, cb) => cb(null, []));
 
       const response = await request(app)
         .get('/api/hours-monitor/weekly-check');

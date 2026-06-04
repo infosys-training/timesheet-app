@@ -83,35 +83,17 @@ async function checkAndAlert(userEmail, referenceDate) {
   const { weekStart, weekEnd } = getWeekBounds(referenceDate || new Date());
   const entries = await getWeeklyHours(userEmail, weekStart, weekEnd);
   const totalHours = entries.reduce((sum, e) => sum + parseFloat(e.hours), 0);
+  const exceeded = totalHours > WEEKLY_HOUR_THRESHOLD;
 
-  if (totalHours <= WEEKLY_HOUR_THRESHOLD) {
-    return {
-      alert: false,
-      totalHours,
-      threshold: WEEKLY_HOUR_THRESHOLD,
-      weekStart,
-      weekEnd
-    };
-  }
+  const result = { alert: exceeded, totalHours, threshold: WEEKLY_HOUR_THRESHOLD, weekStart, weekEnd };
+
+  if (!exceeded) return result;
 
   const html = buildReportHtml(userEmail, totalHours, entries, weekStart, weekEnd);
   const subject = `Hours Threshold Exceeded – ${userEmail} (${totalHours.toFixed(2)} hrs, week of ${weekStart})`;
+  const emailResult = await sendEmail({ to: ALERT_RECIPIENT, subject, html });
 
-  const emailResult = await sendEmail({
-    to: ALERT_RECIPIENT,
-    subject,
-    html
-  });
-
-  return {
-    alert: true,
-    totalHours,
-    threshold: WEEKLY_HOUR_THRESHOLD,
-    weekStart,
-    weekEnd,
-    emailSentTo: ALERT_RECIPIENT,
-    emailMessageId: emailResult.messageId
-  };
+  return { ...result, emailSentTo: ALERT_RECIPIENT, emailMessageId: emailResult.messageId };
 }
 
 module.exports = {
