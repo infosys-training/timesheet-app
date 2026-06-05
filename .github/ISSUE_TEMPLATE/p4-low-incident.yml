@@ -1,0 +1,122 @@
+name: "P4 - Low Severity Incident"
+description: "Cosmetic issues, minor performance degradation, or improvement opportunities (24 hour SLA)"
+title: "[P4] "
+labels: ["incident", "P4-low"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 Low Severity Incident Report
+        **Response SLA: 24 hours (next business day)**
+        **Escalation: On-call engineer**
+
+        Use this template for:
+        - Cosmetic or UI issues
+        - Minor performance degradation
+        - Non-critical logging/monitoring gaps
+        - Documentation improvements needed
+        - Minor dependency warnings
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief, descriptive title of the issue
+      placeholder: "e.g., Slow response times on client list endpoint during peak hours"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact-description
+    attributes:
+      label: Impact Description
+      description: Describe the impact and who is affected
+      placeholder: |
+        - What is affected: {feature/component}
+        - User-facing impact: {describe what users experience}
+        - Scope: {how many users, how often}
+      value: |
+        **What is affected:** 
+        **User-facing impact:** 
+        **Scope:** 
+    validations:
+      required: true
+
+  - type: textarea
+    id: incident-timeline
+    attributes:
+      label: Incident Timeline
+      description: When was this first noticed
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        |  | Issue first noticed |
+        |  | |
+    validations:
+      required: true
+
+  - type: dropdown
+    id: incident-status
+    attributes:
+      label: Current Status
+      options:
+        - Investigating
+        - Identified
+        - Scheduled for fix
+        - Resolved
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Performance
+        - UI/Cosmetic
+        - Logging/Monitoring
+        - Documentation
+        - Dependency Warning
+        - Configuration
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution-steps
+    attributes:
+      label: Resolution Steps
+      description: Proposed or completed resolution
+      placeholder: |
+        1. {Describe the fix or improvement}
+        2. {Implementation plan}
+        3. {Verification approach}
+      value: |
+        ### Proposed Fix
+        1. 
+
+        ### Implementation Plan
+        1. 
+
+        ### Verification
+        1. 
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any additional information, screenshots, or references
+      placeholder: "Add any other context, related issues, or reference materials"
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-up Actions
+      description: Actions to prevent recurrence
+      value: |
+        - [ ] Fix implemented
+        - [ ] Verified in staging/production
+        - [ ] Related documentation updated
