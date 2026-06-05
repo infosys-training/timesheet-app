@@ -97,7 +97,7 @@ check_json_field() {
   }
 
   local actual
-  actual=$(echo "$body" | grep -o "\"$field\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" | head -1 | sed 's/.*: *"//;s/"//')
+  actual=$(echo "$body" | grep -o "\"$field\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" | head -1 | sed 's/.*: *"//;s/"//') || actual=""
 
   if [ "$actual" = "$expected" ]; then
     log_pass "$description ($field=$actual)"
@@ -158,7 +158,7 @@ CLIENT_RESPONSE=$(curl -s --max-time "$TIMEOUT" \
   -H "x-user-email: $TEST_EMAIL" \
   -d '{"name":"HealthCheck Test Client"}' 2>&1) || CLIENT_RESPONSE=""
 
-CLIENT_ID=$(echo "$CLIENT_RESPONSE" | grep -o '"id"[[:space:]]*:[[:space:]]*[0-9]*' | head -1 | grep -o '[0-9]*$')
+CLIENT_ID=$(echo "$CLIENT_RESPONSE" | grep -o '"id"[[:space:]]*:[[:space:]]*[0-9]*' | head -1 | grep -o '[0-9]*$') || CLIENT_ID=""
 
 if [ -n "$CLIENT_ID" ]; then
   log_pass "Create client (id=$CLIENT_ID)"
@@ -195,7 +195,7 @@ if [ -n "$CLIENT_ID" ]; then
     -H "x-user-email: $TEST_EMAIL" \
     -d "{\"clientId\":$CLIENT_ID,\"hours\":1.5,\"description\":\"Health check test\",\"date\":\"2024-01-01\"}" 2>&1) || ENTRY_RESPONSE=""
 
-  ENTRY_ID=$(echo "$ENTRY_RESPONSE" | grep -o '"id"[[:space:]]*:[[:space:]]*[0-9]*' | head -1 | grep -o '[0-9]*$')
+  ENTRY_ID=$(echo "$ENTRY_RESPONSE" | grep -o '"id"[[:space:]]*:[[:space:]]*[0-9]*' | head -1 | grep -o '[0-9]*$') || ENTRY_ID=""
 
   if [ -n "$ENTRY_ID" ]; then
     log_pass "Create work entry (id=$ENTRY_ID)"
