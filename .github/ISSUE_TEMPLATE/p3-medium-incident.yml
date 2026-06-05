@@ -1,0 +1,147 @@
+name: "P3 - Medium Severity Incident"
+description: "Single feature degraded or intermittent errors affecting some users (4 hour SLA)"
+title: "[P3] "
+labels: ["incident", "P3-medium"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 Medium Severity Incident Report
+        **Response SLA: 4 hours**
+        **Escalation: On-call -> Team Lead**
+
+        Use this template for:
+        - Single feature degraded but functional
+        - Intermittent errors affecting some users
+        - Non-critical dependency failures
+        - Performance degradation for subset of operations
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief, descriptive title of the incident
+      placeholder: "e.g., Intermittent 500 errors on work entry creation"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact-description
+    attributes:
+      label: Impact Description
+      description: Describe what is affected and the scope of impact
+      placeholder: |
+        - Affected feature: {specific feature}
+        - User impact: {percentage of users affected, or specific conditions}
+        - Frequency: {constant / intermittent / triggered by specific action}
+        - Workaround: {describe workaround if available}
+      value: |
+        **Affected Feature:** 
+        **User Impact:** 
+        **Frequency:** 
+        **Workaround:** 
+    validations:
+      required: true
+
+  - type: textarea
+    id: incident-timeline
+    attributes:
+      label: Incident Timeline
+      description: When was the issue first noticed and key events since
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        |  | Issue first reported/detected |
+        |  | Investigation started |
+        |  | |
+    validations:
+      required: true
+
+  - type: dropdown
+    id: incident-status
+    attributes:
+      label: Current Status
+      options:
+        - Investigating
+        - Identified
+        - Mitigating
+        - Monitoring
+        - Resolved
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-feature
+    attributes:
+      label: Primary Affected Feature
+      options:
+        - Authentication / Login
+        - Client Management
+        - Work Entry Management
+        - Report Generation
+        - PDF Export
+        - CSV Export
+        - Frontend UI
+        - API Performance
+        - Database
+        - Rate Limiting
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: Technical root cause (if identified)
+      placeholder: "Describe the root cause or current hypothesis"
+
+  - type: textarea
+    id: resolution-steps
+    attributes:
+      label: Resolution Steps
+      description: Steps taken or planned to resolve the issue
+      placeholder: |
+        1. {Investigation steps}
+        2. {Mitigation or fix}
+        3. {Verification}
+      value: |
+        ### Investigation
+        1. 
+
+        ### Resolution
+        1. 
+
+        ### Verification
+        1. 
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: Reproduction Steps
+      description: How to reproduce the issue (if known)
+      placeholder: |
+        1. Navigate to...
+        2. Perform action...
+        3. Observe error...
+
+  - type: textarea
+    id: logs-evidence
+    attributes:
+      label: Logs / Evidence
+      description: Relevant log entries, error messages, or screenshots
+      placeholder: "Paste relevant log entries or attach screenshots"
+      render: shell
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-up Actions
+      description: Actions needed after resolution
+      value: |
+        - [ ] Root cause documented
+        - [ ] Fix deployed and verified
+        - [ ] Monitoring added if needed

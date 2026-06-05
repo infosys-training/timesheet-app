@@ -1,0 +1,152 @@
+name: "P1 - Critical Incident"
+description: "Complete outage, data loss, or security breach requiring immediate response (15 min SLA)"
+title: "[P1] "
+labels: ["incident", "P1-critical", "urgent"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 Critical Incident Report
+        **Response SLA: 15 minutes**
+        **Escalation: On-call -> Engineering Lead -> VP Engineering**
+
+        Use this template for:
+        - Complete application outage
+        - Data loss or corruption
+        - Security breach or unauthorized access
+        - All users affected
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief, descriptive title of the incident
+      placeholder: "e.g., Complete API outage - all endpoints returning 500"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact-description
+    attributes:
+      label: Impact Description
+      description: Describe the scope and severity of impact on users and business operations
+      placeholder: |
+        - Number of affected users: {ALL / percentage}
+        - Affected services/features: {list services}
+        - Business impact: {revenue loss, SLA violation, data exposure, etc.}
+        - Geographic scope: {global / regional}
+      value: |
+        **Affected Users:** 
+        **Affected Services:** 
+        **Business Impact:** 
+        **Geographic Scope:** 
+    validations:
+      required: true
+
+  - type: textarea
+    id: incident-timeline
+    attributes:
+      label: Incident Timeline
+      description: Chronological record of the incident from detection to current status
+      placeholder: |
+        - YYYY-MM-DD HH:MM UTC - Incident detected (how was it detected?)
+        - YYYY-MM-DD HH:MM UTC - First responder engaged
+        - YYYY-MM-DD HH:MM UTC - Root cause identified
+        - YYYY-MM-DD HH:MM UTC - Mitigation applied
+        - YYYY-MM-DD HH:MM UTC - Service restored
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        |  | Incident detected |
+        |  | First responder engaged |
+        |  | |
+    validations:
+      required: true
+
+  - type: dropdown
+    id: incident-status
+    attributes:
+      label: Current Status
+      options:
+        - Investigating
+        - Identified
+        - Mitigating
+        - Monitoring
+        - Resolved
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause (if identified)
+      description: Technical root cause of the incident
+      placeholder: "Describe the technical root cause, or 'Under investigation' if not yet identified"
+
+  - type: textarea
+    id: resolution-steps
+    attributes:
+      label: Resolution Steps
+      description: Steps taken or planned to resolve the incident
+      placeholder: |
+        1. {Immediate mitigation action}
+        2. {Diagnostic steps performed}
+        3. {Fix applied}
+        4. {Verification steps}
+        5. {Monitoring/follow-up actions}
+      value: |
+        ### Immediate Actions Taken
+        1. 
+
+        ### Diagnostic Steps
+        1. 
+
+        ### Fix Applied
+        1. 
+
+        ### Verification
+        1. 
+    validations:
+      required: true
+
+  - type: textarea
+    id: affected-components
+    attributes:
+      label: Affected Components
+      description: Which system components are involved
+      placeholder: "e.g., Backend API, SQLite Database, Frontend, Docker, CI/CD"
+      value: |
+        - [ ] Backend API (Express/Node.js)
+        - [ ] Database (SQLite)
+        - [ ] Frontend (React/Vite)
+        - [ ] Authentication
+        - [ ] File Exports (PDF/CSV)
+        - [ ] Docker/Infrastructure
+        - [ ] CI/CD Pipeline
+
+  - type: textarea
+    id: communication
+    attributes:
+      label: Communication Log
+      description: Record of stakeholder communications
+      placeholder: |
+        - Who was notified and when
+        - Status page updates
+        - Customer communications
+      value: |
+        | Time (UTC) | Audience | Message |
+        |------------|----------|---------|
+        |  |  |  |
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Post-Incident Follow-up
+      description: Actions needed after the incident is resolved
+      value: |
+        - [ ] Post-mortem scheduled
+        - [ ] Monitoring/alerting improvements identified
+        - [ ] Runbook updates needed
+        - [ ] Architecture changes required
+        - [ ] Customer communication sent
