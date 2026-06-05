@@ -1,0 +1,102 @@
+name: "P3 - Medium Severity Incident"
+description: "Degraded experience; feature partially broken. Acknowledge in 4 hr, resolve in 24 hr."
+title: "[P3] "
+labels: ["incident", "P3-medium"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 - Medium Severity Incident Report
+        **Response SLA:** Acknowledge within 4 hours, resolve within 24 hours.
+        Use this for degraded performance, non-critical feature failures, or intermittent errors.
+
+  - type: input
+    id: incident_title
+    attributes:
+      label: Incident Title
+      description: Brief summary of the incident.
+      placeholder: "e.g., CSV export timing out for clients with >500 entries"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      description: Which part of the system is affected?
+      multiple: true
+      options:
+        - Backend API (Express)
+        - Frontend (React/Vite)
+        - Database (SQLite)
+        - Authentication
+        - Client Management
+        - Work Entry Management
+        - Reports & Exports
+        - Docker / Infrastructure
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe who is affected and how.
+      placeholder: |
+        - Scope: Single user / Multiple users / All users
+        - Feature affected: ...
+        - Workaround: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: When was this first noticed?
+      placeholder: |
+        - **First reported:** YYYY-MM-DD HH:MM UTC
+        - **Acknowledged:** YYYY-MM-DD HH:MM UTC
+        - **Resolved:** ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Error Details
+      description: Describe the issue with reproduction steps, error messages, or screenshots.
+      placeholder: |
+        Steps to reproduce:
+        1. ...
+        2. ...
+
+        Expected behavior: ...
+        Actual behavior: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: root_cause
+    attributes:
+      label: Root Cause (if known)
+      description: What caused the issue?
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution / Mitigation Steps
+      description: What was done or needs to be done?
+      placeholder: |
+        1. ...
+        2. ...
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention & Follow-up
+      description: What changes are needed to prevent recurrence?
+      placeholder: |
+        - [ ] Code fix PR: #
+        - [ ] Add test coverage
+        - [ ] Update documentation

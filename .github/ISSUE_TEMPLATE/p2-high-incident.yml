@@ -1,0 +1,108 @@
+name: "P2 - High Severity Incident"
+description: "Major feature broken affecting many users. Acknowledge in 30 min, mitigate in 4 hr."
+title: "[P2] "
+labels: ["incident", "P2-high"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 - High Severity Incident Report
+        **Response SLA:** Acknowledge in 30 minutes, mitigate within 4 hours.
+        Use this for major feature failures (e.g., cannot submit time entries, authentication broken).
+
+  - type: input
+    id: incident_title
+    attributes:
+      label: Incident Title
+      description: Brief summary of the incident.
+      placeholder: "e.g., Work entry creation failing with 500 error"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      description: Which part of the system is affected?
+      multiple: true
+      options:
+        - Backend API (Express)
+        - Frontend (React/Vite)
+        - Database (SQLite)
+        - Authentication
+        - Client Management
+        - Work Entry Management
+        - Reports & Exports
+        - Docker / Infrastructure
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe who is affected and how.
+      placeholder: |
+        - Number of affected users: ...
+        - Which feature is broken: ...
+        - Workaround available: Yes / No
+        - Business impact: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: When did this start? Key events so far.
+      placeholder: |
+        - **Detected:** YYYY-MM-DD HH:MM UTC
+        - **Acknowledged:** YYYY-MM-DD HH:MM UTC
+        - **Mitigated:** ...
+        - **Resolved:** ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Error Details
+      description: What errors are being observed? Include logs, status codes, and reproduction steps.
+      placeholder: |
+        Steps to reproduce:
+        1. ...
+        2. ...
+
+        Error response:
+        ```json
+        { "error": "..." }
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: root_cause
+    attributes:
+      label: Root Cause (if known)
+      description: What caused the incident? Reference the RUNBOOK.md section if applicable.
+      placeholder: "e.g., JWT validation failing after secret rotation (RUNBOOK Section 4a)"
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution / Mitigation Steps
+      description: What was done (or needs to be done) to resolve the incident?
+      placeholder: |
+        1. Step taken or planned
+        2. ...
+        3. Verification step
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention & Follow-up
+      description: What changes are needed to prevent recurrence?
+      placeholder: |
+        - [ ] Add monitoring / alerting
+        - [ ] Code fix PR: #
+        - [ ] Update runbook

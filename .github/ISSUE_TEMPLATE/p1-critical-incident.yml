@@ -1,0 +1,111 @@
+name: "P1 - Critical Incident"
+description: "Full service outage or data loss affecting all users. Acknowledge in 15 min, mitigate in 1 hr."
+title: "[P1] "
+labels: ["incident", "P1-critical", "urgent"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 - Critical Incident Report
+        **Response SLA:** Acknowledge in 15 minutes, mitigate within 1 hour.
+        Use this template for full outages, data loss, or security breaches.
+
+  - type: input
+    id: incident_title
+    attributes:
+      label: Incident Title
+      description: Brief summary of the incident.
+      placeholder: "e.g., Complete application outage - all users affected"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      description: Which part of the system is affected?
+      multiple: true
+      options:
+        - Backend API (Express)
+        - Frontend (React/Vite)
+        - Database (SQLite)
+        - Authentication
+        - Docker / Infrastructure
+        - All Components
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe who is affected and how.
+      placeholder: |
+        - Number of affected users: All / Subset
+        - Business impact: Cannot submit timesheets, cannot export reports, etc.
+        - Revenue / SLA impact: Missed reporting deadlines, etc.
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: When did this start? Key events so far.
+      placeholder: |
+        - **Detected:** YYYY-MM-DD HH:MM UTC
+        - **Acknowledged:** YYYY-MM-DD HH:MM UTC
+        - **First action taken:** ...
+        - **Mitigated:** ...
+        - **Resolved:** ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Error Details
+      description: What errors are users seeing? Include logs, error codes, screenshots.
+      placeholder: |
+        - Health check response: ...
+        - HTTP status codes observed: ...
+        - Error messages from logs: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: root_cause
+    attributes:
+      label: Root Cause (if known)
+      description: What caused the incident? Reference the RUNBOOK.md section if applicable.
+      placeholder: "e.g., Database initialization failure after deploy (RUNBOOK Section 2b)"
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution / Mitigation Steps
+      description: What was done (or needs to be done) to resolve the incident?
+      placeholder: |
+        1. Step taken or planned
+        2. ...
+        3. Verification step
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention & Follow-up
+      description: What changes are needed to prevent recurrence?
+      placeholder: |
+        - [ ] Add monitoring for ...
+        - [ ] Fix root cause in code
+        - [ ] Update runbook
+        - [ ] Schedule post-mortem
+
+  - type: input
+    id: on_call
+    attributes:
+      label: On-Call Responder
+      description: Who is handling this incident?
+      placeholder: "@username"
+    validations:
+      required: true
