@@ -1,0 +1,15 @@
+{
+  "name": "timesheet-app",
+  "version": "1.0.0",
+  "description": "A full-stack web application for tracking and reporting employee hourly work across different clients.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.60.0"
+  }
+}
