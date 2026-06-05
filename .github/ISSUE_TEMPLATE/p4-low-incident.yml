@@ -1,0 +1,85 @@
+name: "P4 - Low Severity Incident"
+description: "Minor issue or cosmetic bug with a workaround. Resolve within 1 week."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 - Low Severity Incident Report
+        **Response SLA:** Resolve within 1 week.
+        Use this for minor bugs, cosmetic issues, or low-impact problems with existing workarounds.
+
+  - type: input
+    id: title
+    attributes:
+      label: Incident Title
+      description: Brief summary of the issue.
+      placeholder: "e.g., Date picker shows wrong timezone offset"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      description: Which part of the system is affected?
+      multiple: true
+      options:
+        - Backend API (Express)
+        - Frontend (React/Vite)
+        - Database (SQLite)
+        - Authentication
+        - Client Management
+        - Work Entry Management
+        - Reports & Exports
+        - Docker / Infrastructure
+        - Documentation
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the impact and any available workarounds.
+      placeholder: |
+        - Scope: Single user / Few users
+        - Workaround: ...
+        - User-facing impact: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When was this first noticed?
+      placeholder: |
+        - **First reported:** YYYY-MM-DD HH:MM UTC
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Description & Reproduction Steps
+      description: Describe the issue and how to reproduce it.
+      placeholder: |
+        Steps to reproduce:
+        1. ...
+        2. ...
+
+        Expected behavior: ...
+        Actual behavior: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Proposed Fix
+      description: Suggested resolution or fix approach.
+      placeholder: |
+        - Fix in file: ...
+        - Approach: ...
