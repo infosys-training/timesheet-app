@@ -1,0 +1,117 @@
+name: "P2 - High Severity Incident"
+description: "Major feature broken, persistent errors, or significant degradation requiring urgent response."
+title: "[P2] "
+labels: ["incident", "P2-high", "priority:high"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 High Severity Incident Report
+        **Response SLA: < 1 hour**
+
+        Use this template when a major feature is unavailable, there are persistent 500 errors, or significant performance degradation.
+
+  - type: input
+    id: responder
+    attributes:
+      label: Primary Responder
+      description: Who is handling this incident?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Failure Category
+      description: Primary failure mode (see RUNBOOK.md for details)
+      options:
+        - Database Failure (queries failing, lock contention)
+        - API Errors (specific routes returning 500)
+        - Memory Issues (high usage, slow responses)
+        - Authentication Failure (login broken)
+        - CORS Misconfiguration
+        - Rate Limiting (false positives)
+        - Export Failure (CSV/PDF generation broken)
+        - Dependency Failure (package issue)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe what is broken and who is affected.
+      value: |
+        **Users affected:** [all / subset — describe]
+        **Features impacted:** [list broken features]
+        **Workaround available:** [Y/N — describe if yes]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Chronological log of events.
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue detected |
+        | | Investigation started |
+        | | Root cause identified |
+        | | Fix applied |
+        | | Verified resolved |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Observed Symptoms
+      description: Error messages, status codes, user reports, or monitoring alerts.
+      placeholder: |
+        - POST /api/work-entries returning 500
+        - Error log: "Database error: SQLITE_BUSY"
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnosis
+    attributes:
+      label: Diagnosis & Root Cause
+      description: Investigation steps and findings.
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: What was done to fix the issue?
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention / Follow-up Actions
+      description: What changes will prevent recurrence?
+      placeholder: |
+        - [ ] Add specific error handling for this case
+        - [ ] Improve logging around affected area
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: post-incident
+    attributes:
+      label: Post-Incident Checklist
+      options:
+        - label: Root cause identified and documented
+        - label: Fix deployed and verified
+        - label: Health check confirms recovery
+        - label: RUNBOOK.md updated (if applicable)
+        - label: Stakeholders notified

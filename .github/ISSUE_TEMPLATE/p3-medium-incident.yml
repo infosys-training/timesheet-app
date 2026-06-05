@@ -1,0 +1,93 @@
+name: "P3 - Medium Severity Incident"
+description: "Intermittent errors, partial feature degradation, or performance issues."
+title: "[P3] "
+labels: ["incident", "P3-medium"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 Medium Severity Incident Report
+        **Response SLA: < 4 hours**
+
+        Use this template for intermittent errors, report export failures, degraded performance, or non-critical feature issues.
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reporter
+      description: Who is reporting this incident?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Failure Category
+      options:
+        - Intermittent API Errors
+        - Export Failure (CSV/PDF)
+        - Slow Response Times
+        - Memory Usage Elevated
+        - Rate Limiting Issues
+        - Database Performance
+        - Frontend Rendering Issue
+        - Build / CI Failure
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      value: |
+        **Users affected:** [few / some / many]
+        **Features impacted:** [list affected features]
+        **Workaround available:** [Y/N — describe]
+        **Frequency:** [constant / intermittent — approx. rate]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | First occurrence observed |
+        | | |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Observed Symptoms
+      description: Error messages, logs, or reproduction steps.
+      placeholder: |
+        - CSV export for client ID 42 returns 500
+        - Temp directory contains stale files
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution / Workaround
+      description: Steps taken or workaround applied.
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-up Actions
+      placeholder: |
+        - [ ] Fix the underlying issue
+        - [ ] Add test coverage
+        - [ ] Update documentation
+    validations:
+      required: false
