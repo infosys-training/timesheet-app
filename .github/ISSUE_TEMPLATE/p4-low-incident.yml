@@ -1,0 +1,83 @@
+name: "P4 - Low Severity Incident"
+description: "Minor issues, cosmetic bugs, or non-blocking warnings to address in the next cycle."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 Low Severity Incident Report
+        **Response SLA: Next business day**
+
+        Use this template for minor UI issues, non-blocking warnings, logging gaps, or cosmetic bugs.
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reporter
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - UI / Cosmetic Bug
+        - Non-blocking Warning in Logs
+        - Documentation Gap
+        - Logging / Observability Improvement
+        - Minor Performance Issue
+        - Dependency Update (non-security)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Brief description of who/what is affected.
+      placeholder: "Minor UI misalignment on the reports page; no data impact."
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: When was this noticed?
+      placeholder: "First observed on YYYY-MM-DD"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description & Reproduction Steps
+      description: Detailed description of the issue and how to reproduce.
+      placeholder: |
+        1. Navigate to /reports
+        2. Click "Export PDF" for a client with 0 entries
+        3. Observe: empty PDF is generated instead of a "no data" message
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggested-fix
+    attributes:
+      label: Suggested Fix
+      description: Optional — ideas for how to resolve this.
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-up Actions
+      placeholder: |
+        - [ ] Fix the issue
+        - [ ] Add regression test
+    validations:
+      required: false

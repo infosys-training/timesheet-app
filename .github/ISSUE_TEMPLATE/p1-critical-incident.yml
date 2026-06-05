@@ -1,0 +1,128 @@
+name: "P1 - Critical Incident"
+description: "Complete outage, data loss, or security breach requiring immediate response."
+title: "[P1] "
+labels: ["incident", "P1-critical", "priority:urgent"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 Critical Incident Report
+        **Response SLA: Immediate (< 15 minutes)**
+
+        Use this template for complete service outages, confirmed data loss, or active security breaches.
+
+  - type: input
+    id: incident-commander
+    attributes:
+      label: Incident Commander
+      description: Who is leading the response?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Failure Category
+      description: Primary failure mode (see RUNBOOK.md for details)
+      options:
+        - Database Failure (data loss, corruption)
+        - API / HTTP Outage (all endpoints down)
+        - Memory Exhaustion (OOM crash)
+        - Infrastructure Failure (container crash, network down)
+        - Security Breach (unauthorized access, data exposure)
+        - Dependency Failure (critical package vulnerability)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the scope and severity of the impact.
+      value: |
+        **Users affected:** [all / subset — describe]
+        **Features impacted:** [list broken features]
+        **Data impact:** [data loss Y/N, estimated scope]
+        **Revenue impact:** [if applicable]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Chronological log of events. Update as the incident progresses.
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Incident detected — [how was it detected?] |
+        | | First responder engaged |
+        | | Diagnosis started |
+        | | Root cause identified |
+        | | Fix applied |
+        | | Service restored |
+        | | All-clear confirmed |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Observed Symptoms
+      description: What errors, alerts, or user reports triggered this incident?
+      placeholder: |
+        - Health check returning non-200
+        - Error logs showing SQLITE_CORRUPT
+        - Users reporting blank pages
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnosis
+    attributes:
+      label: Diagnosis & Root Cause
+      description: What investigation was done and what was the root cause?
+      placeholder: |
+        Commands run, logs checked, findings...
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: What was done to resolve the incident?
+      placeholder: |
+        1. Restarted container
+        2. Restored database from backup
+        3. Verified via health check
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention / Follow-up Actions
+      description: What changes will prevent recurrence?
+      placeholder: |
+        - [ ] Add automated database backups
+        - [ ] Improve monitoring for disk usage
+        - [ ] Update RUNBOOK.md with new procedure
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: post-incident
+    attributes:
+      label: Post-Incident Checklist
+      options:
+        - label: Root cause identified and documented
+        - label: Fix deployed and verified
+        - label: Health check script confirms recovery
+        - label: Monitoring gap addressed
+        - label: RUNBOOK.md updated (if new failure mode)
+        - label: Stakeholders notified
+        - label: Post-mortem scheduled
