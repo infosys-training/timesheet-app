@@ -56,7 +56,54 @@ test.describe('Work Entries Workflow', () => {
     await expect(page.getByRole('cell', { name: CLIENT_NAME }).first()).toBeVisible();
   });
 
-  test('Step 3: Create a work entry and verify it appears in the list', async ({ page }) => {
+  test('Step 3: Edge case — submit work entry form with missing fields', async ({ page }) => {
+    await login(page);
+
+    await navigateTo(page, 'Work Entries');
+    await expect(page).toHaveURL(/\/work-entries/);
+    await expect(page.getByRole('heading', { name: 'Work Entries', exact: true })).toBeVisible();
+
+    // Open Add Work Entry dialog
+    await page.getByRole('button', { name: /Add Work Entry/i }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+
+    // Fill valid hours but do NOT select a client, then submit
+    await dialog.getByLabel('Hours *').fill('4');
+    await dialog.getByRole('button', { name: 'Create' }).click();
+
+    // React validation fires: "Please select a client" (clientId === 0)
+    await expect(page.getByText('Please select a client')).toBeVisible();
+    await expect(dialog).toBeVisible();
+
+    // Now select a client but set hours to an out-of-range value via JS
+    // (native input[type=number] max=24 blocks form submit, so bypass it)
+    await dialog.locator('.MuiSelect-select').click();
+    await page.getByRole('option', { name: CLIENT_NAME }).click();
+    const hoursInput = dialog.getByLabel('Hours *');
+    await hoursInput.fill('');
+    await hoursInput.evaluate((el: HTMLInputElement) => {
+      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype, 'value'
+      )!.set!;
+      nativeInputValueSetter.call(el, '25');
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    // Remove native max constraint so form can submit to React validation
+    await hoursInput.evaluate((el: HTMLInputElement) => el.removeAttribute('max'));
+    await dialog.getByRole('button', { name: 'Create' }).click();
+
+    // React validation fires: "Hours must be between 0 and 24"
+    await expect(page.getByText('Hours must be between 0 and 24')).toBeVisible();
+    await expect(dialog).toBeVisible();
+
+    // Cancel to close the dialog cleanly
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(dialog).not.toBeVisible({ timeout: 5000 });
+  });
+
+  test('Step 4: Create a work entry and verify it appears in the list', async ({ page }) => {
     await login(page);
 
     // Navigate to Work Entries page
@@ -89,7 +136,7 @@ test.describe('Work Entries Workflow', () => {
     await expect(page.getByText('E2E test work entry').first()).toBeVisible();
   });
 
-  test('Step 4: Edit the work entry', async ({ page }) => {
+  test('Step 5: Edit the work entry', async ({ page }) => {
     await login(page);
 
     // Navigate to Work Entries
@@ -128,7 +175,7 @@ test.describe('Work Entries Workflow', () => {
     await expect(page.getByText('E2E test work entry - updated')).toBeVisible();
   });
 
-  test('Step 5: Delete the work entry', async ({ page }) => {
+  test('Step 6: Delete the work entry', async ({ page }) => {
     await login(page);
 
     // Navigate to Work Entries
