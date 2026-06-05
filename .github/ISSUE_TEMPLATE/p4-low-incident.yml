@@ -11,7 +11,7 @@ body:
         Use this for minor bugs, cosmetic issues, or low-impact problems with existing workarounds.
 
   - type: input
-    id: title
+    id: incident_title
     attributes:
       label: Incident Title
       description: Brief summary of the issue.

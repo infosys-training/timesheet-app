@@ -11,7 +11,7 @@ body:
         Use this for major feature failures (e.g., cannot submit time entries, authentication broken).
 
   - type: input
-    id: title
+    id: incident_title
     attributes:
       label: Incident Title
       description: Brief summary of the incident.

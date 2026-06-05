@@ -11,7 +11,7 @@ body:
         Use this template for full outages, data loss, or security breaches.
 
   - type: input
-    id: title
+    id: incident_title
     attributes:
       label: Incident Title
       description: Brief summary of the incident.

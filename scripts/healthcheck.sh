@@ -188,7 +188,7 @@ section "3. Client CRUD"
 http_request POST "${BACKEND_URL}/api/clients" '{"name": "HealthCheck Test Client", "description": "Auto-created by healthcheck script"}'
 if [[ "$HTTP_STATUS" == "201" ]]; then
   log_pass "POST /api/clients -> 201 (create)"
-  CLEANUP_CLIENT_ID=$(echo "$HTTP_BODY" | grep -o '"id":[0-9]*' | head -1 | cut -d: -f2)
+  CLEANUP_CLIENT_ID=$(echo "$HTTP_BODY" | grep -o '"id":[0-9]*' | head -1 | cut -d: -f2 || true)
   if [[ -z "$CLEANUP_CLIENT_ID" ]]; then
     log_warn "Could not parse client ID from response"
   fi
@@ -241,7 +241,7 @@ if [[ -n "$CLEANUP_CLIENT_ID" ]]; then
     "{\"clientId\": $CLEANUP_CLIENT_ID, \"hours\": 2.5, \"description\": \"Healthcheck test entry\", \"date\": \"$TODAY\"}"
   if [[ "$HTTP_STATUS" == "201" ]]; then
     log_pass "POST /api/work-entries -> 201 (create)"
-    CLEANUP_ENTRY_ID=$(echo "$HTTP_BODY" | grep -o '"id":[0-9]*' | head -1 | cut -d: -f2)
+    CLEANUP_ENTRY_ID=$(echo "$HTTP_BODY" | grep -o '"id":[0-9]*' | head -1 | cut -d: -f2 || true)
   else
     log_fail "POST /api/work-entries -> $HTTP_STATUS (expected 201)" "$HTTP_BODY"
   fi

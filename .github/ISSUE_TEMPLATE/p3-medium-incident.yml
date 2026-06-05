@@ -11,7 +11,7 @@ body:
         Use this for degraded performance, non-critical feature failures, or intermittent errors.
 
   - type: input
-    id: title
+    id: incident_title
     attributes:
       label: Incident Title
       description: Brief summary of the incident.
