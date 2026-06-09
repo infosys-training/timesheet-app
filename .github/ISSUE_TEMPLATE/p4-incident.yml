@@ -1,0 +1,115 @@
+name: "P4 Incident - Low Impact / Cosmetic"
+description: "Low impact issue, cosmetic defect, or performance degradation. Response time: < 24 hours."
+title: "[P4] "
+labels: ["incident", "P4", "low"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 Incident Report - Low Impact / Cosmetic
+        **Response SLA: < 24 hours | Assigned engineer, next sprint**
+
+        A P4 incident is a low-impact issue such as: slow response times that
+        don't cause timeouts, minor UI inconsistencies, logging gaps, non-critical
+        warning messages, or cosmetic defects.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief, descriptive title of the issue
+      placeholder: "e.g., Client list endpoint response time increased from 50ms to 200ms"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected Component
+      description: Primary system component affected
+      options:
+        - Backend Performance
+        - Frontend Performance
+        - Frontend UI/UX (cosmetic)
+        - Logging / Monitoring
+        - Documentation
+        - Development Tooling
+        - Security (non-critical)
+        - Dependencies (non-breaking)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact-assessment
+    attributes:
+      label: Impact Assessment
+      description: Describe the impact (should be low)
+      value: |
+        **Users Affected:** [None directly / Minor annoyance]
+        **Feature Impacted:** [Feature still works, but degraded]
+        **Business Impact:** [Minimal / None]
+        **Urgency:** [Can be addressed in next sprint]
+    validations:
+      required: true
+
+  - type: textarea
+    id: incident-timeline
+    attributes:
+      label: Incident Timeline
+      description: When was the issue discovered?
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue discovered |
+        | YYYY-MM-DD HH:MM | Triaged and prioritized |
+        | YYYY-MM-DD HH:MM | Fix scheduled |
+        | YYYY-MM-DD HH:MM | Fix deployed |
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Issue Description
+      description: Detailed description of the issue
+      placeholder: |
+        Describe what you observed, how it differs from expected behavior,
+        and any metrics or evidence of the issue.
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution-steps
+    attributes:
+      label: Resolution Steps
+      description: Planned or completed resolution actions
+      value: |
+        1. [ ] Assess effort and priority
+        2. [ ] Schedule for appropriate sprint/milestone
+        3. [ ] Implement fix
+        4. [ ] Verify improvement
+    validations:
+      required: true
+
+  - type: textarea
+    id: metrics
+    attributes:
+      label: Metrics / Evidence
+      description: Any measurable data related to the issue
+      placeholder: |
+        - Response time before: X ms
+        - Response time after: Y ms
+        - Error rate: Z%
+        - Screenshots or logs
+    validations:
+      required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional Notes
+      description: Any other relevant context
+      placeholder: "Related issues, similar past incidents, etc."
+    validations:
+      required: false

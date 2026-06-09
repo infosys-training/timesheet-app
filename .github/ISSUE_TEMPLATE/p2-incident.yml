@@ -1,0 +1,130 @@
+name: "P2 Incident - Major Feature Degradation"
+description: "Major feature is degraded or unavailable. Response time: < 30 minutes."
+title: "[P2] "
+labels: ["incident", "P2", "major"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 Incident Report - Major Feature Degradation
+        **Response SLA: < 30 minutes | On-call engineer + team lead**
+
+        A P2 incident means a major feature is broken but the application is still
+        partially functional. Examples: report exports failing, authentication
+        intermittently broken, work entry creation failing.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief, descriptive title of the incident
+      placeholder: "e.g., PDF/CSV report exports returning 500 errors"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected Component
+      description: Primary system component affected
+      options:
+        - Authentication (login/session)
+        - Client Management (CRUD)
+        - Work Entry Management (CRUD)
+        - Report Generation (PDF/CSV)
+        - Database Queries
+        - Frontend Routing/Rendering
+        - API Rate Limiting
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact-assessment
+    attributes:
+      label: Impact Assessment
+      description: Describe the scope and severity of the impact
+      value: |
+        **Users Affected:** [All / Percentage / Specific group]
+        **Features Impacted:** [List degraded features]
+        **Workaround Available:** [Yes/No - describe if yes]
+        **Data Integrity Risk:** [Yes/No - describe if applicable]
+    validations:
+      required: true
+
+  - type: textarea
+    id: incident-timeline
+    attributes:
+      label: Incident Timeline
+      description: Chronological record of the incident
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue first observed |
+        | YYYY-MM-DD HH:MM | Incident declared as P2 |
+        | YYYY-MM-DD HH:MM | Investigation started |
+        | YYYY-MM-DD HH:MM | Root cause identified |
+        | YYYY-MM-DD HH:MM | Fix applied |
+        | YYYY-MM-DD HH:MM | Feature restored and verified |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms Observed
+      description: What observable symptoms indicated the issue?
+      placeholder: |
+        - Specific endpoint returning error codes
+        - Frontend displaying error messages
+        - Partial data loss or corruption
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause Analysis
+      description: What caused the degradation?
+      placeholder: "Describe the underlying technical cause once identified"
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution-steps
+    attributes:
+      label: Resolution Steps
+      description: Step-by-step actions taken to resolve the incident
+      value: |
+        1. [ ] Identify affected endpoint(s) using health check script
+        2. [ ] Check backend logs for relevant errors
+        3. [ ] Reproduce the issue locally if possible
+        4. [ ] Identify root cause
+        5. [ ] Develop and test fix
+        6. [ ] Deploy fix
+        7. [ ] Verify feature is restored via health check
+        8. [ ] Monitor for 30 minutes post-fix
+    validations:
+      required: true
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Workaround (if applicable)
+      description: Temporary workaround users can use while the fix is being developed
+      placeholder: "Describe any available workaround for affected users"
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention / Follow-up Actions
+      description: What changes will prevent this from happening again?
+      value: |
+        - [ ] Action item 1 (assignee, deadline)
+        - [ ] Action item 2 (assignee, deadline)
+        - [ ] Add or update relevant tests
+        - [ ] Update RUNBOOK.md if applicable
+    validations:
+      required: false

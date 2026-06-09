@@ -1,0 +1,141 @@
+name: "P1 Incident - Critical Service Outage"
+description: "Complete service outage affecting all users. Response time: < 15 minutes."
+title: "[P1] "
+labels: ["incident", "P1", "critical"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 Incident Report - Critical Service Outage
+        **Response SLA: < 15 minutes | All hands on deck**
+
+        A P1 incident means the entire application is unavailable or a critical
+        security breach has occurred. Examples: backend crash, database init failure,
+        complete auth system failure.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief, descriptive title of the incident
+      placeholder: "e.g., Backend service unresponsive - all API calls failing"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected Component
+      description: Primary system component affected
+      options:
+        - Backend API (Express)
+        - Frontend (React/Vite)
+        - Database (SQLite)
+        - Authentication System
+        - Full Stack (All Components)
+        - Infrastructure / Hosting
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact-assessment
+    attributes:
+      label: Impact Assessment
+      description: Describe the scope and severity of the impact
+      value: |
+        **Users Affected:** [All / Percentage / Specific group]
+        **Features Impacted:** [List all broken features]
+        **Data Loss:** [Yes/No - describe if applicable]
+        **Revenue Impact:** [Estimated if applicable]
+        **External Dependencies Affected:** [List any]
+    validations:
+      required: true
+
+  - type: textarea
+    id: incident-timeline
+    attributes:
+      label: Incident Timeline
+      description: Chronological record of the incident (update as events unfold)
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Incident detected by [monitoring/user report/other] |
+        | YYYY-MM-DD HH:MM | First responder engaged |
+        | YYYY-MM-DD HH:MM | Root cause identified |
+        | YYYY-MM-DD HH:MM | Fix deployed |
+        | YYYY-MM-DD HH:MM | Service restored |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms Observed
+      description: What observable symptoms indicated the incident?
+      placeholder: |
+        - Health check endpoint returning non-200
+        - Error logs showing specific messages
+        - Users reporting specific error screens
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause Analysis
+      description: What caused the incident? (Fill after investigation)
+      placeholder: "Describe the underlying technical cause once identified"
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution-steps
+    attributes:
+      label: Resolution Steps
+      description: Step-by-step actions taken to resolve the incident
+      value: |
+        1. [ ] Confirm incident via health check script (`scripts/health-check.sh`)
+        2. [ ] Check backend process status
+        3. [ ] Review error logs
+        4. [ ] Identify root cause
+        5. [ ] Apply fix (describe specific actions)
+        6. [ ] Verify fix via health check
+        7. [ ] Monitor for recurrence (15 min observation period)
+        8. [ ] Communicate resolution to stakeholders
+    validations:
+      required: true
+
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Immediate Mitigation
+      description: What was done to restore service before root cause fix?
+      placeholder: "e.g., Restarted backend process, rolled back deployment"
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention / Follow-up Actions
+      description: What changes will prevent this from happening again?
+      value: |
+        - [ ] Action item 1 (assignee, deadline)
+        - [ ] Action item 2 (assignee, deadline)
+        - [ ] Update RUNBOOK.md if new procedure was discovered
+        - [ ] Add monitoring/alerting for this failure mode
+    validations:
+      required: false
+
+  - type: textarea
+    id: communication-log
+    attributes:
+      label: Communication Log
+      description: Record of stakeholder communications during the incident
+      placeholder: |
+        - HH:MM - Notified team via [Slack/PagerDuty/Email]
+        - HH:MM - Status page updated
+        - HH:MM - User communication sent
+    validations:
+      required: false
