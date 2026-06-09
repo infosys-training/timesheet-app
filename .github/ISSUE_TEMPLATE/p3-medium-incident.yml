@@ -1,0 +1,127 @@
+name: "P3 — Medium Incident"
+description: "Minor feature issue or degraded performance for a subset of users. Response SLA: 1 hour."
+title: "[P3] "
+labels: ["incident", "P3-medium"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 — Medium Incident Report
+        Use this template for **minor feature issues or performance degradation** affecting a subset of users (e.g., slow report generation, intermittent validation errors, minor UI issues tied to backend behavior).
+        **Response SLA**: Acknowledge within 1 hour. Resolve within 1 business day.
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reported By
+      description: Who identified this issue?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Select the primary failure category (see RUNBOOK.md for details).
+      options:
+        - "FM-3: SQLite Lock / Busy Errors"
+        - "FM-4: API 5xx Errors"
+        - "FM-5: Rate Limiting Exhaustion (HTTP 429)"
+        - "FM-7: Memory Leak — Unbounded DB Growth"
+        - "FM-8: Temp File Accumulation"
+        - "FM-9: Report Generation Failures"
+        - "FM-10: Dependency / Build Failures"
+        - "FM-11: Frontend ↔ Backend Connectivity"
+        - "FM-13: CORS Misconfiguration"
+        - "Other / Unknown"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact-assessment
+    attributes:
+      label: Impact Assessment
+      description: Describe the scope and severity.
+      value: |
+        **Users affected**: [few / subset — describe]
+        **Features impacted**: [specific feature]
+        **Workaround available**: [yes / no — describe if yes]
+        **Frequency**: [constant / intermittent — describe pattern]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: When was the issue first observed and key follow-up events.
+      value: |
+        | Time (UTC) | Event |
+        |---|---|
+        | YYYY-MM-DD HH:MM | Issue first observed |
+        | YYYY-MM-DD HH:MM | Acknowledged by @... |
+        | YYYY-MM-DD HH:MM | Resolution applied |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Evidence
+      description: Error messages, logs, steps to reproduce, etc.
+      placeholder: |
+        Steps to reproduce:
+        1. Log in as user@example.com
+        2. Navigate to Reports page
+        3. Click "Export CSV" for a client with >1000 entries
+        4. Observe 500 error
+
+        Log output:
+          Error: ENOSPC: no space left on device, write
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What caused the issue? Fill in once identified.
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: What was done to fix it?
+      value: |
+        **Fix applied**:
+
+        **Verification**:
+        - [ ] Issue no longer reproducible
+        - [ ] Health check passing
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-Up Actions
+      value: |
+        - [ ] Runbook updated if applicable
+        - [ ] Code changes submitted via PR
+    validations:
+      required: false
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Production
+        - Staging
+        - Development
+        - Docker (local)
+    validations:
+      required: true

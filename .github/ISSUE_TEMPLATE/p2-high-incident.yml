@@ -1,0 +1,136 @@
+name: "P2 — High Incident"
+description: "Major feature degraded or unavailable for a significant number of users. Response SLA: 15 minutes."
+title: "[P2] "
+labels: ["incident", "P2-high"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 — High Incident Report
+        Use this template for **major feature degradation** affecting a significant portion of users (e.g., exports broken, intermittent 500 errors, severe performance degradation).
+        **Response SLA**: Acknowledge within 15 minutes. Resolve or mitigate within 4 hours.
+
+  - type: input
+    id: incident-commander
+    attributes:
+      label: Incident Commander
+      description: Who is leading the response?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Select the primary failure category (see RUNBOOK.md for details).
+      options:
+        - "FM-1: Database Connection / Initialization Failure"
+        - "FM-2: In-Memory Data Loss on Restart"
+        - "FM-3: SQLite Lock / Busy Errors"
+        - "FM-4: API 5xx Errors"
+        - "FM-5: Rate Limiting Exhaustion (HTTP 429)"
+        - "FM-6: Authentication / Header Misconfiguration"
+        - "FM-7: Memory Leak — Unbounded DB Growth"
+        - "FM-8: Temp File Accumulation"
+        - "FM-9: Report Generation Failures"
+        - "FM-10: Dependency / Build Failures"
+        - "FM-11: Frontend ↔ Backend Connectivity"
+        - "FM-12: Docker / Container Health Failures"
+        - "FM-13: CORS Misconfiguration"
+        - "Other / Unknown"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact-assessment
+    attributes:
+      label: Impact Assessment
+      description: Describe what is broken and who is affected.
+      value: |
+        **Users affected**: [percentage / specific group]
+        **Features impacted**: [list affected features]
+        **Workaround available**: [yes / no — describe if yes]
+        **Data integrity**: [confirmed intact / at risk / unknown]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Document key events as they happen.
+      value: |
+        | Time (UTC) | Event |
+        |---|---|
+        | YYYY-MM-DD HH:MM | Issue first reported / detected |
+        | YYYY-MM-DD HH:MM | Incident acknowledged by @... |
+        | YYYY-MM-DD HH:MM | Root cause identified |
+        | YYYY-MM-DD HH:MM | Fix applied |
+        | YYYY-MM-DD HH:MM | Service fully restored |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Evidence
+      description: Error messages, log snippets, health-check output, HTTP responses, etc.
+      placeholder: |
+        Paste relevant log output, curl responses, or screenshots here.
+        Example:
+          $ curl -H "x-user-email: user@test.com" http://localhost:3001/api/reports/export/pdf/1
+          {"error":"Failed to generate PDF report"}
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What caused the incident? Fill this in once identified.
+      placeholder: "e.g., Temp directory filled up preventing new CSV/PDF exports from being written."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution & Recovery Steps
+      description: What was done to resolve the incident?
+      value: |
+        **Immediate mitigation**:
+
+        **Permanent fix**:
+
+        **Verification**:
+        - [ ] Affected feature confirmed working
+        - [ ] Health check passing (`node scripts/health-check.js`)
+        - [ ] No elevated error rates in logs
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-Up Actions
+      description: Post-incident tasks to prevent recurrence.
+      value: |
+        - [ ] Post-incident review scheduled (if warranted)
+        - [ ] Runbook updated if applicable
+        - [ ] Monitoring / alerting gaps addressed
+        - [ ] Code changes submitted via PR
+    validations:
+      required: false
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Production
+        - Staging
+        - Development
+        - Docker (local)
+    validations:
+      required: true
