@@ -1,0 +1,80 @@
+name: "P4 — Low Priority Incident"
+description: "Cosmetic issues, minor bugs, or improvement opportunities discovered during operations."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 — Low Priority Incident
+        **Response SLA: Next business day** · **Resolution target: Next sprint**
+
+        Use this template for cosmetic issues, minor UX bugs, non-urgent operational improvements, or technical debt discovered during incident investigation.
+
+  - type: input
+    id: title
+    attributes:
+      label: Incident Title
+      description: Brief summary of the issue
+      placeholder: "e.g., Error messages not user-friendly for validation failures"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - UI / Cosmetic Bug
+        - Error Message Improvement
+        - Performance Optimization
+        - Logging / Observability Gap
+        - Documentation Gap
+        - Technical Debt
+        - Dependency Update Needed
+        - Configuration Improvement
+        - Other Low Priority
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      value: |
+        **Users affected**: (none directly / minor inconvenience)
+        **Features affected**:
+        **Workaround**: (describe if applicable)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Detailed description of the issue and any relevant context
+      placeholder: |
+        Describe what you observed, where it occurs, and why it matters.
+        Include screenshots, log snippets, or reproduction steps if helpful.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_fix
+    attributes:
+      label: Proposed Fix / Improvement
+      description: Suggested resolution if known
+      placeholder: "Optional — describe what a fix might look like."
+
+  - type: dropdown
+    id: current_status
+    attributes:
+      label: Current Status
+      options:
+        - Reported
+        - Triaged
+        - In Progress
+        - Resolved
+    validations:
+      required: true

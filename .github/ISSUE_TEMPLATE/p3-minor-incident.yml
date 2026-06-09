@@ -1,0 +1,105 @@
+name: "P3 — Minor Incident"
+description: "Limited impact on a subset of users or a non-critical feature. Service is operational."
+title: "[P3] "
+labels: ["incident", "P3-minor"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 — Minor Incident
+        **Response SLA: 4 hours** · **Resolution target: 1 business day**
+
+        Use this template for issues affecting a small number of users or non-critical features (e.g., a single API endpoint intermittently failing, slow performance for specific operations).
+
+  - type: input
+    id: title
+    attributes:
+      label: Incident Title
+      description: Brief summary of the issue
+      placeholder: "e.g., Work entry creation slow for users with > 500 entries"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Failure Category
+      options:
+        - Intermittent API Errors
+        - Performance Degradation
+        - Single Feature Broken
+        - UI/Frontend Rendering Issue
+        - Incorrect Data Returned
+        - Logging / Monitoring Gap
+        - Other Minor
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      value: |
+        **Users affected**: (count or description)
+        **Features affected**:
+        **Workaround available**: (yes / no — describe if yes)
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue first reported |
+        | YYYY-MM-DD HH:MM | Investigation started |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Observed Symptoms
+      description: What is the user experiencing?
+      placeholder: |
+        - Specific error message
+        - Steps to reproduce
+        - Affected endpoint or page
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnosis
+    attributes:
+      label: Diagnosis & Root Cause
+      placeholder: "Update when identified."
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      value: |
+        1.
+        2.
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention & Follow-up
+      value: |
+        - [ ] Action item
+
+  - type: dropdown
+    id: current_status
+    attributes:
+      label: Current Status
+      options:
+        - Investigating
+        - Identified
+        - Mitigated
+        - Resolved
+    validations:
+      required: true

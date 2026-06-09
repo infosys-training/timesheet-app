@@ -1,0 +1,122 @@
+name: "P1 — Critical Incident"
+description: "Service is completely down or data loss is occurring. Immediate response required."
+title: "[P1] "
+labels: ["incident", "P1-critical", "urgent"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 — Critical Incident
+        **Response SLA: 15 minutes** · **Resolution target: 1 hour**
+
+        Use this template when the service is completely unavailable, data loss is occurring, or a security breach is detected.
+
+  - type: input
+    id: title
+    attributes:
+      label: Incident Title
+      description: Brief summary of the incident
+      placeholder: "e.g., Backend unreachable — all users affected"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Failure Category
+      options:
+        - Service Outage (backend/frontend completely down)
+        - Data Loss
+        - Security Breach
+        - Database Corruption
+        - Infrastructure Failure
+        - Other Critical
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Who and what is affected?
+      value: |
+        **Users affected**: (all / specific group / count)
+        **Features affected**: (all / list specific features)
+        **Data impact**: (no data loss / potential data loss / confirmed data loss)
+        **Revenue impact**: (none / estimated)
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Key timestamps (use UTC)
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue first detected |
+        | YYYY-MM-DD HH:MM | Incident declared |
+        | YYYY-MM-DD HH:MM | First responder engaged |
+        | YYYY-MM-DD HH:MM | (add more as incident progresses) |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Observed Symptoms
+      description: What error messages, HTTP status codes, or behaviors are you seeing?
+      placeholder: |
+        - Health check returns 503
+        - Backend logs show "SQLITE_CORRUPT"
+        - Users see blank page
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnosis
+    attributes:
+      label: Diagnosis & Root Cause
+      description: What was identified as the root cause? (fill in as investigation progresses)
+      placeholder: "Leave blank initially; update as investigation progresses."
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: What actions were taken to resolve the incident?
+      value: |
+        1.
+        2.
+        3.
+
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Mitigation / Workaround
+      description: Any temporary workaround applied before full resolution?
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention & Follow-up
+      description: What changes are needed to prevent recurrence?
+      value: |
+        - [ ] Action item 1
+        - [ ] Action item 2
+        - [ ] Schedule post-mortem
+
+  - type: dropdown
+    id: current_status
+    attributes:
+      label: Current Status
+      options:
+        - Investigating
+        - Identified
+        - Mitigated
+        - Resolved
+        - Post-mortem Scheduled
+    validations:
+      required: true

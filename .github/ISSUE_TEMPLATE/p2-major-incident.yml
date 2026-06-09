@@ -1,0 +1,116 @@
+name: "P2 — Major Incident"
+description: "Significant degradation affecting many users. Core functionality impaired but service is partially available."
+title: "[P2] "
+labels: ["incident", "P2-major"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 — Major Incident
+        **Response SLA: 1 hour** · **Resolution target: 4 hours**
+
+        Use this template when core functionality is degraded (e.g., reports not generating, high error rate, severe performance issues) but the service is not completely down.
+
+  - type: input
+    id: title
+    attributes:
+      label: Incident Title
+      description: Brief summary of the incident
+      placeholder: "e.g., PDF export returning 500 errors for all users"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Failure Category
+      options:
+        - API Errors (high 5xx rate)
+        - Database Performance (slow queries, locks)
+        - Authentication Issues
+        - Rate Limiting (false positives)
+        - Report Generation Failure (CSV/PDF)
+        - Memory / Resource Exhaustion
+        - Partial Service Degradation
+        - Other Major
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Who and what is affected?
+      value: |
+        **Users affected**: (percentage / count / specific group)
+        **Features affected**: (list specific features)
+        **Error rate**: (approximate % of requests failing)
+        **Workaround available**: (yes / no — describe if yes)
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Key timestamps (use UTC)
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue first detected |
+        | YYYY-MM-DD HH:MM | Incident declared |
+        | YYYY-MM-DD HH:MM | (add more as incident progresses) |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Observed Symptoms
+      description: Error messages, status codes, log entries, or user reports
+      placeholder: |
+        - 30% of API requests returning 500
+        - Backend logs show SQLITE_BUSY errors
+        - CSV export times out for large clients
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnosis
+    attributes:
+      label: Diagnosis & Root Cause
+      description: What was identified as the root cause?
+      placeholder: "Update as investigation progresses."
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: Actions taken to resolve the incident
+      value: |
+        1.
+        2.
+        3.
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention & Follow-up
+      description: What changes are needed to prevent recurrence?
+      value: |
+        - [ ] Action item 1
+        - [ ] Action item 2
+
+  - type: dropdown
+    id: current_status
+    attributes:
+      label: Current Status
+      options:
+        - Investigating
+        - Identified
+        - Mitigated
+        - Resolved
+        - Post-mortem Scheduled
+    validations:
+      required: true
