@@ -1,0 +1,104 @@
+name: "P3 Incident - Medium / Minor Degradation"
+description: "Non-critical feature degraded or intermittent errors affecting some users"
+title: "[P3] "
+labels: ["incident", "P3", "medium"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 Incident Report
+        Use this template for **medium severity** incidents: non-critical features degraded, intermittent errors, or performance issues affecting a subset of users.
+        **Expected response time: 4 hours**
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Short description of the incident
+      placeholder: "e.g., CSV report export intermittently timing out"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact-description
+    attributes:
+      label: Impact Description
+      description: |
+        Describe the scope and severity of the impact.
+        - Which feature is affected?
+        - Is it intermittent or consistent?
+        - What is the user experience?
+      placeholder: "{IMPACT_DESCRIPTION}"
+      value: |
+        **Affected Feature:**
+        **Frequency:** Intermittent / Consistent
+        **Affected Users:** Percentage or count
+        **User Experience:** (describe what users see)
+        **Workaround Available:** Yes / No
+    validations:
+      required: true
+
+  - type: textarea
+    id: incident-timeline
+    attributes:
+      label: Incident Timeline
+      description: |
+        When was the issue first reported or detected?
+      placeholder: "{INCIDENT_TIMELINE}"
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue first reported/detected |
+        | YYYY-MM-DD HH:MM | Investigation started |
+        | YYYY-MM-DD HH:MM | Fix deployed |
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution-steps
+    attributes:
+      label: Resolution Steps
+      description: |
+        Steps taken or planned to resolve the incident.
+      placeholder: "{RESOLUTION_STEPS}"
+      value: |
+        **Root Cause:**
+
+        **Actions Taken:**
+        1.
+        2.
+
+        **RUNBOOK Section Referenced:** FM-X (if applicable)
+
+        **Fix Type:** Configuration change / Code fix / Infrastructure
+        **PR Link:** (if applicable)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode Category
+      description: Which failure mode from the RUNBOOK applies?
+      options:
+        - FM-1: Database Connectivity / Corruption
+        - FM-2: Backend Process Crash / OOM
+        - FM-3: API Rate Limiting Exceeded
+        - FM-4: Report Generation Failure
+        - FM-5: Authentication Middleware Failure
+        - FM-6: Frontend/Backend Connectivity Loss
+        - FM-7: Disk Space Exhaustion
+        - FM-8: Docker Container Health Check Failure
+        - Other (describe in resolution steps)
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      value: |
+        **Environment:** Production / Staging / Development
+        **Last Deployment:** (date/commit SHA)
+    validations:
+      required: false
