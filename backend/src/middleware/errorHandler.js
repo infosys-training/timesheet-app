@@ -9,17 +9,21 @@ function errorHandler(err, req, res, next) {
     });
   }
 
-  // SQLite errors
+  // SQLite errors — never leak internal details
   if (err.code && err.code.startsWith('SQLITE_')) {
     return res.status(500).json({
-      error: 'Database error',
-      message: 'An error occurred while processing your request'
+      error: 'An error occurred while processing your request'
     });
   }
 
-  // Default error
-  res.status(err.status || 500).json({
-    error: err.message || 'Internal server error'
+  // Default error — sanitize: never expose raw error messages in production
+  const statusCode = err.status || 500;
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  res.status(statusCode).json({
+    error: isProduction || statusCode === 500
+      ? 'Internal server error'
+      : err.message || 'Internal server error'
   });
 }
 
