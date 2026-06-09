@@ -1,0 +1,138 @@
+name: "P1 — Critical Incident"
+description: "Complete service outage or data loss affecting all users. Response SLA: 5 minutes."
+title: "[P1] "
+labels: ["incident", "P1-critical"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 — Critical Incident Report
+        Use this template for **complete service outages, data loss, or security breaches** affecting all users.
+        **Response SLA**: Acknowledge within 5 minutes. Resolve or mitigate within 1 hour.
+
+  - type: input
+    id: incident-commander
+    attributes:
+      label: Incident Commander
+      description: Who is leading the response?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Select the primary failure category (see RUNBOOK.md for details).
+      options:
+        - "FM-1: Database Connection / Initialization Failure"
+        - "FM-2: In-Memory Data Loss on Restart"
+        - "FM-3: SQLite Lock / Busy Errors"
+        - "FM-4: API 5xx Errors"
+        - "FM-5: Rate Limiting Exhaustion (HTTP 429)"
+        - "FM-6: Authentication / Header Misconfiguration"
+        - "FM-7: Memory Leak — Unbounded DB Growth"
+        - "FM-8: Temp File Accumulation"
+        - "FM-9: Report Generation Failures"
+        - "FM-10: Dependency / Build Failures"
+        - "FM-11: Frontend ↔ Backend Connectivity"
+        - "FM-12: Docker / Container Health Failures"
+        - "FM-13: CORS Misconfiguration"
+        - "Other / Unknown"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact-assessment
+    attributes:
+      label: Impact Assessment
+      description: Describe what is broken and who is affected.
+      value: |
+        **Users affected**: [all / percentage / specific group]
+        **Features impacted**: [list affected features]
+        **Data loss**: [yes / no — describe if yes]
+        **Revenue impact**: [estimated if applicable]
+        **External customer visibility**: [yes / no]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Document key events as they happen. Update this section throughout the incident.
+      value: |
+        | Time (UTC) | Event |
+        |---|---|
+        | YYYY-MM-DD HH:MM | Alert triggered / Issue first reported |
+        | YYYY-MM-DD HH:MM | Incident acknowledged by @... |
+        | YYYY-MM-DD HH:MM | Root cause identified |
+        | YYYY-MM-DD HH:MM | Mitigation applied |
+        | YYYY-MM-DD HH:MM | Service restored |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Evidence
+      description: Error messages, log snippets, health-check output, screenshots, etc.
+      placeholder: |
+        Paste relevant log output, curl responses, or screenshots here.
+        Example:
+          $ curl http://localhost:3001/health
+          curl: (7) Failed to connect to localhost port 3001: Connection refused
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What caused the incident? Fill this in once identified.
+      placeholder: "e.g., DATABASE_PATH was not set in production, causing in-memory mode with data loss on container restart."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution & Recovery Steps
+      description: What was done to resolve the incident?
+      value: |
+        **Immediate mitigation**:
+
+        **Permanent fix**:
+
+        **Verification**:
+        - [ ] Health check passing (`node scripts/health-check.js`)
+        - [ ] Core API endpoints responding correctly
+        - [ ] No elevated error rates in logs
+        - [ ] User-facing functionality confirmed working
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-Up Actions
+      description: Post-incident tasks to prevent recurrence.
+      value: |
+        - [ ] Post-incident review scheduled
+        - [ ] Runbook updated if applicable
+        - [ ] Monitoring / alerting gaps addressed
+        - [ ] Code changes submitted via PR
+    validations:
+      required: false
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Production
+        - Staging
+        - Development
+        - Docker (local)
+    validations:
+      required: true

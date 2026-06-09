@@ -1,0 +1,106 @@
+name: "P4 — Low Incident"
+description: "Cosmetic issue, minor bug, or improvement needed. Response SLA: 1 business day."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 — Low Incident Report
+        Use this template for **cosmetic issues, minor bugs, or operational improvements** that do not significantly impact users (e.g., noisy logs, minor validation edge cases, non-critical dependency warnings).
+        **Response SLA**: Acknowledge within 1 business day. Resolve within 1 sprint/cycle.
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reported By
+      description: Who identified this issue?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: What type of issue is this?
+      options:
+        - "Minor bug"
+        - "Performance improvement"
+        - "Logging / observability gap"
+        - "Dependency update"
+        - "Documentation / runbook update"
+        - "Configuration improvement"
+        - "Tech debt"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact-assessment
+    attributes:
+      label: Impact Assessment
+      description: Describe the impact (if any) and urgency.
+      value: |
+        **Users affected**: [none / minimal]
+        **Workaround**: [describe if applicable]
+        **Risk if not addressed**: [low / tech-debt accumulation / etc.]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When was the issue noticed?
+      value: |
+        | Time (UTC) | Event |
+        |---|---|
+        | YYYY-MM-DD HH:MM | Issue first noticed |
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description & Evidence
+      description: Describe the issue in detail with any supporting evidence.
+      placeholder: |
+        Describe the issue here. Include:
+        - Steps to reproduce (if applicable)
+        - Log snippets or screenshots
+        - Expected vs. actual behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-fix
+    attributes:
+      label: Proposed Fix
+      description: Suggest a resolution if known.
+      placeholder: "e.g., Add PRAGMA busy_timeout to database init to reduce SQLITE_BUSY errors under load."
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-Up Actions
+      value: |
+        - [ ] Code changes submitted via PR
+        - [ ] Runbook/docs updated if applicable
+    validations:
+      required: false
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Production
+        - Staging
+        - Development
+        - Docker (local)
+        - All
+    validations:
+      required: true
