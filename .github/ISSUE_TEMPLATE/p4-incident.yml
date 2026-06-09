@@ -1,0 +1,70 @@
+name: "P4 Incident - Low"
+description: "Cosmetic or low-impact issue. Response within 24 hours."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 Incident Report -- Low
+        Cosmetic issue, noisy logs, or minor inconvenience. No significant user impact.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief summary of the issue
+      placeholder: "e.g., Excessive debug logging in production"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected Component
+      description: Which part of the system is affected?
+      multiple: true
+      options:
+        - Backend API (Express)
+        - Frontend (React/Vite)
+        - Database (SQLite)
+        - Authentication
+        - Client Management
+        - Work Entry Tracking
+        - Reporting / Export
+        - UI/UX
+        - CI/CD
+        - Documentation
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Issue Description
+      description: Describe what is happening and why it matters
+      placeholder: "Describe the issue, its impact (even if minor), and any context"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: How to observe the issue
+      placeholder: |
+        1. Go to ...
+        2. Click on ...
+        3. Observe ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: suggested-fix
+    attributes:
+      label: Suggested Fix
+      description: If you have ideas on how to fix this
+      placeholder: "Describe any proposed solution or improvement"
+    validations:
+      required: false

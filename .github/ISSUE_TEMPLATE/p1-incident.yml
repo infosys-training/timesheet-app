@@ -1,0 +1,118 @@
+name: "P1 Incident - Critical"
+description: "Service completely unavailable. All users impacted. Response within 15 minutes."
+title: "[P1] "
+labels: ["incident", "P1-critical", "urgent"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 Incident Report -- Critical
+        Complete service outage or data loss affecting all users. Requires immediate response.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief summary of the incident
+      placeholder: "e.g., Backend API completely unresponsive"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected Component
+      description: Which part of the system is affected?
+      multiple: true
+      options:
+        - Backend API (Express)
+        - Frontend (React/Vite)
+        - Database (SQLite)
+        - Authentication
+        - PDF/CSV Export
+        - Full Stack (all components)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the scope and severity of impact
+      value: |
+        **Users affected**: [all / percentage / specific group]
+        **Functionality lost**: [describe what is broken]
+        **Data loss**: [yes / no -- if yes, describe extent]
+        **Business impact**: [describe revenue/workflow impact]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Chronological list of events (use UTC timestamps)
+      value: |
+        - **YYYY-MM-DD HH:MM UTC** -- Incident detected: [how]
+        - **YYYY-MM-DD HH:MM UTC** -- First response: [action taken]
+        - **YYYY-MM-DD HH:MM UTC** -- [additional events]
+        - **YYYY-MM-DD HH:MM UTC** -- Resolution: [what fixed it]
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms Observed
+      description: What errors, logs, or behaviors were observed?
+      placeholder: |
+        - HTTP status codes returned
+        - Error messages in server logs
+        - Browser console errors
+        - Health check results
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What caused the incident? (fill in after investigation)
+      placeholder: "Describe the underlying technical cause"
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: What was done to resolve the incident?
+      placeholder: |
+        1. Step taken to diagnose
+        2. Step taken to mitigate
+        3. Step taken to fully resolve
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention / Follow-up Actions
+      description: Action items to prevent recurrence
+      value: |
+        - [ ] Action item 1 -- owner: @, due: YYYY-MM-DD
+        - [ ] Action item 2 -- owner: @, due: YYYY-MM-DD
+    validations:
+      required: false
+
+  - type: dropdown
+    id: runbook-followed
+    attributes:
+      label: Was the RUNBOOK.md followed?
+      options:
+        - "Yes"
+        - "No -- runbook did not cover this scenario"
+        - "Partially -- some steps were not applicable"
+    validations:
+      required: true

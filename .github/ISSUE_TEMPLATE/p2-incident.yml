@@ -1,0 +1,108 @@
+name: "P2 Incident - Major"
+description: "Major feature broken with significant user impact. Response within 1 hour."
+title: "[P2] "
+labels: ["incident", "P2-major"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 Incident Report -- Major
+        A critical feature is broken. Significant number of users affected. Workaround may or may not exist.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief summary of the incident
+      placeholder: "e.g., Authentication failing for new users"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected Component
+      description: Which part of the system is affected?
+      multiple: true
+      options:
+        - Backend API (Express)
+        - Frontend (React/Vite)
+        - Database (SQLite)
+        - Authentication
+        - Client Management
+        - Work Entry Tracking
+        - Reporting / Export
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the scope and severity of impact
+      value: |
+        **Users affected**: [estimate number or percentage]
+        **Feature(s) broken**: [list affected features]
+        **Workaround available**: [yes / no -- describe if yes]
+        **Data integrity**: [any risk of data corruption?]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Chronological list of events (use UTC timestamps)
+      value: |
+        - **YYYY-MM-DD HH:MM UTC** -- Incident detected
+        - **YYYY-MM-DD HH:MM UTC** -- Investigation started
+        - **YYYY-MM-DD HH:MM UTC** -- Resolution applied
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms Observed
+      description: What errors, logs, or behaviors were observed?
+      placeholder: |
+        - Specific API endpoints affected
+        - Error messages
+        - Steps to reproduce
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: What was done to resolve the incident?
+      placeholder: |
+        1. Diagnosis steps
+        2. Fix applied
+        3. Verification performed
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention / Follow-up Actions
+      description: Action items to prevent recurrence
+      value: |
+        - [ ] Action item 1 -- owner: @, due: YYYY-MM-DD
+        - [ ] Action item 2 -- owner: @, due: YYYY-MM-DD
+    validations:
+      required: false
+
+  - type: dropdown
+    id: runbook-followed
+    attributes:
+      label: Was the RUNBOOK.md followed?
+      options:
+        - "Yes"
+        - "No -- runbook did not cover this scenario"
+        - "Partially -- some steps were not applicable"
+    validations:
+      required: false

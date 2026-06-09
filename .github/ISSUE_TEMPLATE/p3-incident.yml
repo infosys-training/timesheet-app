@@ -1,0 +1,84 @@
+name: "P3 Incident - Minor"
+description: "Minor feature degraded with workaround available. Response within 4 hours."
+title: "[P3] "
+labels: ["incident", "P3-minor"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 Incident Report -- Minor
+        A feature is degraded but a workaround exists. Limited user impact.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief summary of the incident
+      placeholder: "e.g., PDF export generating empty documents"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected Component
+      description: Which part of the system is affected?
+      multiple: true
+      options:
+        - Backend API (Express)
+        - Frontend (React/Vite)
+        - Database (SQLite)
+        - Authentication
+        - Client Management
+        - Work Entry Tracking
+        - Reporting / Export
+        - UI/UX
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the scope and severity of impact
+      value: |
+        **Users affected**: [estimate]
+        **Feature(s) degraded**: [describe]
+        **Workaround**: [describe the workaround]
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms Observed
+      description: Error messages, unexpected behavior, or logs
+      placeholder: |
+        - What the user sees
+        - Relevant log entries
+        - Steps to reproduce
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution / Fix Plan
+      description: How this was or will be resolved
+      placeholder: |
+        1. Root cause identified
+        2. Fix description
+        3. Verification steps
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Follow-up Actions
+      description: Any preventive measures or improvements
+      value: |
+        - [ ] Action item -- owner: @, due: YYYY-MM-DD
+    validations:
+      required: false
