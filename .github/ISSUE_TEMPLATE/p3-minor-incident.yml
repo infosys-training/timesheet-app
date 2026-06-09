@@ -1,0 +1,85 @@
+name: "P3 — Minor Incident"
+description: "Performance degradation or minor feature issues requiring response within 4 hours"
+title: "[P3] "
+labels: ["incident", "P3-minor", "priority:medium"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 — Minor Incident Report
+        **Response SLA: ≤ 4 hours**
+        Use this for slow responses, rate-limiting false positives, intermittent errors, or non-critical feature issues.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Short, descriptive title
+      placeholder: "e.g., Slow response times on work entries list endpoint"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Category
+      options:
+        - Performance — Slow API Responses
+        - Performance — Slow Report Generation
+        - API — Intermittent 500 Errors
+        - API — Rate Limit False Positives
+        - Frontend — Slow Page Load
+        - Frontend — UI Rendering Issue
+        - Temp Files — Disk Space Warning
+        - Logging — Excessive Log Volume
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      value: |
+        **Users affected:** [few / some / many]
+        **Feature impact:** [degraded but functional / intermittent failures]
+        **Workaround available:** [yes / no]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      value: |
+        - **First noticed:** YYYY-MM-DD HH:MM UTC
+        - **Reported by:** [monitoring / user / routine check]
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Evidence
+      placeholder: |
+        - What's happening: ...
+        - Frequency: ...
+        - Relevant metrics / logs: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      placeholder: |
+        **Root cause:** ...
+        **Fix applied:** ...
+        **Resolved at:** YYYY-MM-DD HH:MM UTC
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-Up Actions
+      placeholder: |
+        - [ ] Action item 1

@@ -1,0 +1,105 @@
+name: "P2 — Major Incident"
+description: "Partial outage or major feature degradation requiring response within 1 hour"
+title: "[P2] "
+labels: ["incident", "P2-major", "priority:high"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 — Major Incident Report
+        **Response SLA: ≤ 1 hour**
+        Use this for partial outages, authentication failures, report generation broken, or significant performance degradation.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Short, descriptive title for the incident
+      placeholder: "e.g., PDF report generation failing with 500 errors"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Category
+      description: Primary failure mode (refer to RUNBOOK.md for details)
+      options:
+        - Database — Write Contention (SQLITE_BUSY)
+        - Database — Schema Initialization Failure
+        - API — CORS Rejection
+        - API — Rate Limit Exhaustion (429s)
+        - API — Validation Error Storm
+        - API — Authentication Degraded
+        - Memory — High Memory Usage
+        - Reports — PDF Generation Failure
+        - Reports — CSV Export Failure
+        - Frontend — API Proxy Failure
+        - Frontend — Axios Timeout
+        - Infrastructure — Container Health Check Failing
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Who and what is affected?
+      value: |
+        **Users affected:** [percentage or count]
+        **Features degraded:** [list affected features]
+        **Workaround available:** [yes / no — describe if yes]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When did this start? Key events.
+      value: |
+        - **Detected at:** YYYY-MM-DD HH:MM UTC
+        - **Reported by:** [monitoring alert / user report / on-call]
+        - **Current status:** [investigating / mitigating / resolved]
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Evidence
+      description: What are you observing? Include log snippets, error messages, health check output.
+      placeholder: |
+        - Endpoint affected: ...
+        - Error response: ...
+        - Frequency: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actions-taken
+    attributes:
+      label: Actions Taken
+      description: Steps taken so far. Reference RUNBOOK.md sections.
+      placeholder: |
+        1. Ran general triage checklist (RUNBOOK §1)
+        2. ...
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: Fill in after resolution.
+      placeholder: |
+        **Root cause:** ...
+        **Fix applied:** ...
+        **Resolved at:** YYYY-MM-DD HH:MM UTC
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-Up Actions
+      placeholder: |
+        - [ ] Action item 1
+        - [ ] Action item 2

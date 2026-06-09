@@ -1,0 +1,64 @@
+name: "P4 — Low Priority Issue"
+description: "Cosmetic issues, log noise, or minor improvements — next business day response"
+title: "[P4] "
+labels: ["incident", "P4-low", "priority:low"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 — Low Priority Issue Report
+        **Response SLA: Next business day**
+        Use this for cosmetic bugs, log noise, minor UX issues, or non-urgent improvements discovered during operations.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Issue Title
+      description: Short, descriptive title
+      placeholder: "e.g., Unnecessary error logs for expected 404 responses"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Category
+      options:
+        - UI — Cosmetic / Layout Issue
+        - Logging — Noise / Unnecessary Errors
+        - Configuration — Non-Critical Misconfiguration
+        - Documentation — Missing or Outdated
+        - Performance — Minor Optimization Opportunity
+        - Maintenance — Dependency Update Needed
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      value: |
+        **Users affected:** [none / minimal]
+        **Operational impact:** [describe]
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Detailed description of the issue
+      placeholder: |
+        What's happening, where, and how to reproduce...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-fix
+    attributes:
+      label: Proposed Fix
+      description: Suggested resolution if known
+      placeholder: |
+        - Option A: ...
+        - Option B: ...
