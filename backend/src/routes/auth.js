@@ -11,106 +11,90 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-only-secret';
 const JWT_EXPIRES_IN = '24h';
 const SALT_ROUNDS = 10;
 
-// Register endpoint - creates a new user with email + password
+function generateToken(email) {
+  return jwt.sign({ email }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+}
+
+function findUserByEmail(db, query, email) {
+  return new Promise((resolve, reject) => {
+    db.get(query, [email], (err, row) => {
+      if (err) reject(err);
+      else resolve(row);
+    });
+  });
+}
+
+function insertUser(db, email, passwordHash) {
+  return new Promise((resolve, reject) => {
+    db.run('INSERT INTO users (email, password_hash) VALUES (?, ?)', [email, passwordHash], function(err) {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+}
+
 router.post('/register', async (req, res, next) => {
   try {
     const { error, value } = registerSchema.validate(req.body);
-    if (error) {
-      return next(error);
-    }
+    if (error) return next(error);
 
     const { email, password } = value;
     const db = getDatabase();
 
-    // Check if user already exists
-    db.get('SELECT email FROM users WHERE email = ?', [email], async (err, row) => {
-      if (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({ error: 'Internal server error' });
-      }
+    const existing = await findUserByEmail(db, 'SELECT email FROM users WHERE email = ?', email);
+    if (existing) {
+      return res.status(409).json({ error: 'User already exists' });
+    }
 
-      if (row) {
-        return res.status(409).json({ error: 'User already exists' });
-      }
+    const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+    await insertUser(db, email, passwordHash);
 
-      try {
-        const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-
-        db.run('INSERT INTO users (email, password_hash) VALUES (?, ?)', [email, passwordHash], function(err) {
-          if (err) {
-            console.error('Error creating user:', err);
-            return res.status(500).json({ error: 'Failed to create user' });
-          }
-
-          const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
-
-          res.status(201).json({
-            message: 'User created and logged in successfully',
-            token,
-            user: {
-              email,
-              createdAt: new Date().toISOString()
-            }
-          });
-        });
-      } catch (hashErr) {
-        console.error('Error hashing password:', hashErr);
-        return res.status(500).json({ error: 'Internal server error' });
-      }
+    res.status(201).json({
+      message: 'User created and logged in successfully',
+      token: generateToken(email),
+      user: { email, createdAt: new Date().toISOString() }
     });
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    if (err.message === 'Insert failed' || err.message?.includes('insert')) {
+      console.error('Error creating user:', err);
+      return res.status(500).json({ error: 'Failed to create user' });
+    }
+    console.error('Registration error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Login endpoint - authenticates with email + password, returns JWT
 router.post('/login', async (req, res, next) => {
   try {
     const { error, value } = loginSchema.validate(req.body);
-    if (error) {
-      return next(error);
-    }
+    if (error) return next(error);
 
     const { email, password } = value;
     const db = getDatabase();
 
-    db.get('SELECT email, password_hash, created_at FROM users WHERE email = ?', [email], async (err, row) => {
-      if (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({ error: 'Internal server error' });
-      }
+    const row = await findUserByEmail(
+      db, 'SELECT email, password_hash, created_at FROM users WHERE email = ?', email
+    );
+    if (!row) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
 
-      if (!row) {
-        return res.status(401).json({ error: 'Invalid email or password' });
-      }
+    const passwordMatch = await bcrypt.compare(password, row.password_hash);
+    if (!passwordMatch) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
 
-      try {
-        const passwordMatch = await bcrypt.compare(password, row.password_hash);
-        if (!passwordMatch) {
-          return res.status(401).json({ error: 'Invalid email or password' });
-        }
-
-        const token = jwt.sign({ email: row.email }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
-
-        res.json({
-          message: 'Login successful',
-          token,
-          user: {
-            email: row.email,
-            createdAt: row.created_at
-          }
-        });
-      } catch (compareErr) {
-        console.error('Error comparing passwords:', compareErr);
-        return res.status(500).json({ error: 'Internal server error' });
-      }
+    res.json({
+      message: 'Login successful',
+      token: generateToken(row.email),
+      user: { email: row.email, createdAt: row.created_at }
     });
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    console.error('Login error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Get current user info
 router.get('/me', authenticateUser, (req, res) => {
   const db = getDatabase();
   
@@ -125,10 +109,7 @@ router.get('/me', authenticateUser, (req, res) => {
     }
 
     res.json({
-      user: {
-        email: row.email,
-        createdAt: row.created_at
-      }
+      user: { email: row.email, createdAt: row.created_at }
     });
   });
 });

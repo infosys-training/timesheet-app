@@ -19,8 +19,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         try {
           const response = await apiClient.getCurrentUser();
           setUser(response.user);
-        } catch (error) {
-          console.error('Auth check failed:', error);
+        } catch {
           localStorage.removeItem('authToken');
           localStorage.removeItem('userEmail');
         }
@@ -31,28 +30,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkAuth();
   }, []);
 
+  const handleAuthResponse = (response: { user: User; token: string }, email: string) => {
+    setUser(response.user);
+    localStorage.setItem('authToken', response.token);
+    localStorage.setItem('userEmail', email);
+  };
+
   const login = async (email: string, password: string) => {
-    try {
-      const response = await apiClient.login(email, password);
-      setUser(response.user);
-      localStorage.setItem('authToken', response.token);
-      localStorage.setItem('userEmail', email);
-    } catch (error) {
-      console.error('Login failed:', error);
-      throw error;
-    }
+    const response = await apiClient.login(email, password);
+    handleAuthResponse(response, email);
   };
 
   const register = async (email: string, password: string) => {
-    try {
-      const response = await apiClient.register(email, password);
-      setUser(response.user);
-      localStorage.setItem('authToken', response.token);
-      localStorage.setItem('userEmail', email);
-    } catch (error) {
-      console.error('Registration failed:', error);
-      throw error;
-    }
+    const response = await apiClient.register(email, password);
+    handleAuthResponse(response, email);
   };
 
   const logout = () => {
