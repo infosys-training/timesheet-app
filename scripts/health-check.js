@@ -20,6 +20,10 @@ const TIMEOUT_MS = 5000;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
+function sanitize(str) {
+  return String(str).replace(/[\r\n\t]/g, " ").slice(0, 200);
+}
+
 function request(method, path, body) {
   return new Promise((resolve, reject) => {
     const url = new URL(path, BASE_URL);
@@ -77,9 +81,9 @@ async function check(name, fn) {
     console.log(`  ✓  ${name} (${ms}ms)`);
   } catch (err) {
     const ms = Date.now() - start;
-    const msg = err.message || String(err);
+    const msg = sanitize(err.message || String(err));
     results.push({ name, status: "FAIL", ms, error: msg });
-    console.log(`  ✗  ${name} (${ms}ms) — ${msg}`);
+    console.log(`  \u2717  ${name} (${ms}ms) — ${msg}`);
   }
 }
 
