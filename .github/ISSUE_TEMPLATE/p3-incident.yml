@@ -1,0 +1,114 @@
+name: "P3 Incident - Minor Feature Impacted"
+description: "Minor feature impacted, workaround available. Response time: < 2 hours."
+title: "[P3] "
+labels: ["incident", "P3", "minor"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 Incident Report - Minor Feature Impacted
+        **Response SLA: < 2 hours | Assigned engineer**
+
+        A P3 incident means a non-critical feature is impacted and a workaround
+        exists. Examples: specific validation error on edge case input, slow
+        response times on one endpoint, minor UI rendering issue.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief, descriptive title of the issue
+      placeholder: "e.g., Work entry validation rejecting valid date format"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected Component
+      description: Primary system component affected
+      options:
+        - Authentication (login/session)
+        - Client Management (CRUD)
+        - Work Entry Management (CRUD)
+        - Report Generation (PDF/CSV)
+        - Input Validation
+        - Frontend UI/UX
+        - API Response Performance
+        - CORS / Headers
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact-assessment
+    attributes:
+      label: Impact Assessment
+      description: Describe the scope of the impact
+      value: |
+        **Users Affected:** [Few / Specific conditions]
+        **Feature Impacted:** [Specific feature or workflow]
+        **Workaround:** [Describe the available workaround]
+        **Frequency:** [Always / Intermittent / Edge case only]
+    validations:
+      required: true
+
+  - type: textarea
+    id: incident-timeline
+    attributes:
+      label: Incident Timeline
+      description: When was the issue discovered and resolved?
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue reported/discovered |
+        | YYYY-MM-DD HH:MM | Investigation started |
+        | YYYY-MM-DD HH:MM | Fix deployed |
+        | YYYY-MM-DD HH:MM | Verified resolved |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms / Reproduction Steps
+      description: How to reproduce the issue
+      value: |
+        **Steps to reproduce:**
+        1.
+        2.
+        3.
+
+        **Expected behavior:**
+
+        **Actual behavior:**
+
+        **Error messages (if any):**
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution-steps
+    attributes:
+      label: Resolution Steps
+      description: Actions taken to resolve the issue
+      value: |
+        1. [ ] Reproduce the issue
+        2. [ ] Identify root cause
+        3. [ ] Implement fix
+        4. [ ] Add test to prevent regression
+        5. [ ] Deploy and verify
+    validations:
+      required: true
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention / Follow-up
+      description: Actions to prevent recurrence
+      placeholder: |
+        - Add unit test for this edge case
+        - Update validation schema
+        - Add error handling for this scenario
+    validations:
+      required: false
