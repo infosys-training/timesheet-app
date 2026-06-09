@@ -1,0 +1,112 @@
+name: "P2 Incident - High / Major Degradation"
+description: "Major feature unavailable or significant performance degradation"
+title: "[P2] "
+labels: ["incident", "P2", "high"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 Incident Report
+        Use this template for **high severity** incidents: a major feature is unavailable or significantly degraded, but the service is not fully down.
+        **Expected response time: 30 minutes**
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Short description of the incident
+      placeholder: "e.g., Authentication failing for subset of users"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact-description
+    attributes:
+      label: Impact Description
+      description: |
+        Describe the scope and severity of the impact.
+        - Which features are degraded or unavailable?
+        - What percentage of users are affected?
+        - Are there workarounds available?
+      placeholder: "{IMPACT_DESCRIPTION}"
+      value: |
+        **Affected Users:** Percentage or count
+        **Affected Features:**
+        - [ ] Authentication / Login
+        - [ ] Client management (CRUD)
+        - [ ] Work entry logging
+        - [ ] Report generation (PDF/CSV)
+        **Workaround Available:** Yes / No
+        **Workaround Description:**
+    validations:
+      required: true
+
+  - type: textarea
+    id: incident-timeline
+    attributes:
+      label: Incident Timeline
+      description: |
+        Chronological sequence of events from detection to current state.
+      placeholder: "{INCIDENT_TIMELINE}"
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Incident detected (how?) |
+        | YYYY-MM-DD HH:MM | First responder engaged |
+        | YYYY-MM-DD HH:MM | Root cause identified |
+        | YYYY-MM-DD HH:MM | Mitigation applied |
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution-steps
+    attributes:
+      label: Resolution Steps
+      description: |
+        Steps taken or planned to resolve the incident. Reference RUNBOOK.md sections where applicable.
+      placeholder: "{RESOLUTION_STEPS}"
+      value: |
+        **Root Cause:**
+
+        **Immediate Actions Taken:**
+        1.
+        2.
+        3.
+
+        **RUNBOOK Section Referenced:** FM-X (link to section)
+
+        **Permanent Fix Required:** Yes / No
+        **Follow-up Tasks:**
+        - [ ]
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode Category
+      description: Which failure mode from the RUNBOOK applies?
+      options:
+        - FM-1: Database Connectivity / Corruption
+        - FM-2: Backend Process Crash / OOM
+        - FM-3: API Rate Limiting Exceeded
+        - FM-4: Report Generation Failure
+        - FM-5: Authentication Middleware Failure
+        - FM-6: Frontend/Backend Connectivity Loss
+        - FM-7: Disk Space Exhaustion
+        - FM-8: Docker Container Health Check Failure
+        - Other (describe in resolution steps)
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Which environment is affected?
+      value: |
+        **Environment:** Production / Staging / Development
+        **Deployment Method:** Docker / Bare metal / Other
+        **Last Deployment:** (date/commit SHA)
+    validations:
+      required: false

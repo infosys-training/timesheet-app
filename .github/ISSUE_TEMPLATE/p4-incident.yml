@@ -1,0 +1,93 @@
+name: "P4 Incident - Low / Cosmetic"
+description: "Minor issue with minimal user impact, cosmetic bugs, or improvement opportunities identified during incidents"
+title: "[P4] "
+labels: ["incident", "P4", "low"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 Incident Report
+        Use this template for **low severity** issues: cosmetic bugs, minor inconveniences, or improvement opportunities identified during incident response.
+        **Expected response time: Next business day (backlog triage)**
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Short description of the issue
+      placeholder: "e.g., Health check response missing version field"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact-description
+    attributes:
+      label: Impact Description
+      description: |
+        Describe the issue and its impact on users.
+      placeholder: "{IMPACT_DESCRIPTION}"
+      value: |
+        **Affected Feature:**
+        **User Impact:** Minimal / Cosmetic / None (operational improvement)
+        **Description:**
+    validations:
+      required: true
+
+  - type: textarea
+    id: incident-timeline
+    attributes:
+      label: Incident Timeline
+      description: |
+        When was the issue identified?
+      placeholder: "{INCIDENT_TIMELINE}"
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue identified |
+        | YYYY-MM-DD HH:MM | Logged for triage |
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution-steps
+    attributes:
+      label: Resolution Steps
+      description: |
+        Proposed fix or improvement.
+      placeholder: "{RESOLUTION_STEPS}"
+      value: |
+        **Proposed Fix:**
+
+        **Effort Estimate:** Small / Medium / Large
+        **Related RUNBOOK Section:** (if applicable)
+        **PR Link:** (if applicable)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode Category
+      description: Which failure mode from the RUNBOOK applies (if any)?
+      options:
+        - FM-1: Database Connectivity / Corruption
+        - FM-2: Backend Process Crash / OOM
+        - FM-3: API Rate Limiting Exceeded
+        - FM-4: Report Generation Failure
+        - FM-5: Authentication Middleware Failure
+        - FM-6: Frontend/Backend Connectivity Loss
+        - FM-7: Disk Space Exhaustion
+        - FM-8: Docker Container Health Check Failure
+        - Not applicable
+        - Other
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      value: |
+        **Environment:** Production / Staging / Development
+    validations:
+      required: false
