@@ -1,0 +1,113 @@
+name: "P4 — Low Severity Incident"
+description: "Cosmetic issue, minor inconvenience, or proactive improvement. Response SLA: 1 business day."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 — Low Severity Incident Report
+        **Response SLA: 1 business day | Resolution Target: 1 week**
+
+        Use this template for:
+        - Cosmetic or UI issues
+        - Minor inconvenience with easy workaround
+        - Proactive improvements identified during review
+        - Low-severity dependency updates
+        - Documentation gaps
+        - Non-urgent technical debt
+
+  - type: input
+    id: detected_at
+    attributes:
+      label: "Detection Time"
+      description: "When was the issue first noticed?"
+      placeholder: "2024-01-15"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: detection_method
+    attributes:
+      label: "Detection Method"
+      options:
+        - User report
+        - Code review / audit
+        - Automated scan (npm audit, linter)
+        - On-call engineer observation
+        - Proactive review
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: "Impact Assessment"
+      description: "Describe the impact."
+      placeholder: |
+        - What is affected:
+        - Who is affected:
+        - Workaround:
+        - Urgency (low):
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: "Category"
+      options:
+        - "UI / Cosmetic"
+        - "Performance (minor)"
+        - "Dependency update"
+        - "Documentation"
+        - "Technical debt"
+        - "Logging / Observability"
+        - "Security (low severity)"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: "Detailed description of the issue and steps to reproduce."
+      placeholder: |
+        Steps to reproduce:
+        1. 
+        2. 
+        3. 
+
+        Expected behavior:
+        Actual behavior:
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_fix
+    attributes:
+      label: "Proposed Fix"
+      description: "Suggested approach to resolve the issue."
+      placeholder: |
+        - Approach:
+        - Files to change:
+        - Estimated effort:
+
+  - type: textarea
+    id: follow_up
+    attributes:
+      label: "Acceptance Criteria"
+      description: "How do we know this is fixed?"
+      placeholder: |
+        - [ ] Criteria 1
+        - [ ] Criteria 2
+        - [ ] No regression in existing tests
+
+  - type: input
+    id: assignee
+    attributes:
+      label: "Assignee"
+      description: "Who should pick this up?"
+      placeholder: "@username or unassigned"

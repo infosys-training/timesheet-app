@@ -1,0 +1,134 @@
+name: "P3 — Medium Severity Incident"
+description: "Minor feature degraded, small number of users affected, workaround exists. Response SLA: 4 hours."
+title: "[P3] "
+labels: ["incident", "P3-medium"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 — Medium Severity Incident Report
+        **Response SLA: 4 hours | Resolution Target: 24 hours**
+
+        Use this template for:
+        - Minor feature degraded but workaround exists
+        - Small number of users affected (<10%)
+        - Non-critical performance degradation
+        - Non-critical dependency vulnerabilities
+        - Export functionality partially broken
+
+  - type: input
+    id: detected_at
+    attributes:
+      label: "Detection Time"
+      description: "When was the incident first detected? (ISO 8601 format)"
+      placeholder: "2024-01-15T14:30:00Z"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: detection_method
+    attributes:
+      label: "Detection Method"
+      options:
+        - Automated monitoring alert
+        - User report
+        - On-call engineer observation
+        - CI/CD pipeline failure
+        - Code review / audit
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: "Impact Assessment"
+      description: "Describe the scope and severity of impact."
+      placeholder: |
+        - Feature(s) affected:
+        - Number of users impacted:
+        - Workaround available:
+        - Business impact (low/medium):
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure_mode
+    attributes:
+      label: "Failure Mode"
+      description: "Select the primary failure category (see RUNBOOK.md)."
+      options:
+        - "FM-1: Database Failure"
+        - "FM-2: API / HTTP Errors"
+        - "FM-3: Authentication & JWT Failure"
+        - "FM-4: Memory Leak / Resource Exhaustion"
+        - "FM-5: Dependency / Build Failure"
+        - "FM-6: Rate Limiting / DoS"
+        - "FM-7: PDF/CSV Export Failure"
+        - "FM-8: Frontend Build Failure"
+        - "FM-9: Process Crash / Restart Loop"
+        - "Unknown / Multiple"
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: "Symptoms"
+      description: "What observable symptoms are present?"
+      placeholder: |
+        - Affected endpoint(s):
+        - Error messages or logs:
+        - Steps to reproduce:
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: "Incident Timeline"
+      description: "Key events and status updates."
+      value: |
+        | Time (UTC) | Event |
+        |-----------|-------|
+        |           | Issue detected |
+        |           | Investigation started |
+        |           | Root cause identified |
+        |           | Fix applied |
+    validations:
+      required: true
+
+  - type: textarea
+    id: root_cause
+    attributes:
+      label: "Root Cause"
+      description: "What caused the issue?"
+      placeholder: "e.g., CSV export fails when client name contains special characters."
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: "Resolution"
+      description: "How was the issue resolved?"
+      placeholder: |
+        Fix applied:
+        -
+        Verification steps:
+        -
+
+  - type: textarea
+    id: follow_up
+    attributes:
+      label: "Follow-Up Actions"
+      description: "Preventive measures for the future."
+      placeholder: |
+        - [ ] Add unit test for edge case
+        - [ ] Update input validation
+        - [ ] Update documentation
+
+  - type: input
+    id: assignee
+    attributes:
+      label: "Assignee"
+      description: "Who is responsible for resolution?"
+      placeholder: "@username"
