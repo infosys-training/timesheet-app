@@ -1,7 +1,5 @@
 import axios, { type AxiosInstance, type AxiosResponse } from 'axios';
 
-// Use empty string to make requests relative to the current origin
-// Vite proxy will forward /api requests to the backend
 const API_BASE_URL = '';
 
 class ApiClient {
@@ -11,31 +9,23 @@ class ApiClient {
     this.client = axios.create({
       baseURL: API_BASE_URL,
       timeout: 10000,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
     });
 
-    // Request interceptor to add email header
     this.client.interceptors.request.use(
       (config) => {
-        const userEmail = localStorage.getItem('userEmail');
-        if (userEmail) {
-          config.headers['x-user-email'] = userEmail;
-        }
+        const token = localStorage.getItem('authToken');
+        if (token) config.headers['Authorization'] = `Bearer ${token}`;
         return config;
       },
-      (error) => {
-        return Promise.reject(error);
-      }
+      (error) => Promise.reject(error)
     );
 
-    // Response interceptor for error handling
     this.client.interceptors.response.use(
       (response: AxiosResponse) => response,
       (error) => {
         if (error.response?.status === 401) {
-          // Clear stored email on auth error
+          localStorage.removeItem('authToken');
           localStorage.removeItem('userEmail');
           window.location.href = '/login';
         }
@@ -44,100 +34,63 @@ class ApiClient {
     );
   }
 
-  // Auth endpoints
-  async login(email: string) {
-    const response = await this.client.post('/api/auth/login', { email });
-    return response.data;
+  private async get<T = unknown>(url: string, config?: object): Promise<T> {
+    return (await this.client.get(url, config)).data;
   }
 
-  async getCurrentUser() {
-    const response = await this.client.get('/api/auth/me');
-    return response.data;
+  private async post<T = unknown>(url: string, data?: object): Promise<T> {
+    return (await this.client.post(url, data)).data;
   }
 
-  // Client endpoints
-  async getClients() {
-    const response = await this.client.get('/api/clients');
-    return response.data;
+  private async put<T = unknown>(url: string, data?: object): Promise<T> {
+    return (await this.client.put(url, data)).data;
   }
 
-  async getClient(id: number) {
-    const response = await this.client.get(`/api/clients/${id}`);
-    return response.data;
+  private async del<T = unknown>(url: string): Promise<T> {
+    return (await this.client.delete(url)).data;
   }
 
-  async createClient(clientData: { name: string; description?: string; department?: string; email?: string }) {
-    const response = await this.client.post('/api/clients', clientData);
-    return response.data;
+  // Auth
+  login(email: string, password: string) { return this.post('/api/auth/login', { email, password }); }
+  register(email: string, password: string) { return this.post('/api/auth/register', { email, password }); }
+  getCurrentUser() { return this.get('/api/auth/me'); }
+
+  // Clients
+  getClients() { return this.get('/api/clients'); }
+  getClient(id: number) { return this.get(`/api/clients/${id}`); }
+  createClient(data: { name: string; description?: string; department?: string; email?: string }) {
+    return this.post('/api/clients', data);
+  }
+  updateClient(id: number, data: { name?: string; description?: string; department?: string; email?: string }) {
+    return this.put(`/api/clients/${id}`, data);
+  }
+  deleteClient(id: number) { return this.del(`/api/clients/${id}`); }
+  deleteAllClients() { return this.del('/api/clients'); }
+
+  // Work entries
+  getWorkEntries(clientId?: number) {
+    return this.get('/api/work-entries', clientId ? { params: { clientId } } : {});
+  }
+  getWorkEntry(id: number) { return this.get(`/api/work-entries/${id}`); }
+  createWorkEntry(data: { clientId: number; hours: number; description?: string; date: string }) {
+    return this.post('/api/work-entries', data);
+  }
+  updateWorkEntry(id: number, data: { clientId?: number; hours?: number; description?: string; date?: string }) {
+    return this.put(`/api/work-entries/${id}`, data);
+  }
+  deleteWorkEntry(id: number) { return this.del(`/api/work-entries/${id}`); }
+
+  // Reports
+  getClientReport(clientId: number) { return this.get(`/api/reports/client/${clientId}`); }
+  exportClientReportCsv(clientId: number) {
+    return this.get(`/api/reports/export/csv/${clientId}`, { responseType: 'blob' });
+  }
+  exportClientReportPdf(clientId: number) {
+    return this.get(`/api/reports/export/pdf/${clientId}`, { responseType: 'blob' });
   }
 
-  async updateClient(id: number, clientData: { name?: string; description?: string; department?: string; email?: string }) {
-    const response = await this.client.put(`/api/clients/${id}`, clientData);
-    return response.data;
-  }
-
-  async deleteClient(id: number) {
-    const response = await this.client.delete(`/api/clients/${id}`);
-    return response.data;
-  }
-
-  async deleteAllClients() {
-    const response = await this.client.delete('/api/clients');
-    return response.data;
-  }
-
-  // Work entry endpoints
-  async getWorkEntries(clientId?: number) {
-    const params = clientId ? { clientId } : {};
-    const response = await this.client.get('/api/work-entries', { params });
-    return response.data;
-  }
-
-  async getWorkEntry(id: number) {
-    const response = await this.client.get(`/api/work-entries/${id}`);
-    return response.data;
-  }
-
-  async createWorkEntry(entryData: { clientId: number; hours: number; description?: string; date: string }) {
-    const response = await this.client.post('/api/work-entries', entryData);
-    return response.data;
-  }
-
-  async updateWorkEntry(id: number, entryData: { clientId?: number; hours?: number; description?: string; date?: string }) {
-    const response = await this.client.put(`/api/work-entries/${id}`, entryData);
-    return response.data;
-  }
-
-  async deleteWorkEntry(id: number) {
-    const response = await this.client.delete(`/api/work-entries/${id}`);
-    return response.data;
-  }
-
-  // Report endpoints
-  async getClientReport(clientId: number) {
-    const response = await this.client.get(`/api/reports/client/${clientId}`);
-    return response.data;
-  }
-
-  async exportClientReportCsv(clientId: number) {
-    const response = await this.client.get(`/api/reports/export/csv/${clientId}`, {
-      responseType: 'blob',
-    });
-    return response.data;
-  }
-
-  async exportClientReportPdf(clientId: number) {
-    const response = await this.client.get(`/api/reports/export/pdf/${clientId}`, {
-      responseType: 'blob',
-    });
-    return response.data;
-  }
-
-  // Health check
-  async healthCheck() {
-    const response = await this.client.get('/health');
-    return response.data;
-  }
+  // Health
+  healthCheck() { return this.get('/health'); }
 }
 
 export const apiClient = new ApiClient();

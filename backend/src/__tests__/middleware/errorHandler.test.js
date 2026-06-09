@@ -65,8 +65,7 @@ describe('Error Handler Middleware', () => {
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
-        error: 'Database error',
-        message: 'An error occurred while processing your request'
+        error: 'An error occurred while processing your request'
       });
     });
 
@@ -80,14 +79,13 @@ describe('Error Handler Middleware', () => {
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
-        error: 'Database error',
-        message: 'An error occurred while processing your request'
+        error: 'An error occurred while processing your request'
       });
     });
   });
 
   describe('Generic Errors', () => {
-    test('should handle error with custom status', () => {
+    test('should handle error with custom status (non-500)', () => {
       const customError = {
         status: 403,
         message: 'Forbidden access'
@@ -101,16 +99,16 @@ describe('Error Handler Middleware', () => {
       });
     });
 
-    test('should default to 500 status if not specified', () => {
+    test('should sanitize 500 errors to generic message', () => {
       const genericError = {
-        message: 'Something went wrong'
+        message: 'Something went wrong with internal details'
       };
 
       errorHandler(genericError, req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
-        error: 'Something went wrong'
+        error: 'Internal server error'
       });
     });
 
