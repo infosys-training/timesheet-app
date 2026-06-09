@@ -23,11 +23,15 @@ function buildApp() {
 const app = buildApp();
 
 function createMockDb(overrides = {}) {
-  return {
-    get: jest.fn(),
-    run: jest.fn(),
-    ...overrides
-  };
+  return { get: jest.fn(), run: jest.fn(), ...overrides };
+}
+
+function mockDbGetError(mockDb) {
+  mockDb.get.mockImplementation((q, p, cb) => cb(new Error('Database error'), null));
+}
+
+function postAuth(endpoint, body) {
+  return request(app).post(endpoint).send(body);
 }
 
 describe('Auth Routes', () => {
@@ -38,20 +42,40 @@ describe('Auth Routes', () => {
     getDatabase.mockReturnValue(mockDb);
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
+  afterEach(() => { jest.clearAllMocks(); });
+
+  // Shared validation and db-error tests for both endpoints
+  describe.each([
+    { endpoint: '/api/auth/register', invalidCases: [
+      { desc: 'missing password', body: { email: 'test@example.com' } },
+      { desc: 'short password', body: { email: 'test@example.com', password: 'short' } },
+      { desc: 'invalid email', body: { email: 'invalid-email', password: 'securepassword123' } },
+    ]},
+    { endpoint: '/api/auth/login', invalidCases: [
+      { desc: 'missing password', body: { email: 'test@example.com' } },
+      { desc: 'invalid email', body: { email: 'invalid-email', password: 'somepassword' } },
+    ]},
+  ])('$endpoint shared behavior', ({ endpoint, invalidCases }) => {
+    test.each(invalidCases)('should return 400 for $desc', async ({ body }) => {
+      const response = await postAuth(endpoint, body);
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe('Validation error');
+    });
+
+    test('should return 500 on database error', async () => {
+      mockDbGetError(mockDb);
+      const response = await postAuth(endpoint, { email: 'test@example.com', password: 'securepassword123' });
+      expect(response.status).toBe(500);
+      expect(response.body).toEqual({ error: 'Internal server error' });
+    });
   });
 
   describe('POST /api/auth/register', () => {
     test('should register a new user and return JWT', async () => {
-      mockDb.get.mockImplementation((query, params, callback) => callback(null, null));
-      mockDb.run.mockImplementation(function(query, params, callback) {
-        callback.call(this, null);
-      });
+      mockDb.get.mockImplementation((q, p, cb) => cb(null, null));
+      mockDb.run.mockImplementation(function(q, p, cb) { cb.call(this, null); });
 
-      const response = await request(app)
-        .post('/api/auth/register')
-        .send({ email: 'newuser@example.com', password: 'securepassword123' });
+      const response = await postAuth('/api/auth/register', { email: 'newuser@example.com', password: 'securepassword123' });
 
       expect(response.status).toBe(201);
       expect(response.body.message).toBe('User created and logged in successfully');
@@ -60,51 +84,19 @@ describe('Auth Routes', () => {
     });
 
     test('should return 409 if user already exists', async () => {
-      mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, { email: 'existing@example.com' });
-      });
+      mockDb.get.mockImplementation((q, p, cb) => cb(null, { email: 'existing@example.com' }));
 
-      const response = await request(app)
-        .post('/api/auth/register')
-        .send({ email: 'existing@example.com', password: 'securepassword123' });
+      const response = await postAuth('/api/auth/register', { email: 'existing@example.com', password: 'securepassword123' });
 
       expect(response.status).toBe(409);
       expect(response.body.error).toBe('User already exists');
     });
 
-    const invalidRegistrations = [
-      { desc: 'missing password', body: { email: 'test@example.com' } },
-      { desc: 'short password', body: { email: 'test@example.com', password: 'short' } },
-      { desc: 'invalid email', body: { email: 'invalid-email', password: 'securepassword123' } },
-    ];
-    test.each(invalidRegistrations)('should return 400 for $desc', async ({ body }) => {
-      const response = await request(app).post('/api/auth/register').send(body);
-      expect(response.status).toBe(400);
-      expect(response.body.error).toBe('Validation error');
-    });
-
-    test('should handle database error when checking user', async () => {
-      mockDb.get.mockImplementation((query, params, callback) => {
-        callback(new Error('Database error'), null);
-      });
-
-      const response = await request(app)
-        .post('/api/auth/register')
-        .send({ email: 'test@example.com', password: 'securepassword123' });
-
-      expect(response.status).toBe(500);
-      expect(response.body).toEqual({ error: 'Internal server error' });
-    });
-
     test('should handle database error when inserting user', async () => {
-      mockDb.get.mockImplementation((query, params, callback) => callback(null, null));
-      mockDb.run.mockImplementation((query, params, callback) => {
-        callback(new Error('Insert failed'));
-      });
+      mockDb.get.mockImplementation((q, p, cb) => cb(null, null));
+      mockDb.run.mockImplementation((q, p, cb) => cb(new Error('Insert failed')));
 
-      const response = await request(app)
-        .post('/api/auth/register')
-        .send({ email: 'newuser@example.com', password: 'securepassword123' });
+      const response = await postAuth('/api/auth/register', { email: 'newuser@example.com', password: 'securepassword123' });
 
       expect(response.status).toBe(500);
       expect(response.body).toEqual({ error: 'Failed to create user' });
@@ -112,19 +104,18 @@ describe('Auth Routes', () => {
   });
 
   describe('POST /api/auth/login', () => {
-    test('should login existing user with correct password', async () => {
-      const passwordHash = await bcrypt.hash('correctpassword', 10);
-
-      mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, {
-          email: 'existing@example.com', password_hash: passwordHash,
-          created_at: '2024-01-01T00:00:00.000Z'
+    function mockUserWithPassword(password) {
+      return bcrypt.hash(password, 10).then(hash => {
+        mockDb.get.mockImplementation((q, p, cb) => {
+          cb(null, { email: 'existing@example.com', password_hash: hash, created_at: '2024-01-01T00:00:00.000Z' });
         });
       });
+    }
 
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({ email: 'existing@example.com', password: 'correctpassword' });
+    test('should login existing user with correct password', async () => {
+      await mockUserWithPassword('correctpassword');
+
+      const response = await postAuth('/api/auth/login', { email: 'existing@example.com', password: 'correctpassword' });
 
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('Login successful');
@@ -133,63 +124,27 @@ describe('Auth Routes', () => {
     });
 
     test('should return 401 for wrong password', async () => {
-      const passwordHash = await bcrypt.hash('correctpassword', 10);
+      await mockUserWithPassword('correctpassword');
 
-      mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, {
-          email: 'existing@example.com', password_hash: passwordHash,
-          created_at: '2024-01-01T00:00:00.000Z'
-        });
-      });
-
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({ email: 'existing@example.com', password: 'wrongpassword' });
+      const response = await postAuth('/api/auth/login', { email: 'existing@example.com', password: 'wrongpassword' });
 
       expect(response.status).toBe(401);
       expect(response.body.error).toBe('Invalid email or password');
     });
 
     test('should return 401 for non-existent user', async () => {
-      mockDb.get.mockImplementation((query, params, callback) => callback(null, null));
+      mockDb.get.mockImplementation((q, p, cb) => cb(null, null));
 
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({ email: 'nonexistent@example.com', password: 'somepassword' });
+      const response = await postAuth('/api/auth/login', { email: 'nonexistent@example.com', password: 'somepassword' });
 
       expect(response.status).toBe(401);
       expect(response.body.error).toBe('Invalid email or password');
     });
 
-    const invalidLogins = [
-      { desc: 'missing password', body: { email: 'test@example.com' } },
-      { desc: 'invalid email', body: { email: 'invalid-email', password: 'somepassword' } },
-    ];
-    test.each(invalidLogins)('should return 400 for $desc', async ({ body }) => {
-      const response = await request(app).post('/api/auth/login').send(body);
-      expect(response.status).toBe(400);
-      expect(response.body.error).toBe('Validation error');
-    });
-
-    test('should handle database error', async () => {
-      mockDb.get.mockImplementation((query, params, callback) => {
-        callback(new Error('Database error'), null);
-      });
-
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({ email: 'test@example.com', password: 'somepassword' });
-
-      expect(response.status).toBe(500);
-      expect(response.body).toEqual({ error: 'Internal server error' });
-    });
-
     test('should handle unexpected errors', async () => {
       getDatabase.mockImplementation(() => { throw new Error('Unexpected error'); });
 
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({ email: 'test@example.com', password: 'somepassword' });
+      const response = await postAuth('/api/auth/login', { email: 'test@example.com', password: 'somepassword' });
 
       expect(response.status).toBe(500);
       expect(response.body).toEqual({ error: 'Internal server error' });
@@ -197,19 +152,18 @@ describe('Auth Routes', () => {
   });
 
   describe('GET /api/auth/me', () => {
-    function authHeader() {
-      return `Bearer ${jwt.sign({ email: 'test@example.com' }, JWT_SECRET, { expiresIn: '1h' })}`;
+    const authHeader = `Bearer ${jwt.sign({ email: 'test@example.com' }, JWT_SECRET, { expiresIn: '1h' })}`;
+
+    function getMe() {
+      return request(app).get('/api/auth/me').set('Authorization', authHeader);
     }
 
     test('should return current user info with valid token', async () => {
-      mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, { email: 'test@example.com', created_at: '2024-01-01T00:00:00.000Z' });
+      mockDb.get.mockImplementation((q, p, cb) => {
+        cb(null, { email: 'test@example.com', created_at: '2024-01-01T00:00:00.000Z' });
       });
 
-      const response = await request(app)
-        .get('/api/auth/me')
-        .set('Authorization', authHeader());
-
+      const response = await getMe();
       expect(response.status).toBe(200);
       expect(response.body.user.email).toBe('test@example.com');
     });
@@ -221,25 +175,15 @@ describe('Auth Routes', () => {
     });
 
     test('should return 404 if user not found', async () => {
-      mockDb.get.mockImplementation((query, params, callback) => callback(null, null));
-
-      const response = await request(app)
-        .get('/api/auth/me')
-        .set('Authorization', authHeader());
-
+      mockDb.get.mockImplementation((q, p, cb) => cb(null, null));
+      const response = await getMe();
       expect(response.status).toBe(404);
       expect(response.body).toEqual({ error: 'User not found' });
     });
 
     test('should handle database error', async () => {
-      mockDb.get.mockImplementation((query, params, callback) => {
-        callback(new Error('Database error'), null);
-      });
-
-      const response = await request(app)
-        .get('/api/auth/me')
-        .set('Authorization', authHeader());
-
+      mockDbGetError(mockDb);
+      const response = await getMe();
       expect(response.status).toBe(500);
       expect(response.body).toEqual({ error: 'Internal server error' });
     });
