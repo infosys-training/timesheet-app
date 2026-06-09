@@ -1,0 +1,108 @@
+name: "P1 — Critical Incident"
+description: "Full outage, data loss, or security breach requiring immediate response (≤ 15 min)"
+title: "[P1] "
+labels: ["incident", "P1-critical", "priority:urgent"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 — Critical Incident Report
+        **Response SLA: ≤ 15 minutes**
+        Use this template for full outages, data loss, security breaches, or any issue affecting all users.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Short, descriptive title for the incident
+      placeholder: "e.g., Complete API outage — all endpoints returning 502"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Category
+      description: Primary failure mode (refer to RUNBOOK.md for details)
+      options:
+        - Database — Data Loss
+        - Database — Connection Failure
+        - Database — Write Contention (SQLITE_BUSY)
+        - API — Full Outage
+        - API — Authentication Broken
+        - Memory — OOM Kill
+        - Security — Data Breach
+        - Security — Unauthorized Access
+        - Infrastructure — Container Crash
+        - Infrastructure — DNS / Network Failure
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Who and what is affected?
+      value: |
+        **Users affected:** [all / subset — describe]
+        **Features broken:** [list affected features]
+        **Data loss:** [yes / no — if yes, describe scope]
+        **Revenue impact:** [if applicable]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When did this start? When was it detected? Key events so far.
+      value: |
+        - **Detected at:** YYYY-MM-DD HH:MM UTC
+        - **Reported by:** [monitoring alert / user report / on-call]
+        - **First response at:** HH:MM UTC
+        - **Current status:** [investigating / mitigating / resolved]
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Evidence
+      description: What are you observing? Include log snippets, error messages, screenshots, and health check output.
+      placeholder: |
+        - Health check output: ...
+        - Error logs: ...
+        - HTTP status codes observed: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actions-taken
+    attributes:
+      label: Actions Taken
+      description: What steps have been taken so far? Reference RUNBOOK.md sections.
+      placeholder: |
+        1. Ran general triage checklist (RUNBOOK §1)
+        2. Checked database status (RUNBOOK §2.x)
+        3. ...
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: How was the incident resolved? Fill this in after resolution.
+      placeholder: |
+        **Root cause:** ...
+        **Fix applied:** ...
+        **Resolved at:** YYYY-MM-DD HH:MM UTC
+        **Total duration:** X hours Y minutes
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-Up Actions
+      description: Preventive measures to avoid recurrence
+      placeholder: |
+        - [ ] Action item 1
+        - [ ] Action item 2
