@@ -1,0 +1,116 @@
+name: "P2 — High Severity Incident"
+description: "Major feature broken or degraded affecting many users (1-hour SLA)"
+title: "[P2] "
+labels: ["incident", "P2-high"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 High Severity Incident Report
+        Use this template for incidents causing **major feature breakage or significant degradation**.
+        **Response SLA: 1 hour.** Notify the on-call engineer.
+
+  - type: input
+    id: incident-owner
+    attributes:
+      label: Incident Owner
+      description: "Who is responsible for driving resolution?"
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Failure Category
+      options:
+        - API Errors (500s, timeouts, rate limiting)
+        - Authentication Failures (login broken, header issues)
+        - Database Issues (queries failing, slow responses)
+        - Report Generation Failures (PDF/CSV export broken)
+        - Frontend Failures (app not loading, broken navigation)
+        - Dependency Failure (upstream service or library issue)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: "Describe who and what is affected."
+      value: |
+        **Users affected:** [all / percentage / specific group]
+        **Features affected:** [list affected features]
+        **Workaround available:** [yes / no — describe if yes]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: "Record key timestamps."
+      value: |
+        | Time (UTC) | Event |
+        |---|---|
+        | YYYY-MM-DD HH:MM | Issue first detected |
+        | YYYY-MM-DD HH:MM | Investigation started |
+        | YYYY-MM-DD HH:MM | Root cause identified |
+        | YYYY-MM-DD HH:MM | Fix deployed |
+        | YYYY-MM-DD HH:MM | Service restored |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Error Details
+      description: "What errors or symptoms were observed?"
+      placeholder: |
+        - HTTP status codes observed
+        - Error messages from logs
+        - Browser console errors
+        - Health check script output
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: "What caused the issue?"
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: "Steps taken to resolve."
+      value: |
+        1. 
+        2. 
+        3. 
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Follow-up Actions
+      description: "What changes will prevent recurrence?"
+      value: |
+        - [ ] Action item — Owner: @username — Due: YYYY-MM-DD
+        - [ ] Update RUNBOOK.md if applicable
+    validations:
+      required: false
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostic Data
+      description: "Attach logs, screenshots, or health check output."
+    validations:
+      required: false
