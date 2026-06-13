@@ -1,0 +1,122 @@
+name: "P1 — Critical Incident"
+description: "Full service outage, data loss, or security breach requiring immediate response (15-min SLA)"
+title: "[P1] "
+labels: ["incident", "P1-critical", "urgent"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 Critical Incident Report
+        Use this template for incidents causing **full service outage, data loss, or security breach**.
+        **Response SLA: 15 minutes.** Page the on-call engineer immediately.
+
+  - type: input
+    id: incident-commander
+    attributes:
+      label: Incident Commander
+      description: "Who is leading the incident response?"
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Failure Category
+      options:
+        - Database Failure (data loss, corruption, connection failure)
+        - Security Breach (unauthorized access, data exposure)
+        - Full Service Outage (backend and/or frontend unreachable)
+        - Infrastructure Failure (Docker, VM, network)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: "Describe the scope and severity of the impact."
+      value: |
+        **Users affected:** [all / percentage / specific group]
+        **Features affected:** [list affected features]
+        **Data loss:** [yes / no — describe if yes]
+        **Revenue impact:** [estimated if applicable]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: "Record key timestamps throughout the incident lifecycle."
+      value: |
+        | Time (UTC) | Event |
+        |---|---|
+        | YYYY-MM-DD HH:MM | Issue first detected |
+        | YYYY-MM-DD HH:MM | Incident declared |
+        | YYYY-MM-DD HH:MM | Investigation started |
+        | YYYY-MM-DD HH:MM | Root cause identified |
+        | YYYY-MM-DD HH:MM | Fix deployed |
+        | YYYY-MM-DD HH:MM | Service restored |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Detection
+      description: "How was the incident detected? What symptoms were observed?"
+      placeholder: |
+        - Health check failures
+        - Error logs showing ...
+        - User reports of ...
+        - Monitoring alert from ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause Analysis
+      description: "What caused the incident? (Fill in after investigation)"
+      placeholder: "Describe the root cause once identified."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: "What steps were taken to resolve the incident?"
+      value: |
+        1. 
+        2. 
+        3. 
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Prevention & Follow-up Actions
+      description: "What changes will prevent recurrence?"
+      value: |
+        - [ ] Action item 1 — Owner: @username — Due: YYYY-MM-DD
+        - [ ] Action item 2 — Owner: @username — Due: YYYY-MM-DD
+        - [ ] Update RUNBOOK.md if new failure mode
+        - [ ] Add/improve monitoring or alerting
+    validations:
+      required: false
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostic Data
+      description: "Attach logs, screenshots, metrics, or other evidence."
+      placeholder: |
+        Paste relevant log snippets, error messages, or link to dashboards.
+        Run `./scripts/healthcheck.sh` and paste the output here.
+    validations:
+      required: false

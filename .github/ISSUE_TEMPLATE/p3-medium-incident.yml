@@ -1,0 +1,111 @@
+name: "P3 — Medium Severity Incident"
+description: "Single feature broken or degraded, limited user impact (4-hour SLA)"
+title: "[P3] "
+labels: ["incident", "P3-medium"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 Medium Severity Incident Report
+        Use this template for incidents causing **single feature breakage or limited degradation**.
+        **Response SLA: 4 hours.**
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reporter
+      description: "Who is reporting this incident?"
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Failure Category
+      options:
+        - Report Export Failure (CSV or PDF)
+        - Single API Endpoint Error
+        - Slow Response Times / Performance
+        - UI Rendering Issue (functional impact)
+        - Data Validation Problem
+        - CORS or Proxy Configuration
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected Component
+      options:
+        - Backend API
+        - Frontend UI
+        - Database
+        - Authentication
+        - Reports / Export
+        - CI/CD Pipeline
+        - Docker / Deployment
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      value: |
+        **Users affected:** [few / some / specific group]
+        **Feature affected:** [specific feature name]
+        **Workaround available:** [yes / no — describe if yes]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      value: |
+        | Time (UTC) | Event |
+        |---|---|
+        | YYYY-MM-DD HH:MM | Issue reported |
+        | YYYY-MM-DD HH:MM | Investigation started |
+        | YYYY-MM-DD HH:MM | Fix applied |
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Detailed Description
+      description: "Describe the issue, steps to reproduce, and any error messages."
+      placeholder: |
+        Steps to reproduce:
+        1. Navigate to ...
+        2. Click on ...
+        3. Observe error ...
+
+        Error message or HTTP response:
+        ```
+        paste here
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: "How was / will this be resolved?"
+    validations:
+      required: false
+
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Follow-up Actions
+      value: |
+        - [ ] Fix deployed
+        - [ ] Tests added to prevent regression
+    validations:
+      required: false

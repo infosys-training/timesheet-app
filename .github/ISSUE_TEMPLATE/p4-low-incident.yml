@@ -1,0 +1,89 @@
+name: "P4 — Low Severity Incident"
+description: "Minor issue with minimal user impact (next business day SLA)"
+title: "[P4] "
+labels: ["incident", "P4-low"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 Low Severity Incident Report
+        Use this template for **minor issues** with minimal user impact.
+        **Response SLA: Next business day.**
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reporter
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Issue Category
+      options:
+        - UI Cosmetic Issue
+        - Minor Performance Degradation
+        - Non-critical Log Errors
+        - Documentation Gap
+        - Dependency Warning (non-breaking)
+        - CI/CD Flaky Test
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected Component
+      options:
+        - Backend API
+        - Frontend UI
+        - Database
+        - Authentication
+        - Reports / Export
+        - CI/CD Pipeline
+        - Docker / Deployment
+        - Documentation
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: "Describe the issue and its impact."
+      placeholder: |
+        What happened:
+        Expected behavior:
+        Actual behavior:
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      value: |
+        **Users affected:** [minimal / cosmetic only]
+        **Workaround:** [describe if applicable]
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Proposed Fix
+      description: "Suggested approach to resolve."
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots / Evidence
+      description: "Attach screenshots or logs if applicable."
+    validations:
+      required: false
