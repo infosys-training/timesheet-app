@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Incident Response Runbook
+    url: https://github.com/infosys-training/timesheet-app/blob/main/RUNBOOK.md
+    about: Review the runbook for step-by-step incident response procedures before filing.

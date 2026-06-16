@@ -1,0 +1,125 @@
+name: "P1 — Critical Incident"
+description: "Service down, data loss, or security breach requiring immediate response."
+title: "[P1] "
+labels: ["incident", "P1-critical"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 — Critical Incident
+        Use this template when the service is **completely unavailable**, there is **active data loss**, or a **security breach** is in progress. Expected response time: **immediate**.
+
+  - type: input
+    id: detected_at
+    attributes:
+      label: Detection Time
+      description: "When was the incident first detected? (UTC)"
+      placeholder: "YYYY-MM-DD HH:MM UTC"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Production
+        - Staging
+        - Development
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      options:
+        - Backend API (Express)
+        - Frontend (React/Vite)
+        - Database (SQLite)
+        - Authentication
+        - Report Generation (CSV/PDF)
+        - Docker / Infrastructure
+        - CI/CD Pipeline
+        - Multiple / Unknown
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: "Who and what is affected? Include number of users, business processes blocked, and data at risk."
+      placeholder: |
+        - All users unable to log in
+        - Timesheet submissions blocked for ~50 users
+        - Risk of data loss for entries created in the last 2 hours
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms
+      description: "What is being observed? Include error messages, HTTP status codes, log excerpts."
+      placeholder: |
+        - Health check returns 503
+        - Backend logs: "SQLITE_CANTOPEN: unable to open database file"
+        - Frontend shows blank page with network error
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: "Chronological record of events. Update this as the incident progresses."
+      placeholder: |
+        - HH:MM UTC — Monitoring alert fired
+        - HH:MM UTC — On-call engineer paged
+        - HH:MM UTC — Root cause identified
+        - HH:MM UTC — Fix deployed
+        - HH:MM UTC — Service restored
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: "What was done to resolve the incident? Include commands run, config changes, deploys."
+      placeholder: |
+        - Restarted container: `docker restart timesheet-app`
+        - Root cause: disk full on /app/data volume
+        - Expanded volume from 10GB to 50GB
+    validations:
+      required: false
+
+  - type: textarea
+    id: root_cause
+    attributes:
+      label: Root Cause
+      description: "What caused the incident? Fill in after investigation."
+    validations:
+      required: false
+
+  - type: textarea
+    id: action_items
+    attributes:
+      label: Follow-Up Action Items
+      description: "Preventive measures, monitoring improvements, or process changes."
+      placeholder: |
+        - [ ] Add disk space alerting at 80% threshold
+        - [ ] Schedule post-mortem meeting
+        - [ ] Update RUNBOOK.md with new procedure
+    validations:
+      required: false
+
+  - type: input
+    id: resolved_at
+    attributes:
+      label: Resolution Time
+      description: "When was the incident resolved? (UTC)"
+      placeholder: "YYYY-MM-DD HH:MM UTC"
+    validations:
+      required: false
