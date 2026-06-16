@@ -288,6 +288,17 @@ See `backend/DEPLOYMENT.md` for detailed production deployment instructions.
 - Mobile app
 - Integration with calendar systems
 
+## Incident Response
+
+- **[RUNBOOK.md](./RUNBOOK.md)** — Step-by-step procedures for common failure modes
+- **[GitHub Issue Templates](./.github/ISSUE_TEMPLATE/)** — P1/P2/P3/P4 incident templates
+- **[Health Check Script](./scripts/healthcheck.sh)** — Automated endpoint testing
+
+Run the health check:
+```bash
+./scripts/healthcheck.sh http://localhost:3001
+```
+
 ## License
 
 MIT
