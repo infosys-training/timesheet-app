@@ -1,0 +1,136 @@
+name: "P2 Incident — Major Feature Broken"
+description: "A major feature is broken but the service is partially available. Response within 30 minutes."
+title: "[P2] "
+labels: ["incident", "P2-major", "priority:high"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🟠 P2 Incident Report — Major
+        **Response SLA:** 30 minutes · **Escalation:** On-call → Engineering Lead
+        Use this for major feature failures where the service is still partially operational.
+
+  - type: input
+    id: incident-id
+    attributes:
+      label: Incident ID
+      description: "Assign a unique ID (e.g., INC-2025-002)"
+      placeholder: "INC-YYYY-NNN"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: "Which failure mode best describes this incident? (See RUNBOOK.md)"
+      options:
+        - "FM-1: Database — In-Memory Data Loss on Restart"
+        - "FM-2: Database — SQLite Connection / Query Errors"
+        - "FM-3: API — 5xx Internal Server Errors"
+        - "FM-4: API — Rate Limiting (429)"
+        - "FM-5: Authentication Failures"
+        - "FM-6: Memory Leaks / High Memory Usage"
+        - "FM-7: Report Generation Failures (CSV/PDF)"
+        - "FM-8: Frontend Build / Startup Failures"
+        - "FM-9: Dependency / npm Install Failures"
+        - "FM-10: Docker Container Health Check Failures"
+        - "Other / Unknown"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected Component
+      description: "Which part of the application is impacted?"
+      multiple: true
+      options:
+        - "Backend API"
+        - "Frontend UI"
+        - "Authentication"
+        - "Database"
+        - "Report generation (CSV/PDF)"
+        - "Docker / Infrastructure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: "Describe the scope and severity of the impact."
+      value: |
+        **Users affected:** All / Subset (describe)
+        **Feature(s) broken:** 
+        **Workaround available:** Yes / No
+        **Data integrity risk:** Yes / No
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms Observed
+      description: "What alerts fired? What did users report? Include error messages and log excerpts."
+      placeholder: |
+        - Endpoint /api/clients returning 500
+        - Error in logs: "Database error: SQLITE_BUSY"
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: "Record all key events with timestamps (UTC)."
+      value: |
+        | Time (UTC) | Event |
+        |---|---|
+        | YYYY-MM-DD HH:MM | Issue first detected |
+        | | Incident acknowledged by: |
+        | | Root cause identified |
+        | | Fix deployed |
+        | | Recovery confirmed |
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: "Technical explanation of why this happened."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution & Recovery Steps
+      description: "What was done to restore the feature? Reference RUNBOOK.md sections if applicable."
+    validations:
+      required: false
+
+  - type: textarea
+    id: action-items
+    attributes:
+      label: Follow-Up Action Items
+      description: "Preventive measures to avoid recurrence."
+      value: |
+        - [ ] Action item — Owner — Due date
+        - [ ] Action item — Owner — Due date
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      value: |
+        **Environment:** Production / Staging / Development
+        **Deployment method:** Docker / Direct / CI/CD
+        **Node.js version:** 
+        **Last deployment:** 
+    validations:
+      required: false

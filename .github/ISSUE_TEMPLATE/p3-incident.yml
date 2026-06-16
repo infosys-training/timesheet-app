@@ -1,0 +1,129 @@
+name: "P3 Incident — Minor Feature Degraded"
+description: "A minor feature is degraded but core functionality works. Response within 4 hours."
+title: "[P3] "
+labels: ["incident", "P3-minor", "priority:medium"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🟡 P3 Incident Report — Minor
+        **Response SLA:** 4 hours · **Escalation:** Assigned engineer
+        Use this for degraded non-critical features where core workflows remain functional.
+
+  - type: input
+    id: incident-id
+    attributes:
+      label: Incident ID
+      description: "Assign a unique ID (e.g., INC-2025-003)"
+      placeholder: "INC-YYYY-NNN"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: "Which failure mode best describes this incident? (See RUNBOOK.md)"
+      options:
+        - "FM-1: Database — In-Memory Data Loss on Restart"
+        - "FM-2: Database — SQLite Connection / Query Errors"
+        - "FM-3: API — 5xx Internal Server Errors"
+        - "FM-4: API — Rate Limiting (429)"
+        - "FM-5: Authentication Failures"
+        - "FM-6: Memory Leaks / High Memory Usage"
+        - "FM-7: Report Generation Failures (CSV/PDF)"
+        - "FM-8: Frontend Build / Startup Failures"
+        - "FM-9: Dependency / npm Install Failures"
+        - "FM-10: Docker Container Health Check Failures"
+        - "Other / Unknown"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected Component
+      multiple: true
+      options:
+        - "Backend API"
+        - "Frontend UI"
+        - "Authentication"
+        - "Database"
+        - "Report generation (CSV/PDF)"
+        - "Docker / Infrastructure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      value: |
+        **Users affected:** None / Few / Some
+        **Feature(s) degraded:** 
+        **Workaround available:** Yes (describe) / No
+        **Core workflows impacted:** No
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms Observed
+      description: "Describe what you observed. Include error messages if available."
+      placeholder: |
+        - CSV export returns empty file for clients with special characters in name
+        - No error in logs, but file content is blank
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      value: |
+        | Time (UTC) | Event |
+        |---|---|
+        | YYYY-MM-DD HH:MM | Issue first reported |
+        | | Investigation started |
+        | | Fix deployed |
+        | | Verified resolved |
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: "Technical explanation (fill once identified)."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: "Steps taken to fix the issue."
+    validations:
+      required: false
+
+  - type: textarea
+    id: action-items
+    attributes:
+      label: Follow-Up Action Items
+      value: |
+        - [ ] Action item — Owner — Due date
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      value: |
+        **Environment:** Production / Staging / Development
+        **Browser (if frontend):** 
+        **Node.js version:** 
+    validations:
+      required: false

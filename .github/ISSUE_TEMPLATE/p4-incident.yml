@@ -1,0 +1,114 @@
+name: "P4 Incident — Low Impact / Cosmetic"
+description: "Cosmetic issues or edge cases with minimal user impact. Handled in next sprint."
+title: "[P4] "
+labels: ["incident", "P4-low", "priority:low"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🔵 P4 Incident Report — Low
+        **Response SLA:** Next sprint · **Escalation:** Backlog triage
+        Use this for cosmetic issues, minor edge cases, or improvements discovered during incident investigation.
+
+  - type: input
+    id: incident-id
+    attributes:
+      label: Incident ID
+      description: "Assign a unique ID (e.g., INC-2025-004)"
+      placeholder: "INC-YYYY-NNN"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode (if applicable)
+      description: "Select if this maps to a known failure mode in RUNBOOK.md."
+      options:
+        - "N/A — Not a known failure mode"
+        - "FM-1: Database — In-Memory Data Loss on Restart"
+        - "FM-2: Database — SQLite Connection / Query Errors"
+        - "FM-3: API — 5xx Internal Server Errors"
+        - "FM-4: API — Rate Limiting (429)"
+        - "FM-5: Authentication Failures"
+        - "FM-6: Memory Leaks / High Memory Usage"
+        - "FM-7: Report Generation Failures (CSV/PDF)"
+        - "FM-8: Frontend Build / Startup Failures"
+        - "FM-9: Dependency / npm Install Failures"
+        - "FM-10: Docker Container Health Check Failures"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected Component
+      multiple: true
+      options:
+        - "Backend API"
+        - "Frontend UI"
+        - "Authentication"
+        - "Database"
+        - "Report generation (CSV/PDF)"
+        - "Docker / Infrastructure"
+        - "Documentation"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      value: |
+        **Users affected:** Minimal / Edge case only
+        **Feature(s) affected:** 
+        **Workaround:** 
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: "Describe the issue in detail. Include steps to reproduce if applicable."
+      placeholder: |
+        Steps to reproduce:
+        1. Navigate to Reports page
+        2. Select a client with 0 work entries
+        3. Click "Export PDF"
+        4. Observe: PDF is generated but contains only headers
+        
+        Expected: Show a message "No entries to export" instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      value: |
+        | Time (UTC) | Event |
+        |---|---|
+        | YYYY-MM-DD HH:MM | Issue discovered |
+        | | Fix scheduled for sprint: |
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Proposed Fix
+      description: "Describe the proposed solution or link to a PR."
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      value: |
+        **Environment:** Production / Staging / Development
+        **Browser (if frontend):** 
+    validations:
+      required: false

@@ -1,0 +1,129 @@
+name: "P1 Incident — Critical / Service Down"
+description: "Complete service outage or data loss affecting all users. Requires immediate response (15 min SLA)."
+title: "[P1] "
+labels: ["incident", "P1-critical", "priority:urgent"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## ⛔ P1 Incident Report — Critical
+        **Response SLA:** 15 minutes · **Escalation:** On-call → Engineering Lead → CTO
+        Use this template for complete service outages, data loss, or security breaches.
+
+  - type: input
+    id: incident-id
+    attributes:
+      label: Incident ID
+      description: "Assign a unique ID (e.g., INC-2025-001)"
+      placeholder: "INC-YYYY-NNN"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: "Which failure mode best describes this incident? (See RUNBOOK.md)"
+      options:
+        - "FM-1: Database — In-Memory Data Loss on Restart"
+        - "FM-2: Database — SQLite Connection / Query Errors"
+        - "FM-3: API — 5xx Internal Server Errors"
+        - "FM-4: API — Rate Limiting (429)"
+        - "FM-5: Authentication Failures"
+        - "FM-6: Memory Leaks / High Memory Usage"
+        - "FM-7: Report Generation Failures (CSV/PDF)"
+        - "FM-8: Frontend Build / Startup Failures"
+        - "FM-9: Dependency / npm Install Failures"
+        - "FM-10: Docker Container Health Check Failures"
+        - "Other / Unknown"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: "Describe the scope and severity of the impact."
+      value: |
+        **Users affected:** 
+        **Services affected:** 
+        **Data loss:** Yes / No
+        **Revenue impact:** 
+        **External visibility:** Yes / No
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms Observed
+      description: "What alerts fired? What did users report? Include error messages, HTTP status codes, and log excerpts."
+      placeholder: |
+        - Health check returning 500
+        - Users see blank dashboard
+        - Error in logs: "SQLITE_CORRUPT: ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: "Record all key events with timestamps (UTC)."
+      value: |
+        | Time (UTC) | Event |
+        |---|---|
+        | YYYY-MM-DD HH:MM | Issue first detected / alert fired |
+        | | Incident acknowledged by: |
+        | | Investigation started |
+        | | Root cause identified |
+        | | Fix deployed |
+        | | Recovery confirmed |
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: "Technical explanation of why this happened. Fill in once identified."
+      placeholder: "e.g., Backend container restarted due to OOM kill, causing in-memory SQLite data loss."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution & Recovery Steps
+      description: "What was done to restore service? Reference RUNBOOK.md sections if applicable."
+      placeholder: |
+        1. Restarted backend container
+        2. Verified health endpoint returned 200
+        3. Confirmed users could log in and view data
+    validations:
+      required: false
+
+  - type: textarea
+    id: action-items
+    attributes:
+      label: Follow-Up Action Items
+      description: "Preventive measures to avoid recurrence."
+      value: |
+        - [ ] Action item — Owner — Due date
+        - [ ] Action item — Owner — Due date
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: "Where did this occur?"
+      value: |
+        **Environment:** Production / Staging / Development
+        **Deployment method:** Docker / Direct / CI/CD
+        **Node.js version:** 
+        **Last deployment:** 
+    validations:
+      required: false
