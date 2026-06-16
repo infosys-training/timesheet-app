@@ -1,0 +1,132 @@
+name: "P1 Incident - Critical / Complete Outage"
+description: "Complete service outage, data loss, or security breach requiring immediate response (SLA: 15 min)"
+title: "[P1] "
+labels: ["incident", "P1-critical", "urgent"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 Incident Report - Critical
+        **Response SLA: 15 minutes** | **Resolution target: 1 hour**
+        Use this template for complete service outages, data loss, or security breaches.
+        Refer to the [RUNBOOK.md](../../RUNBOOK.md) for response procedures.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief, descriptive title of the incident
+      placeholder: "e.g., Complete API outage - all endpoints returning 500"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode Category
+      description: Primary failure mode (see RUNBOOK.md for details)
+      options:
+        - Database - Corruption / Data Loss
+        - Database - Connection Failure
+        - API - Complete Outage (all routes)
+        - Memory / Resource Exhaustion
+        - Security Breach
+        - Docker / Deployment Failure
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the scope and severity of user impact
+      value: |
+        **Affected users:** [all / percentage / specific group]
+        **Affected features:** [all / specific features]
+        **Data loss:** [yes / no / unknown]
+        **Revenue impact:** [estimated if applicable]
+        **External visibility:** [customer-facing / internal only]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Record all key events with timestamps (UTC)
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Incident detected via [monitoring/user report/health check] |
+        | YYYY-MM-DD HH:MM | On-call engineer paged |
+        | YYYY-MM-DD HH:MM | Investigation started |
+        | YYYY-MM-DD HH:MM | Root cause identified |
+        | YYYY-MM-DD HH:MM | Mitigation applied |
+        | YYYY-MM-DD HH:MM | Service restored |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms Observed
+      description: What symptoms were observed? Include error messages, HTTP status codes, log excerpts.
+      placeholder: |
+        - Health check endpoint returning non-200
+        - Docker container showing "unhealthy"
+        - Error logs showing SQLITE_CORRUPT
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What was the root cause? (Fill in during or after resolution)
+      placeholder: "Describe the underlying technical cause"
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution / Mitigation Steps
+      description: What steps were taken to resolve the incident?
+      value: |
+        ### Immediate Mitigation
+        - [ ] Step taken to stop the bleeding
+
+        ### Permanent Fix
+        - [ ] Code/config change to prevent recurrence
+
+        ### Verification
+        - [ ] Health check passing
+        - [ ] Smoke test of affected endpoints
+        - [ ] Monitoring confirms normal operation
+    validations:
+      required: true
+
+  - type: textarea
+    id: action-items
+    attributes:
+      label: Follow-Up Action Items
+      description: What needs to happen to prevent recurrence?
+      value: |
+        - [ ] Action item 1 (owner: @, deadline: )
+        - [ ] Action item 2 (owner: @, deadline: )
+        - [ ] Update RUNBOOK.md with findings
+        - [ ] Schedule post-incident review meeting
+    validations:
+      required: false
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostic Data
+      description: Attach relevant logs, screenshots, metrics, or health check output
+      placeholder: |
+        Paste relevant logs, health check script output, `docker stats` output, etc.
+    validations:
+      required: false

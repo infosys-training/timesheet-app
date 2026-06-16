@@ -1,0 +1,94 @@
+name: "P4 Incident - Low / Cosmetic"
+description: "Low-impact issue, cosmetic defect, or performance concern (SLA: 1 business day)"
+title: "[P4] "
+labels: ["incident", "P4-low"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 Incident Report - Low Priority
+        **Response SLA: 1 business day** | **Resolution target: Next sprint**
+        Use this template for low-impact issues, cosmetic defects, or minor performance concerns.
+        Refer to the [RUNBOOK.md](../../RUNBOOK.md) for response procedures.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief, descriptive title of the incident
+      placeholder: "e.g., Slow response times on /api/work-entries with large datasets"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode Category
+      description: Primary failure mode (see RUNBOOK.md for details)
+      options:
+        - Performance - Slow API Response
+        - Performance - High Memory Usage
+        - Logging - Excessive / Missing Log Output
+        - Dependency - Outdated Package Warning
+        - Dependency - npm Audit Advisory (low/moderate)
+        - Frontend - UI Cosmetic Issue
+        - Configuration - Non-Critical Misconfiguration
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the scope and impact
+      value: |
+        **Affected users:** [minimal / specific edge case]
+        **Affected feature:** [feature name]
+        **User-visible:** [yes / no]
+        **Workaround:** [not needed / describe]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When was this discovered?
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue discovered |
+        | YYYY-MM-DD HH:MM | Ticket created |
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Detailed description of the issue
+      placeholder: |
+        Describe the issue, including:
+        - Steps to reproduce
+        - Expected vs actual behavior
+        - Any relevant metrics or measurements
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-fix
+    attributes:
+      label: Proposed Fix
+      description: Suggested approach to resolution
+    validations:
+      required: false
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostic Data
+      description: Attach relevant logs, screenshots, or metrics
+    validations:
+      required: false
