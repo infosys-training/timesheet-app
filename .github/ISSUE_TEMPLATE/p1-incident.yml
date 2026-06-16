@@ -1,0 +1,148 @@
+name: "P1 Incident – Critical / Total Outage"
+description: "Complete service outage or data loss affecting all users. Requires immediate response."
+title: "[P1] "
+labels: ["incident", "P1-critical", "priority:urgent"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 Incident Report – Critical
+        **Response SLA:** Immediate (< 15 minutes to acknowledge)
+        **Escalation:** On-call engineer → Team lead within 15 minutes
+
+        > Use this template for: complete backend outage, database corruption/data loss,
+        > security breaches, or any issue preventing all users from accessing the application.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief, descriptive title of the incident
+      placeholder: "e.g., Backend health check failing – all API requests returning 500"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode Category
+      description: Select the category that best matches this incident (see RUNBOOK.md)
+      options:
+        - "INC-01: Backend Health Check Failure"
+        - "INC-02: SQLite Database Unavailable or Corrupt"
+        - "INC-07: Frontend-to-Backend Connectivity Loss"
+        - "INC-08: Memory Exhaustion / Node.js OOM"
+        - "INC-10: Docker Container Health Check Failure"
+        - "Security Breach / Unauthorized Access"
+        - "Other (describe below)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the scope and business impact of this incident
+      value: |
+        **Users affected:** [all / percentage / specific group]
+        **Services affected:** [backend / frontend / database / reports / all]
+        **Data impact:** [no data loss / potential data loss / confirmed data loss]
+        **Revenue impact:** [none / estimated]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Chronological log of events (update as the incident progresses)
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Incident detected – [how it was detected] |
+        | YYYY-MM-DD HH:MM | On-call acknowledged |
+        | YYYY-MM-DD HH:MM | Investigation started |
+        | YYYY-MM-DD HH:MM | Root cause identified |
+        | YYYY-MM-DD HH:MM | Fix deployed |
+        | YYYY-MM-DD HH:MM | Service restored |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Observations
+      description: What is the observable behavior? Include error messages, HTTP status codes, and log snippets.
+      placeholder: |
+        - Health check endpoint returning 500
+        - Backend logs show: "SQLITE_CORRUPT: database disk image is malformed"
+        - Docker container status: unhealthy, restarting every 30s
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution-steps
+    attributes:
+      label: Resolution Steps
+      description: Steps taken or planned to resolve the incident. Reference RUNBOOK.md procedures.
+      value: |
+        ### Diagnosis
+        - [ ] Checked backend process status (`pgrep -f "node src/server.js"`)
+        - [ ] Tested health endpoint (`curl http://localhost:3001/health`)
+        - [ ] Reviewed backend logs for errors
+        - [ ] Checked database connectivity
+
+        ### Resolution
+        - [ ] Identified root cause: [describe]
+        - [ ] Applied fix: [describe]
+        - [ ] Verified fix with health check script (`scripts/health-check.sh`)
+        - [ ] Confirmed all endpoints returning expected responses
+
+        ### Runbook Reference
+        - Procedure followed: [e.g., INC-01, INC-02]
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause Analysis
+      description: What caused the incident? (Fill in after resolution)
+      placeholder: |
+        Root cause: [description]
+        Contributing factors: [description]
+        Was this preventable? [yes/no — how?]
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-Up Actions
+      description: Post-incident action items to prevent recurrence
+      value: |
+        - [ ] Action item 1
+        - [ ] Action item 2
+        - [ ] Update RUNBOOK.md if needed
+        - [ ] Schedule post-incident review meeting
+    validations:
+      required: false
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Where did this occur?
+      placeholder: "production / staging / development"
+    validations:
+      required: true
+
+  - type: input
+    id: incident-commander
+    attributes:
+      label: Incident Commander
+      description: Who is leading the response?
+      placeholder: "@username"
+    validations:
+      required: false
