@@ -1,0 +1,105 @@
+name: "🟡 P3 — Minor Incident"
+description: "Minor degradation or non-critical feature broken. Limited user impact."
+title: "[P3] "
+labels: ["incident", "P3-minor"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 — Minor Incident
+        **SLA:** Acknowledge within 4 hours. Resolve within 1 business day.
+        Use this template for issues affecting a small number of users or non-critical features (e.g., slow queries, cosmetic UI issues, intermittent errors).
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Summary
+      description: One-line description of the incident.
+      placeholder: "e.g., Work entries page loads slowly for users with 500+ entries"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Primary category of the failure (see RUNBOOK.md for details).
+      options:
+        - Database performance
+        - API latency / timeout
+        - Memory usage elevated
+        - Dependency deprecation warning
+        - Authentication edge case
+        - Report formatting issue
+        - Frontend rendering issue
+        - Deployment configuration
+        - Rate limiting too aggressive
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Who and what is affected?
+      placeholder: |
+        - **Users affected:** Small subset / edge case users
+        - **Functionality affected:** e.g., slow loading on a specific page
+        - **Business impact:** Minor inconvenience; workaround available
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When was this first noticed and when was it addressed?
+      value: |
+        | Time (UTC) | Event |
+        |---|---|
+        | YYYY-MM-DD HH:MM | Issue first reported |
+        | | Investigation started |
+        | | Fix applied |
+    validations:
+      required: true
+
+  - type: textarea
+    id: detection
+    attributes:
+      label: Detection
+      description: How was the incident detected?
+      placeholder: "e.g., User feedback, slow query log, performance monitoring"
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What caused the issue?
+      placeholder: "e.g., Missing index on work_entries.date column causing full table scan"
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: Steps taken to resolve the issue.
+      placeholder: |
+        1. Added missing database index
+        2. Verified query performance improved
+    validations:
+      required: false
+
+  - type: textarea
+    id: action-items
+    attributes:
+      label: Follow-up Action Items
+      description: Any improvements to prevent recurrence.
+      placeholder: |
+        - [ ] Add query performance tests
+        - [ ] Set up slow-query alerting
+    validations:
+      required: false

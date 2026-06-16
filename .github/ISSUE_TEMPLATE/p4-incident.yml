@@ -1,0 +1,95 @@
+name: "🔵 P4 — Low-Priority Incident"
+description: "Cosmetic issue, minor bug, or improvement opportunity discovered during operations."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 — Low-Priority Incident
+        **SLA:** Acknowledge within 1 business day. Resolve within 1 sprint/cycle.
+        Use this template for cosmetic bugs, non-functional concerns, documentation gaps, or improvements identified during incident response.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Summary
+      description: One-line description of the issue.
+      placeholder: "e.g., Error messages expose internal stack trace details; missing validation on date field"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Category
+      description: Primary category of the issue.
+      options:
+        - Error message quality
+        - Logging improvement
+        - Documentation gap
+        - Security hardening
+        - Performance optimization
+        - Monitoring gap
+        - UI/UX polish
+        - Test coverage gap
+        - Dependency update
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: What is the impact of this issue?
+      placeholder: |
+        - **Users affected:** None directly / potential future impact
+        - **Functionality affected:** Cosmetic or operational
+        - **Business impact:** Negligible; improves reliability or developer experience
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When was this identified?
+      value: |
+        | Time (UTC) | Event |
+        |---|---|
+        | YYYY-MM-DD HH:MM | Issue identified |
+        | | Ticket created |
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context & Details
+      description: Additional context. How was this discovered? Was it found during another incident's investigation?
+      placeholder: "e.g., Found during P2 incident postmortem; error handler in errorHandler.js logs raw error objects"
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Proposed Resolution
+      description: Suggested fix or improvement.
+      placeholder: |
+        - Sanitize error responses in production mode
+        - Add structured logging with severity levels
+    validations:
+      required: false
+
+  - type: textarea
+    id: action-items
+    attributes:
+      label: Action Items
+      description: Concrete tasks to address this issue.
+      placeholder: |
+        - [ ] Update error handler to redact stack traces in production
+        - [ ] Add unit test for error sanitization
+    validations:
+      required: false
