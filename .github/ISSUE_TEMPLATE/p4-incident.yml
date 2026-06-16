@@ -1,0 +1,94 @@
+name: "P4 Incident - Low"
+description: "Cosmetic issue, minor inconvenience, or improvement opportunity discovered during operations."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 — Low Severity Incident
+        **SLA**: Triage in **next sprint planning**. Resolve based on priority.
+        Cosmetic issue, minor inconvenience, or improvement opportunity discovered during operations.
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reporter
+      description: Who reported this issue?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Select the category (see RUNBOOK.md for details).
+      options:
+        - "FM-1: Database Failure (SQLite)"
+        - "FM-2: API Server Crash / Unresponsive"
+        - "FM-3: Authentication & Authorization Errors"
+        - "FM-4: Memory Leak / OOM"
+        - "FM-5: Dependency / npm Failure"
+        - "FM-6: Rate Limiting Blocking Legitimate Users"
+        - "FM-7: CSV/PDF Export Failure"
+        - "FM-8: Frontend Build / Serving Failure"
+        - "FM-9: Docker Container Health Check Failure"
+        - "FM-10: Network / CORS Errors"
+        - "Other / Improvement Opportunity"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the impact.
+      value: |
+        **Users affected**: [minimal / none]
+        **Functionality affected**: [describe]
+        **Business impact**: [negligible / describe]
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the issue or improvement opportunity.
+      placeholder: "Describe what you observed..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What should happen instead?
+      placeholder: "Describe the expected behavior..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Proposed Resolution
+      description: Suggested fix or improvement.
+      value: |
+        **Proposed fix**: [describe or link to PR]
+        **Effort estimate**: [small / medium / large]
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Where did this occur?
+      value: |
+        **Environment**: [production / staging / development]
+        **Browser** (if frontend): 
+    validations:
+      required: false

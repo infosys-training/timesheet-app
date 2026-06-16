@@ -1,0 +1,103 @@
+name: "P3 Incident - Medium"
+description: "Minor feature issue or degraded performance. Users can work around it."
+title: "[P3] "
+labels: ["incident", "P3-medium"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 — Medium Severity Incident
+        **SLA**: Acknowledge within **1 business hour**. Resolve within **1 business day**.
+        Minor feature issue or degraded performance. Users can work around it.
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reporter
+      description: Who reported this incident?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Select the primary failure mode (see RUNBOOK.md for details).
+      options:
+        - "FM-1: Database Failure (SQLite)"
+        - "FM-2: API Server Crash / Unresponsive"
+        - "FM-3: Authentication & Authorization Errors"
+        - "FM-4: Memory Leak / OOM"
+        - "FM-5: Dependency / npm Failure"
+        - "FM-6: Rate Limiting Blocking Legitimate Users"
+        - "FM-7: CSV/PDF Export Failure"
+        - "FM-8: Frontend Build / Serving Failure"
+        - "FM-9: Docker Container Health Check Failure"
+        - "FM-10: Network / CORS Errors"
+        - "Other / Unknown"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe who is affected and how.
+      value: |
+        **Users affected**: [few / specific users]
+        **Functionality affected**: [describe]
+        **Workaround**: [describe the workaround]
+        **Business impact**: [low / describe]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When was this first noticed?
+      value: |
+        | Time (UTC) | Event |
+        |---|---|
+        | YYYY-MM-DD HH:MM | Issue first noticed / reported |
+        | | Investigation started |
+        | | Fix applied |
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Incident Description
+      description: What happened? Include error messages, logs, and steps to reproduce.
+      placeholder: "Describe the issue in detail..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: How was this resolved?
+      value: |
+        **Fix**: [describe or link to PR]
+        **Follow-up**:
+        - [ ] Root cause addressed
+        - [ ] Tests added
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Where did this occur?
+      value: |
+        **Environment**: [production / staging / development]
+        **Browser** (if frontend): 
+        **Node.js version**: 
+    validations:
+      required: true
