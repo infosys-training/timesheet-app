@@ -1,0 +1,90 @@
+name: "P3 — Medium Incident"
+description: "Minor feature degraded, workaround available. 4-hour response SLA."
+labels: ["incident", "P3-medium"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 Medium Incident Report
+        **Response SLA:** 4 hours · **Update cadence:** Daily
+        > Refer to the [RUNBOOK.md](../../RUNBOOK.md) for step-by-step resolution procedures.
+
+  - type: input
+    id: title_summary
+    attributes:
+      label: Incident Summary
+      description: One-line description of the incident.
+      placeholder: "e.g., PDF export returns empty file for reports with >500 entries"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure_mode
+    attributes:
+      label: Failure Mode
+      description: Which failure mode best describes this incident?
+      options:
+        - "FM-1: Application Crash / Process Exit"
+        - "FM-2: Database Failure (SQLite)"
+        - "FM-3: Data Loss on Restart (In-Memory DB)"
+        - "FM-4: API 5xx Errors"
+        - "FM-5: Authentication Failures"
+        - "FM-6: Rate Limiting Blocking Legitimate Users"
+        - "FM-7: Memory Leak / OOM Kill"
+        - "FM-8: PDF/CSV Export Failures"
+        - "FM-9: CORS / Proxy Misconfiguration"
+        - "FM-10: Disk Space Exhaustion"
+        - "FM-11: Docker Container Health Check Failures"
+        - "FM-12: Dependency Vulnerability (npm)"
+        - "Other / Unknown"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Describe who and what is affected. Note any workarounds.
+      placeholder: |
+        - **Users affected:** Subset — users generating large reports
+        - **Workaround:** Export as CSV instead of PDF
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: Key timestamps.
+      placeholder: |
+        | Time (UTC)         | Event                              |
+        |--------------------|------------------------------------|
+        | 2026-06-16 10:00   | User reported issue via support    |
+    validations:
+      required: true
+
+  - type: textarea
+    id: root_cause
+    attributes:
+      label: Root Cause
+      description: What caused the issue?
+    validations:
+      required: false
+
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Resolution Steps
+      description: What was done to fix the issue?
+    validations:
+      required: false
+
+  - type: textarea
+    id: action_items
+    attributes:
+      label: Follow-up Action Items
+      placeholder: |
+        - [ ] Action item 1
+    validations:
+      required: false

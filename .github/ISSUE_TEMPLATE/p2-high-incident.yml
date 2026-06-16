@@ -1,0 +1,102 @@
+name: "P2 — High Incident"
+description: "Major feature broken, significant user impact. 1-hour response SLA."
+labels: ["incident", "P2-high"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 High Incident Report
+        **Response SLA:** 1 hour · **Update cadence:** Every 2 hours
+        > Refer to the [RUNBOOK.md](../../RUNBOOK.md) for step-by-step resolution procedures.
+
+  - type: input
+    id: title_summary
+    attributes:
+      label: Incident Summary
+      description: One-line description of the incident.
+      placeholder: "e.g., All API requests returning 429 — rate limiter misconfigured"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure_mode
+    attributes:
+      label: Failure Mode
+      description: Which failure mode best describes this incident?
+      options:
+        - "FM-1: Application Crash / Process Exit"
+        - "FM-2: Database Failure (SQLite)"
+        - "FM-3: Data Loss on Restart (In-Memory DB)"
+        - "FM-4: API 5xx Errors"
+        - "FM-5: Authentication Failures"
+        - "FM-6: Rate Limiting Blocking Legitimate Users"
+        - "FM-7: Memory Leak / OOM Kill"
+        - "FM-8: PDF/CSV Export Failures"
+        - "FM-9: CORS / Proxy Misconfiguration"
+        - "FM-10: Disk Space Exhaustion"
+        - "FM-11: Docker Container Health Check Failures"
+        - "FM-12: Dependency Vulnerability (npm)"
+        - "Other / Unknown"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Describe the blast radius — how many users, which features are affected.
+      placeholder: |
+        - **Users affected:** All / subset (estimated count)
+        - **Features impacted:** Login, time entry, reports, exports
+        - **Workaround available:** Yes / No
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: Key timestamps (detection, investigation, mitigation, resolution).
+      placeholder: |
+        | Time (UTC)         | Event                              |
+        |--------------------|------------------------------------|
+        | 2026-06-16 14:00   | User reported inability to export  |
+        | 2026-06-16 14:30   | On-call engineer investigating     |
+    validations:
+      required: true
+
+  - type: textarea
+    id: root_cause
+    attributes:
+      label: Root Cause
+      description: What caused the incident?
+    validations:
+      required: false
+
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Mitigation / Resolution Steps
+      description: What was done to restore service?
+    validations:
+      required: false
+
+  - type: textarea
+    id: action_items
+    attributes:
+      label: Follow-up Action Items
+      description: Preventive measures to avoid recurrence.
+      placeholder: |
+        - [ ] Action item 1
+        - [ ] Action item 2
+    validations:
+      required: false
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence / Logs
+      description: Attach relevant logs, screenshots, or monitoring data.
+    validations:
+      required: false

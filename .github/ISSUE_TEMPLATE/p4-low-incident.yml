@@ -1,0 +1,70 @@
+name: "P4 — Low Incident"
+description: "Cosmetic or minor issue with no significant user impact. 1 business day response SLA."
+labels: ["incident", "P4-low"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 Low Incident Report
+        **Response SLA:** 1 business day · **Update cadence:** As needed
+        > Refer to the [RUNBOOK.md](../../RUNBOOK.md) for context.
+
+  - type: input
+    id: title_summary
+    attributes:
+      label: Incident Summary
+      description: One-line description.
+      placeholder: "e.g., npm audit reports moderate vulnerability in dev dependency"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure_mode
+    attributes:
+      label: Failure Mode
+      description: Which failure mode best describes this issue?
+      options:
+        - "FM-1: Application Crash / Process Exit"
+        - "FM-2: Database Failure (SQLite)"
+        - "FM-3: Data Loss on Restart (In-Memory DB)"
+        - "FM-4: API 5xx Errors"
+        - "FM-5: Authentication Failures"
+        - "FM-6: Rate Limiting Blocking Legitimate Users"
+        - "FM-7: Memory Leak / OOM Kill"
+        - "FM-8: PDF/CSV Export Failures"
+        - "FM-9: CORS / Proxy Misconfiguration"
+        - "FM-10: Disk Space Exhaustion"
+        - "FM-11: Docker Container Health Check Failures"
+        - "FM-12: Dependency Vulnerability (npm)"
+        - "Other / Unknown"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Describe the impact (expected to be minimal).
+      placeholder: "No user-facing impact. Dev dependency has a known moderate vulnerability."
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When was this discovered?
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Proposed Resolution
+      description: What should be done to address this?
+      placeholder: |
+        - [ ] Run npm audit fix
+        - [ ] Verify tests pass
+    validations:
+      required: false
