@@ -1,0 +1,106 @@
+name: "P3 Incident - Minor / Single Feature Impacted"
+description: "Minor feature impacted with workaround available (SLA: 4 hours)"
+title: "[P3] "
+labels: ["incident", "P3-minor"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 Incident Report - Minor
+        **Response SLA: 4 hours** | **Resolution target: 1 business day**
+        Use this template for minor feature issues where a workaround exists.
+        Refer to the [RUNBOOK.md](../../RUNBOOK.md) for response procedures.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief, descriptive title of the incident
+      placeholder: "e.g., CSV export failing for clients with special characters in name"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode Category
+      description: Primary failure mode (see RUNBOOK.md for details)
+      options:
+        - API - Single Route Failing
+        - API - Validation Error (unexpected)
+        - Report Export - CSV Generation Failure
+        - Report Export - PDF Generation Failure
+        - Frontend - UI Component Error
+        - Frontend - Build / TypeScript Error
+        - Database - Slow Query Performance
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the scope and severity of user impact
+      value: |
+        **Affected users:** [specific subset / all users of feature]
+        **Affected feature:** [specific feature]
+        **Workaround:** [describe the workaround]
+        **Data integrity:** [not affected / minor concern]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Record key events with timestamps (UTC)
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue reported |
+        | YYYY-MM-DD HH:MM | Investigation started |
+        | YYYY-MM-DD HH:MM | Fix deployed |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms Observed
+      description: What symptoms were observed?
+      placeholder: |
+        - GET /api/reports/export/csv/5 returns 500
+        - Error log shows "ENOENT: no such file or directory, open '/app/temp/...'"
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What was the root cause?
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: What steps were taken to resolve the incident?
+      value: |
+        - [ ] Root cause identified
+        - [ ] Fix implemented and tested
+        - [ ] Fix deployed
+        - [ ] Verified in production
+    validations:
+      required: true
+
+  - type: textarea
+    id: action-items
+    attributes:
+      label: Follow-Up Action Items
+      description: Preventive measures for the future
+    validations:
+      required: false
