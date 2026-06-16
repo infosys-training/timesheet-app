@@ -1,0 +1,116 @@
+name: "🟠 P2 — Major Incident"
+description: "Significant degradation affecting many users. Core functionality partially broken."
+title: "[P2] "
+labels: ["incident", "P2-major"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 — Major Incident
+        **SLA:** Acknowledge within 30 minutes. Resolve or mitigate within 4 hours.
+        Use this template when a major feature is broken (e.g., report exports failing, work entries not saving) but the app is partially functional.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Summary
+      description: One-line description of the incident.
+      placeholder: "e.g., PDF report export returning 500 for all clients"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Primary category of the failure (see RUNBOOK.md for details).
+      options:
+        - Database failure (SQLite)
+        - API / Express server error
+        - Memory leak / OOM
+        - Dependency failure
+        - Authentication issue
+        - Report generation failure (PDF/CSV)
+        - Frontend / proxy failure
+        - Docker / deployment failure
+        - Rate limiting issue
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Who and what is affected?
+      placeholder: |
+        - **Users affected:** Subset of users / specific feature users
+        - **Functionality affected:** e.g., CSV/PDF exports, specific API route
+        - **Business impact:** Users can log time but cannot export reports
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: Chronological log of events. Update as the incident progresses.
+      value: |
+        | Time (UTC) | Event |
+        |---|---|
+        | YYYY-MM-DD HH:MM | Issue first detected |
+        | | Incident acknowledged |
+        | | Root cause identified |
+        | | Fix deployed |
+    validations:
+      required: true
+
+  - type: textarea
+    id: detection
+    attributes:
+      label: Detection
+      description: How was the incident detected?
+      placeholder: "e.g., Error rate spike in monitoring, user-reported bug"
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What caused the incident?
+      placeholder: "e.g., pdfkit dependency updated with breaking change; temp directory permissions incorrect"
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution & Mitigation
+      description: Steps taken to resolve or mitigate. Reference RUNBOOK.md sections where applicable.
+      placeholder: |
+        1. Identified failing dependency version
+        2. Pinned pdfkit to known-good version
+        3. Redeployed backend
+    validations:
+      required: false
+
+  - type: textarea
+    id: action-items
+    attributes:
+      label: Follow-up Action Items
+      description: Preventive measures to avoid recurrence.
+      placeholder: |
+        - [ ] Pin dependency versions in package-lock.json
+        - [ ] Add integration test for PDF export
+    validations:
+      required: false
+
+  - type: input
+    id: incident-commander
+    attributes:
+      label: Incident Commander
+      description: Who is leading the incident response?
+      placeholder: "@username"
+    validations:
+      required: false
