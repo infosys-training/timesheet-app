@@ -1,0 +1,93 @@
+name: "P4 - Low Priority Incident"
+description: "Cosmetic issue, minor inconvenience, or improvement opportunity. Response SLA: 1 business day acknowledge."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 Low Priority Incident Report
+        **Use this template for cosmetic issues, minor inconveniences, or improvement opportunities.**
+        Response SLA: 1 business day acknowledge.
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reporter
+      description: Who is reporting this issue?
+      placeholder: "@username or name"
+    validations:
+      required: true
+
+  - type: input
+    id: detected_at
+    attributes:
+      label: Detection Time
+      description: When was the issue first noticed? (UTC)
+      placeholder: "YYYY-MM-DD HH:MM UTC"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      description: Which part of the system is affected?
+      multiple: true
+      options:
+        - Backend API (Express)
+        - Frontend (React/Vite)
+        - Database (SQLite)
+        - Authentication
+        - Docker / Infrastructure
+        - Exports (PDF/CSV)
+        - Documentation
+        - CI/CD
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: What is the impact? Is there a workaround?
+      placeholder: |
+        - Date picker displays incorrectly in Safari
+        - Users can type the date manually as a workaround
+        - Cosmetic only; no data impact
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Detailed description of the issue.
+      placeholder: "The date picker component renders with overlapping text when the browser window is narrow. This only affects Safari on macOS."
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected Behavior
+      description: What should happen instead?
+      placeholder: "Date picker should render correctly at all viewport widths."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: How was this resolved? (fill in after fix)
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: Fix deployed and verified

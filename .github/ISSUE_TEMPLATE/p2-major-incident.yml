@@ -1,0 +1,121 @@
+name: "P2 - Major Incident"
+description: "Core functionality is degraded (e.g., exports broken, auth intermittent). Response SLA: 30 min acknowledge, 4 hr mitigate."
+title: "[P2] "
+labels: ["incident", "P2-major"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 Major Incident Report
+        **Use this template when core functionality is degraded but the service is partially available.**
+        Response SLA: 30 min acknowledge, 4 hr mitigate.
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reporter
+      description: Who is reporting this incident?
+      placeholder: "@username or name"
+    validations:
+      required: true
+
+  - type: input
+    id: detected_at
+    attributes:
+      label: Detection Time
+      description: When was the incident first detected? (UTC)
+      placeholder: "YYYY-MM-DD HH:MM UTC"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      description: Which part of the system is affected?
+      multiple: true
+      options:
+        - Backend API (Express)
+        - Frontend (React/Vite)
+        - Database (SQLite)
+        - Authentication
+        - Docker / Infrastructure
+        - Exports (PDF/CSV)
+        - All / Unknown
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Describe the user-facing impact. What percentage of users or functionality is affected?
+      placeholder: |
+        - PDF export returns 500 for all clients
+        - CSV export works as a workaround
+        - ~30% of users affected (those needing PDF reports)
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms / Error Details
+      description: What errors or symptoms are being observed? Include error messages, HTTP status codes, or log snippets.
+      placeholder: |
+        - GET /api/reports/export/pdf/1 returns 500
+        - Backend logs: "Error creating PDF: ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: Chronological log of events (update as the incident progresses).
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | HH:MM | Incident detected |
+        | HH:MM | Acknowledged by @responder |
+        | HH:MM | Root cause identified |
+        | HH:MM | Mitigation applied |
+        | HH:MM | Resolution confirmed |
+    validations:
+      required: true
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Workaround
+      description: Is there a workaround available for affected users?
+      placeholder: "Users can export via CSV instead of PDF while the fix is deployed."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution / Root Cause
+      description: Final root cause and permanent fix (fill in after resolution).
+    validations:
+      required: false
+
+  - type: input
+    id: runbook_ref
+    attributes:
+      label: Runbook Reference
+      description: Which RUNBOOK.md section was followed?
+      placeholder: "INC-06: PDF/CSV Export Failures"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: post_incident
+    attributes:
+      label: Post-Incident Checklist
+      options:
+        - label: Service restored and verified via health check
+        - label: Users notified of resolution
+        - label: Post-incident review scheduled (within 48 hours)
+        - label: Action items created from review

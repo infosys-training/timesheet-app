@@ -1,0 +1,125 @@
+name: "P1 - Critical Incident"
+description: "Service is down for all users or data loss is occurring. Response SLA: 15 min acknowledge, 1 hr mitigate."
+title: "[P1] "
+labels: ["incident", "P1-critical"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 Critical Incident Report
+        **Use this template when the service is completely unavailable or data loss is actively occurring.**
+        Response SLA: 15 min acknowledge, 1 hr mitigate.
+
+  - type: input
+    id: reporter
+    attributes:
+      label: Reporter
+      description: Who is reporting this incident?
+      placeholder: "@username or name"
+    validations:
+      required: true
+
+  - type: input
+    id: detected_at
+    attributes:
+      label: Detection Time
+      description: When was the incident first detected? (UTC)
+      placeholder: "YYYY-MM-DD HH:MM UTC"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      description: Which part of the system is affected?
+      multiple: true
+      options:
+        - Backend API (Express)
+        - Frontend (React/Vite)
+        - Database (SQLite)
+        - Authentication
+        - Docker / Infrastructure
+        - Exports (PDF/CSV)
+        - All / Unknown
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Describe the user-facing impact. How many users are affected? What functionality is broken?
+      placeholder: |
+        - All users are unable to log in
+        - Estimated affected users: ~50
+        - No workaround available
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms / Error Details
+      description: What errors or symptoms are being observed? Include error messages, HTTP status codes, screenshots, or log snippets.
+      placeholder: |
+        - /health endpoint returns 503
+        - Browser console shows "Network Error"
+        - Backend logs: "SQLITE_CORRUPT: database disk image is malformed"
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: Chronological log of events (update as the incident progresses).
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | HH:MM | Incident detected |
+        | HH:MM | Acknowledged by @responder |
+        | HH:MM | Root cause identified |
+        | HH:MM | Mitigation applied |
+        | HH:MM | Resolution confirmed |
+    validations:
+      required: true
+
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Mitigation Steps Taken
+      description: What has been done to restore service?
+      placeholder: |
+        1. Restarted the backend container
+        2. Verified /health returns 200
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution / Root Cause
+      description: Final root cause and permanent fix (fill in after resolution).
+      placeholder: "Database file was corrupted due to abrupt container shutdown. Restored from backup and added graceful shutdown handler."
+    validations:
+      required: false
+
+  - type: input
+    id: runbook_ref
+    attributes:
+      label: Runbook Reference
+      description: Which RUNBOOK.md section was followed?
+      placeholder: "INC-01: Database Failure"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: post_incident
+    attributes:
+      label: Post-Incident Checklist
+      options:
+        - label: Service restored and verified via health check
+        - label: Users notified of resolution
+        - label: Post-incident review scheduled (within 48 hours)
+        - label: Action items created from review
