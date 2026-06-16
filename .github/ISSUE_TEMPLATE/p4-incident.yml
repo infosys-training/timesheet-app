@@ -1,0 +1,108 @@
+name: "P4 Incident - Low Priority"
+description: "Minor issue with no immediate user impact. Resolution within next business week."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 Incident Report - Low Priority
+        **Response SLA:** Next business day | **Resolution Target:** 1 week
+        
+        A P4 incident is a **minor issue** with no immediate user impact. Examples: cosmetic bugs,
+        non-critical log warnings, performance degradation under unusual load, dependency deprecation notices.
+
+  - type: input
+    id: incident-start
+    attributes:
+      label: When Discovered
+      description: When was this issue first noticed? (UTC)
+      placeholder: "2024-01-15 14:30 UTC"
+    validations:
+      required: true
+
+  - type: input
+    id: incident-detected-by
+    attributes:
+      label: Discovered By
+      description: How was the issue found?
+      placeholder: "Code review / Log analysis / Dependency audit / Routine maintenance"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Issue Category
+      description: What type of issue is this?
+      options:
+        - "Performance degradation (non-critical)"
+        - "Dependency deprecation warning"
+        - "Security advisory (low severity)"
+        - "Log noise / warning cleanup"
+        - "Configuration drift"
+        - "Documentation gap"
+        - "Monitoring gap"
+        - "Technical debt"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the current and potential future impact
+      value: |
+        **Current user impact:** [none / negligible]
+        **Future risk if unaddressed:** [describe potential escalation]
+        **Affected component:** [backend / frontend / infrastructure]
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Issue Description
+      description: Detailed description of the issue
+      placeholder: |
+        Describe the issue, including any relevant log messages,
+        configuration values, or code references.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-fix
+    attributes:
+      label: Proposed Resolution
+      description: Suggested approach to fix the issue
+      placeholder: |
+        1. Update dependency X to version Y
+        2. Add monitoring for Z
+        3. Document the new behavior
+    validations:
+      required: false
+
+  - type: textarea
+    id: action-items
+    attributes:
+      label: Action Items
+      description: Tasks to complete
+      value: |
+        - [ ] Action item — Owner: @username — Due: YYYY-MM-DD
+    validations:
+      required: false
+
+  - type: dropdown
+    id: effort
+    attributes:
+      label: Estimated Effort
+      description: How much work is needed to resolve?
+      options:
+        - "Small (< 1 hour)"
+        - "Medium (1-4 hours)"
+        - "Large (1-2 days)"
+        - "Extra Large (3+ days)"
+    validations:
+      required: false

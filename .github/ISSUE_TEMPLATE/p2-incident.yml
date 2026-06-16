@@ -1,0 +1,140 @@
+name: "P2 Incident - Major Degradation"
+description: "Significant service degradation affecting many users. Response required within 30 minutes."
+title: "[P2] "
+labels: ["incident", "P2-major"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 Incident Report - Major Degradation
+        **Response SLA:** 30 minutes | **Resolution Target:** 4 hours
+        
+        A P2 incident means **major service degradation** — many users are affected but a partial workaround may exist.
+
+  - type: input
+    id: incident-start
+    attributes:
+      label: Incident Start Time
+      description: When was the incident first detected? (UTC)
+      placeholder: "2024-01-15 14:30 UTC"
+    validations:
+      required: true
+
+  - type: input
+    id: incident-detected-by
+    attributes:
+      label: Detected By
+      description: How was the incident detected?
+      placeholder: "Health check alert / User report / Manual discovery"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Which failure mode best describes this incident? (See RUNBOOK.md)
+      options:
+        - "FM-1: Database Failure (SQLite)"
+        - "FM-2: API Server Crash / Unresponsive"
+        - "FM-3: Authentication Failure"
+        - "FM-4: Memory Leak / High Memory Usage"
+        - "FM-5: Dependency Failure"
+        - "FM-6: Frontend Build / Serve Failure"
+        - "FM-7: Rate Limiting Triggered"
+        - "FM-8: File System Errors (CSV/PDF Export)"
+        - "FM-9: CORS / Network Connectivity Issues"
+        - "FM-10: Docker Container Health Check Failure"
+        - "Other / Unknown"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the user-facing impact
+      value: |
+        **Users affected:** [many / percentage / specific group]
+        **Functionality impacted:** [specific features / endpoints]
+        **Workaround available:** [yes / no — describe if yes]
+        **Data integrity:** [intact / at risk / unknown]
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Error Messages
+      description: What are the observable symptoms? Include error messages, HTTP status codes, log excerpts.
+      placeholder: |
+        - Authentication endpoint returning 500
+        - Users unable to log in
+        - Error: "Failed to create user"
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Chronological record of events and actions taken
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | HH:MM | Incident detected |
+        | HH:MM | First responder engaged |
+        | HH:MM | |
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: What was done to resolve the incident?
+      placeholder: |
+        1. Identified root cause as...
+        2. Applied fix by...
+        3. Verified resolution by...
+    validations:
+      required: false
+
+  - type: input
+    id: incident-end
+    attributes:
+      label: Incident End Time
+      description: When was service fully restored? (UTC)
+      placeholder: "2024-01-15 15:00 UTC"
+    validations:
+      required: false
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What was the underlying cause of this incident?
+    validations:
+      required: false
+
+  - type: textarea
+    id: action-items
+    attributes:
+      label: Follow-up Action Items
+      description: What preventive measures should be taken?
+      value: |
+        - [ ] Action item 1 — Owner: @username — Due: YYYY-MM-DD
+        - [ ] Action item 2 — Owner: @username — Due: YYYY-MM-DD
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: communication
+    attributes:
+      label: Communication Checklist
+      options:
+        - label: Team notified of incident
+        - label: Affected users communicated with (if applicable)
+        - label: All-clear communicated after resolution
+        - label: Post-incident review scheduled (if warranted)

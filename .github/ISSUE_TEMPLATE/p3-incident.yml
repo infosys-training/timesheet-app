@@ -1,0 +1,122 @@
+name: "P3 Incident - Partial Impact"
+description: "Minor service degradation affecting some users or non-critical features. Response within 2 hours."
+title: "[P3] "
+labels: ["incident", "P3-minor"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 Incident Report - Partial Impact
+        **Response SLA:** 2 hours | **Resolution Target:** 24 hours
+        
+        A P3 incident means **partial service impact** — some users or non-critical features are affected.
+        Core functionality (login, time entry, client management) remains operational.
+
+  - type: input
+    id: incident-start
+    attributes:
+      label: Incident Start Time
+      description: When was the incident first detected? (UTC)
+      placeholder: "2024-01-15 14:30 UTC"
+    validations:
+      required: true
+
+  - type: input
+    id: incident-detected-by
+    attributes:
+      label: Detected By
+      description: How was the incident detected?
+      placeholder: "User report / Log monitoring / Routine check"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Which failure mode best describes this incident? (See RUNBOOK.md)
+      options:
+        - "FM-4: Memory Leak / High Memory Usage"
+        - "FM-5: Dependency Failure"
+        - "FM-7: Rate Limiting Triggered"
+        - "FM-8: File System Errors (CSV/PDF Export)"
+        - "FM-9: CORS / Network Connectivity Issues"
+        - "FM-10: Docker Container Health Check Failure"
+        - "Other / Unknown"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the user-facing impact
+      value: |
+        **Users affected:** [few / specific group]
+        **Functionality impacted:** [specific feature — e.g., CSV export, PDF generation]
+        **Workaround available:** [yes — describe]
+        **Core features operational:** [yes / no]
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Error Messages
+      description: What are the observable symptoms?
+      placeholder: |
+        - PDF export returning 500 for large reports
+        - Error: "ENOSPC: no space left on device"
+        - Temp directory full of orphaned files
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Chronological record of events and actions taken
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | HH:MM | Issue reported |
+        | HH:MM | Investigation started |
+        | HH:MM | |
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: What was done to resolve the incident?
+    validations:
+      required: false
+
+  - type: input
+    id: incident-end
+    attributes:
+      label: Incident End Time
+      description: When was service fully restored? (UTC)
+      placeholder: "2024-01-15 15:00 UTC"
+    validations:
+      required: false
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What was the underlying cause?
+    validations:
+      required: false
+
+  - type: textarea
+    id: action-items
+    attributes:
+      label: Follow-up Action Items
+      description: Preventive measures to implement
+      value: |
+        - [ ] Action item — Owner: @username — Due: YYYY-MM-DD
+    validations:
+      required: false

@@ -1,0 +1,140 @@
+name: "P1 Incident - Critical Outage"
+description: "Total service outage affecting all users. Response required within 15 minutes."
+title: "[P1] "
+labels: ["incident", "P1-critical", "urgent"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 Incident Report - Critical Outage
+        **Response SLA:** 15 minutes | **Resolution Target:** 1 hour
+        
+        A P1 incident means **total service outage** — all users are affected and no workaround exists.
+
+  - type: input
+    id: incident-start
+    attributes:
+      label: Incident Start Time
+      description: When was the incident first detected? (UTC)
+      placeholder: "2024-01-15 14:30 UTC"
+    validations:
+      required: true
+
+  - type: input
+    id: incident-detected-by
+    attributes:
+      label: Detected By
+      description: How was the incident detected? (monitoring alert, user report, etc.)
+      placeholder: "Health check alert / User report / Manual discovery"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Which failure mode best describes this incident? (See RUNBOOK.md)
+      options:
+        - "FM-1: Database Failure (SQLite)"
+        - "FM-2: API Server Crash / Unresponsive"
+        - "FM-3: Authentication Failure"
+        - "FM-4: Memory Leak / High Memory Usage"
+        - "FM-5: Dependency Failure"
+        - "FM-6: Frontend Build / Serve Failure"
+        - "FM-9: CORS / Network Connectivity Issues"
+        - "FM-10: Docker Container Health Check Failure"
+        - "Other / Unknown"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the user-facing impact
+      value: |
+        **Users affected:** [all / percentage / specific group]
+        **Functionality impacted:** [all endpoints / specific features]
+        **Data loss:** [yes / no / unknown]
+        **Revenue impact:** [estimated if applicable]
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Error Messages
+      description: What are the observable symptoms? Include error messages, HTTP status codes, log excerpts.
+      placeholder: |
+        - Health check returning 503
+        - Users seeing "Cannot connect to server"
+        - Error in logs: "SQLITE_CANTOPEN: unable to open database file"
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Chronological record of events, actions taken, and communications sent
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | HH:MM | Incident detected |
+        | HH:MM | First responder engaged |
+        | HH:MM | |
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution Steps
+      description: What was done to resolve the incident? Include commands run, configs changed, etc.
+      placeholder: |
+        1. Identified root cause as...
+        2. Executed: docker restart timesheet-app
+        3. Verified health check passing
+        4. Confirmed user access restored
+    validations:
+      required: false
+
+  - type: input
+    id: incident-end
+    attributes:
+      label: Incident End Time
+      description: When was service fully restored? (UTC)
+      placeholder: "2024-01-15 15:00 UTC"
+    validations:
+      required: false
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What was the underlying cause of this incident?
+      placeholder: "The database file became corrupted due to..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: action-items
+    attributes:
+      label: Follow-up Action Items
+      description: What preventive measures should be taken?
+      value: |
+        - [ ] Action item 1 — Owner: @username — Due: YYYY-MM-DD
+        - [ ] Action item 2 — Owner: @username — Due: YYYY-MM-DD
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: communication
+    attributes:
+      label: Communication Checklist
+      options:
+        - label: Stakeholders notified of incident
+        - label: Status page updated (if applicable)
+        - label: All-clear communicated after resolution
+        - label: Post-incident review scheduled (within 48 hours)
