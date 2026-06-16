@@ -1,0 +1,82 @@
+name: "P4 — Low Severity Incident"
+description: "Cosmetic or minor issue with no user workflow impact. Response time: 24 hours."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 — Low Severity Incident Report
+        Use this template for cosmetic issues, non-critical improvements, or minor operational concerns. **Response time: 24 hours.**
+
+  - type: input
+    id: reported_by
+    attributes:
+      label: Reported By
+      description: Name or handle of the person reporting the issue.
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected_component
+    attributes:
+      label: Affected Component
+      description: Which part of the system is affected?
+      multiple: true
+      options:
+        - Backend API (Express)
+        - Frontend (React/Vite)
+        - Database (SQLite)
+        - Docker / Infrastructure
+        - Authentication
+        - Report Generation (PDF/CSV)
+        - .NET Service (if applicable)
+        - CI/CD Pipeline
+        - Documentation
+        - External Dependency
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact_description
+    attributes:
+      label: Impact Description
+      description: Describe the issue. What is the expected vs actual behavior?
+      placeholder: |
+        {IMPACT_DESCRIPTION}
+        Example: Morgan access logs are printing deprecated date format warnings. No functional impact but adds noise to log output.
+    validations:
+      required: true
+
+  - type: textarea
+    id: incident_timeline
+    attributes:
+      label: Incident Timeline
+      description: When was this noticed?
+      placeholder: |
+        {INCIDENT_TIMELINE}
+        - **YYYY-MM-DD HH:MM UTC** — Issue noticed during routine log review
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution_steps
+    attributes:
+      label: Resolution Steps
+      description: Steps to address this issue.
+      placeholder: |
+        {RESOLUTION_STEPS}
+        1. Identified the issue: [description]
+        2. Planned fix: [description]
+        3. Scheduled for next maintenance window
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context
+      description: Any other relevant information, screenshots, or log snippets.
+      placeholder: |
+        Attach screenshots, log excerpts, or links to monitoring dashboards.

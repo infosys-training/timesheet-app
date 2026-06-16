@@ -1,0 +1,117 @@
+name: "P1 — Critical Incident"
+description: "Service completely unavailable or data loss occurring. Response time: 15 minutes."
+title: "[P1] "
+labels: ["incident", "P1-critical"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 — Critical Incident Report
+        Use this template when the service is completely unavailable, data loss is occurring, or all users are impacted. **Response time: 15 minutes.**
+
+  - type: input
+    id: incident_commander
+    attributes:
+      label: Incident Commander
+      description: Name or handle of the person leading the response.
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected_component
+    attributes:
+      label: Affected Component
+      description: Which part of the system is affected?
+      multiple: true
+      options:
+        - Backend API (Express)
+        - Frontend (React/Vite)
+        - Database (SQLite)
+        - Docker / Infrastructure
+        - Authentication
+        - Report Generation (PDF/CSV)
+        - .NET Service (if applicable)
+        - External Dependency
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact_description
+    attributes:
+      label: Impact Description
+      description: Describe the user-facing impact. How many users are affected? What functionality is broken?
+      placeholder: |
+        {IMPACT_DESCRIPTION}
+        Example: All API endpoints returning 500 errors. 100% of users unable to access the application. No new work entries can be created.
+    validations:
+      required: true
+
+  - type: textarea
+    id: incident_timeline
+    attributes:
+      label: Incident Timeline
+      description: Chronological record of events from detection through resolution.
+      placeholder: |
+        {INCIDENT_TIMELINE}
+        - **YYYY-MM-DD HH:MM UTC** — Issue detected by [monitoring alert / user report]
+        - **YYYY-MM-DD HH:MM UTC** — Incident commander assigned
+        - **YYYY-MM-DD HH:MM UTC** — Root cause identified
+        - **YYYY-MM-DD HH:MM UTC** — Fix deployed
+        - **YYYY-MM-DD HH:MM UTC** — Service restored and verified
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution_steps
+    attributes:
+      label: Resolution Steps
+      description: Step-by-step actions taken (or to be taken) to resolve this incident.
+      placeholder: |
+        {RESOLUTION_STEPS}
+        1. Identified root cause as [database corruption / OOM kill / deployment failure]
+        2. Applied immediate mitigation: [container restart / rollback / config change]
+        3. Verified fix via health check script and manual testing
+        4. Deployed permanent fix in PR #___
+        5. Updated monitoring/alerting to prevent recurrence
+    validations:
+      required: true
+
+  - type: textarea
+    id: root_cause
+    attributes:
+      label: Root Cause Analysis
+      description: What caused this incident? Include technical details.
+      placeholder: |
+        Example: SQLite database file at /app/data/timesheet.db became corrupted after an unclean container shutdown during a write operation. The PRAGMA integrity_check returned errors on the work_entries table.
+
+  - type: textarea
+    id: monitoring_gaps
+    attributes:
+      label: Monitoring & Detection Gaps
+      description: How was this detected? Should an alert have caught it sooner?
+      placeholder: |
+        Example: Detected by user report 10 minutes after onset. The Docker HEALTHCHECK was passing because /health doesn't verify database integrity. Action: add database connectivity check to health endpoint.
+
+  - type: textarea
+    id: action_items
+    attributes:
+      label: Follow-Up Action Items
+      description: Preventive measures and improvements.
+      placeholder: |
+        - [ ] Add database integrity check to /health endpoint
+        - [ ] Set up automated backups for SQLite database file
+        - [ ] Update RUNBOOK.md with this failure scenario
+
+  - type: dropdown
+    id: data_loss
+    attributes:
+      label: Data Loss
+      description: Was any data lost?
+      options:
+        - "No data loss"
+        - "Potential data loss — under investigation"
+        - "Confirmed data loss — quantified"
+        - "Confirmed data loss — not yet quantified"
+    validations:
+      required: true

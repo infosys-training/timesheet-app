@@ -1,0 +1,103 @@
+name: "P2 — High Severity Incident"
+description: "Major feature degraded with significant user impact. Response time: 1 hour."
+title: "[P2] "
+labels: ["incident", "P2-high"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 — High Severity Incident Report
+        Use this template when a major feature is degraded or a significant number of users are impacted. **Response time: 1 hour.**
+
+  - type: input
+    id: incident_commander
+    attributes:
+      label: Incident Commander
+      description: Name or handle of the person leading the response.
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected_component
+    attributes:
+      label: Affected Component
+      description: Which part of the system is affected?
+      multiple: true
+      options:
+        - Backend API (Express)
+        - Frontend (React/Vite)
+        - Database (SQLite)
+        - Docker / Infrastructure
+        - Authentication
+        - Report Generation (PDF/CSV)
+        - .NET Service (if applicable)
+        - External Dependency
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact_description
+    attributes:
+      label: Impact Description
+      description: Describe the user-facing impact. Which features are degraded? Approximate percentage of users affected.
+      placeholder: |
+        {IMPACT_DESCRIPTION}
+        Example: PDF report generation timing out for clients with >500 work entries. Approximately 15% of users affected. CSV export still works as a workaround.
+    validations:
+      required: true
+
+  - type: textarea
+    id: incident_timeline
+    attributes:
+      label: Incident Timeline
+      description: Chronological record of events.
+      placeholder: |
+        {INCIDENT_TIMELINE}
+        - **YYYY-MM-DD HH:MM UTC** — Issue detected by [monitoring alert / user report]
+        - **YYYY-MM-DD HH:MM UTC** — Investigation started
+        - **YYYY-MM-DD HH:MM UTC** — Root cause identified
+        - **YYYY-MM-DD HH:MM UTC** — Fix deployed
+        - **YYYY-MM-DD HH:MM UTC** — Feature fully restored
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution_steps
+    attributes:
+      label: Resolution Steps
+      description: Step-by-step actions taken (or to be taken) to resolve this incident.
+      placeholder: |
+        {RESOLUTION_STEPS}
+        1. Identified root cause as [memory pressure / slow query / dependency failure]
+        2. Applied immediate mitigation: [increased memory limit / added query timeout / disabled feature]
+        3. Verified fix via health check and manual testing
+        4. Deployed permanent fix in PR #___
+    validations:
+      required: true
+
+  - type: textarea
+    id: root_cause
+    attributes:
+      label: Root Cause Analysis
+      description: What caused this incident?
+      placeholder: |
+        Example: The PDF export endpoint loads all work entries into memory before generating the document. For clients with >500 entries, this exceeds the 512MB container memory limit.
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Workaround
+      description: Is there a temporary workaround available for affected users?
+      placeholder: |
+        Example: Users can use the CSV export endpoint (/api/reports/export/csv/:clientId) as an alternative while PDF generation is being fixed.
+
+  - type: textarea
+    id: action_items
+    attributes:
+      label: Follow-Up Action Items
+      description: Preventive measures and improvements.
+      placeholder: |
+        - [ ] Add pagination to report queries
+        - [ ] Stream PDF generation instead of buffering in memory
+        - [ ] Add memory usage alerting threshold
