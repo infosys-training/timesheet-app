@@ -1,0 +1,122 @@
+name: "P1 — Critical Incident"
+description: "Service is down or data loss is occurring. Immediate response required."
+title: "[P1] "
+labels: ["incident", "P1-critical"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 — Critical Incident
+        **SLA:** Acknowledge within 15 minutes. Incident Commander assigned within 30 minutes.
+        **Criteria:** Complete service outage, data loss, or security breach affecting all users.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Summary
+      description: One-line summary of what is happening.
+      placeholder: "e.g., Backend unreachable — all API requests returning 502"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Select the category that best matches this incident (see RUNBOOK.md).
+      options:
+        - "FM-1: Backend Process Crash / Unresponsive"
+        - "FM-2: Database Failures (SQLite)"
+        - "FM-3: Data Loss on Restart (In-Memory DB)"
+        - "FM-4: Authentication / JWT Failures"
+        - "FM-5: API Errors (5xx on Route Handlers)"
+        - "FM-6: Rate Limiting Blocking Legitimate Users"
+        - "FM-7: Frontend Build / Serving Failures"
+        - "FM-8: Memory Leaks / High Resource Usage"
+        - "FM-9: PDF/CSV Export Failures"
+        - "FM-10: CORS / Proxy Misconfiguration"
+        - "FM-11: Dependency Vulnerabilities / Failures"
+        - "FM-12: Docker Container Health Check Failures"
+        - "Other / Unknown"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Who and what is affected?
+      value: |
+        **Users affected:** (all / subset — describe)
+        **Features affected:** (list affected features)
+        **Data impact:** (any data loss or corruption?)
+        **Business impact:** (revenue, SLA breach, compliance, etc.)
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: Chronological record of the incident. Update as the incident progresses.
+      value: |
+        | Time (UTC) | Event |
+        |---|---|
+        | YYYY-MM-DD HH:MM | Issue first detected / reported |
+        | | Incident acknowledged |
+        | | Investigation started |
+        | | Root cause identified |
+        | | Mitigation applied |
+        | | Service restored |
+        | | Post-incident review scheduled |
+    validations:
+      required: true
+
+  - type: textarea
+    id: detection
+    attributes:
+      label: Detection
+      description: How was this incident detected?
+      placeholder: "e.g., Health check script alert, user report, monitoring dashboard"
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnosis
+    attributes:
+      label: Diagnosis & Root Cause
+      description: What went wrong? Include logs, error messages, and stack traces.
+      placeholder: "Paste relevant log output, error codes, and your analysis here."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution & Mitigation
+      description: What was done to restore service? Include commands run and configs changed.
+      placeholder: "Describe the steps taken to resolve the incident."
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-up Actions
+      description: What should be done to prevent recurrence?
+      value: |
+        - [ ] Root cause fix deployed
+        - [ ] Monitoring/alerting improved
+        - [ ] Runbook updated
+        - [ ] Post-incident review completed
+    validations:
+      required: false
+
+  - type: input
+    id: commander
+    attributes:
+      label: Incident Commander
+      description: GitHub handle of the person coordinating the response.
+      placeholder: "@username"
+    validations:
+      required: false

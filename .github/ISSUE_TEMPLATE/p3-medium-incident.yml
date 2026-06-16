@@ -1,0 +1,85 @@
+name: "P3 — Medium Incident"
+description: "Minor feature is broken or degraded. Limited user impact."
+title: "[P3] "
+labels: ["incident", "P3-medium"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 — Medium Incident
+        **SLA:** Acknowledge within 4 hours. Resolve same-day or assign to next sprint.
+        **Criteria:** Minor feature broken, edge case failures, or degraded performance that affects a small number of users.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Summary
+      description: One-line summary.
+      placeholder: "e.g., Work entry creation fails when description contains special characters"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Select the category that best matches (see RUNBOOK.md).
+      options:
+        - "FM-1: Backend Process Crash / Unresponsive"
+        - "FM-2: Database Failures (SQLite)"
+        - "FM-3: Data Loss on Restart (In-Memory DB)"
+        - "FM-4: Authentication / JWT Failures"
+        - "FM-5: API Errors (5xx on Route Handlers)"
+        - "FM-6: Rate Limiting Blocking Legitimate Users"
+        - "FM-7: Frontend Build / Serving Failures"
+        - "FM-8: Memory Leaks / High Resource Usage"
+        - "FM-9: PDF/CSV Export Failures"
+        - "FM-10: CORS / Proxy Misconfiguration"
+        - "FM-11: Dependency Vulnerabilities / Failures"
+        - "FM-12: Docker Container Health Check Failures"
+        - "Other / Unknown"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Who and what is affected?
+      value: |
+        **Users affected:** (few / specific conditions)
+        **Features affected:**
+        **Workaround available:** (yes/no)
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When was it noticed and when was it resolved?
+      value: |
+        | Time (UTC) | Event |
+        |---|---|
+        | YYYY-MM-DD HH:MM | Issue reported |
+        | | Investigation started |
+        | | Fix deployed |
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: Steps to reproduce, logs, and any relevant context.
+      placeholder: "Include reproduction steps, error messages, and screenshots if applicable."
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: What was done or needs to be done?
+    validations:
+      required: false

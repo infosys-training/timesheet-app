@@ -1,0 +1,69 @@
+name: "P4 — Low Incident"
+description: "Cosmetic issue, minor inconvenience, or improvement opportunity identified during operations."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 — Low Incident
+        **SLA:** Acknowledge within 1 business day. Track in backlog.
+        **Criteria:** Cosmetic issues, non-critical warnings, minor UX problems, or operational improvements.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Summary
+      description: One-line summary.
+      placeholder: "e.g., Morgan log format includes unnecessary fields in production"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Select category if applicable (see RUNBOOK.md).
+      options:
+        - "FM-1: Backend Process Crash / Unresponsive"
+        - "FM-2: Database Failures (SQLite)"
+        - "FM-3: Data Loss on Restart (In-Memory DB)"
+        - "FM-4: Authentication / JWT Failures"
+        - "FM-5: API Errors (5xx on Route Handlers)"
+        - "FM-6: Rate Limiting Blocking Legitimate Users"
+        - "FM-7: Frontend Build / Serving Failures"
+        - "FM-8: Memory Leaks / High Resource Usage"
+        - "FM-9: PDF/CSV Export Failures"
+        - "FM-10: CORS / Proxy Misconfiguration"
+        - "FM-11: Dependency Vulnerabilities / Failures"
+        - "FM-12: Docker Container Health Check Failures"
+        - "Not applicable"
+    validations:
+      required: false
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: What is the user-facing or operational impact?
+      value: |
+        **Users affected:** (minimal / none)
+        **Severity justification:** (why this is P4)
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: Describe the issue, how it was found, and any relevant context.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-fix
+    attributes:
+      label: Proposed Fix
+      description: Suggested approach to resolve, if known.
+    validations:
+      required: false
