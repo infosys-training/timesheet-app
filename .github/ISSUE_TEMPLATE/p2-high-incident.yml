@@ -1,0 +1,109 @@
+name: "P2 — High Incident"
+description: "Major feature is degraded. Affects many users but service is partially available."
+title: "[P2] "
+labels: ["incident", "P2-high"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 — High Incident
+        **SLA:** Acknowledge within 1 hour. Team lead notified.
+        **Criteria:** Major feature broken or severely degraded; affects a significant portion of users but the service is not completely down.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Summary
+      description: One-line summary of what is happening.
+      placeholder: "e.g., CSV/PDF export returning 500 for all clients"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Select the category that best matches this incident (see RUNBOOK.md).
+      options:
+        - "FM-1: Backend Process Crash / Unresponsive"
+        - "FM-2: Database Failures (SQLite)"
+        - "FM-3: Data Loss on Restart (In-Memory DB)"
+        - "FM-4: Authentication / JWT Failures"
+        - "FM-5: API Errors (5xx on Route Handlers)"
+        - "FM-6: Rate Limiting Blocking Legitimate Users"
+        - "FM-7: Frontend Build / Serving Failures"
+        - "FM-8: Memory Leaks / High Resource Usage"
+        - "FM-9: PDF/CSV Export Failures"
+        - "FM-10: CORS / Proxy Misconfiguration"
+        - "FM-11: Dependency Vulnerabilities / Failures"
+        - "FM-12: Docker Container Health Check Failures"
+        - "Other / Unknown"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Who and what is affected?
+      value: |
+        **Users affected:** (percentage or count)
+        **Features affected:** (list affected features)
+        **Workaround available:** (yes/no — describe if yes)
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: Chronological record of the incident.
+      value: |
+        | Time (UTC) | Event |
+        |---|---|
+        | YYYY-MM-DD HH:MM | Issue first detected |
+        | | Incident acknowledged |
+        | | Root cause identified |
+        | | Fix deployed |
+        | | Verified resolved |
+    validations:
+      required: true
+
+  - type: textarea
+    id: detection
+    attributes:
+      label: Detection
+      description: How was this incident detected?
+      placeholder: "e.g., Health check script, user report, monitoring alert"
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnosis
+    attributes:
+      label: Diagnosis & Root Cause
+      description: What went wrong? Include logs and error messages.
+      placeholder: "Paste relevant log output and your analysis."
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: What was done to resolve this?
+      placeholder: "Describe the steps taken."
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-up Actions
+      description: Preventive measures.
+      value: |
+        - [ ] Root cause fix deployed
+        - [ ] Tests added for this failure mode
+        - [ ] Runbook updated if needed
+    validations:
+      required: false
