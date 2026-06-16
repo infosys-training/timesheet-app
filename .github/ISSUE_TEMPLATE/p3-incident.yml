@@ -1,0 +1,91 @@
+name: "P3 — Medium Severity Incident"
+description: "Minor feature impacted with workaround available. Response time: 4 hours."
+title: "[P3] "
+labels: ["incident", "P3-medium"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 — Medium Severity Incident Report
+        Use this template when a minor feature is impacted and a workaround is available. **Response time: 4 hours.**
+
+  - type: input
+    id: reported_by
+    attributes:
+      label: Reported By
+      description: Name or handle of the person reporting the issue.
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected_component
+    attributes:
+      label: Affected Component
+      description: Which part of the system is affected?
+      multiple: true
+      options:
+        - Backend API (Express)
+        - Frontend (React/Vite)
+        - Database (SQLite)
+        - Docker / Infrastructure
+        - Authentication
+        - Report Generation (PDF/CSV)
+        - .NET Service (if applicable)
+        - External Dependency
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact_description
+    attributes:
+      label: Impact Description
+      description: Describe the impact. Which feature is affected and what is the scope?
+      placeholder: |
+        {IMPACT_DESCRIPTION}
+        Example: CSV export leaves temporary files in backend/temp/ directory. Disk usage growing by ~50MB/day. No user-facing impact yet but will cause disk full errors if not addressed.
+    validations:
+      required: true
+
+  - type: textarea
+    id: incident_timeline
+    attributes:
+      label: Incident Timeline
+      description: Key timestamps for detection and response.
+      placeholder: |
+        {INCIDENT_TIMELINE}
+        - **YYYY-MM-DD HH:MM UTC** — Issue detected
+        - **YYYY-MM-DD HH:MM UTC** — Investigation started
+        - **YYYY-MM-DD HH:MM UTC** — Fix planned / deployed
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution_steps
+    attributes:
+      label: Resolution Steps
+      description: Steps taken or planned to resolve the issue.
+      placeholder: |
+        {RESOLUTION_STEPS}
+        1. Identified the issue: [description]
+        2. Applied workaround: [description]
+        3. Planned permanent fix: [description]
+    validations:
+      required: true
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Workaround
+      description: Describe the available workaround.
+      placeholder: |
+        Example: Manually clear temp files with `rm backend/temp/*.csv`. Schedule a cron job to clean files older than 1 hour.
+
+  - type: textarea
+    id: action_items
+    attributes:
+      label: Follow-Up Action Items
+      description: What should be done to permanently resolve this?
+      placeholder: |
+        - [ ] Add temp file cleanup on application startup
+        - [ ] Add monitoring for disk usage on /app/data/ and /app/temp/
