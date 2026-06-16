@@ -1,0 +1,131 @@
+name: "P1 Incident - Critical"
+description: "Complete service outage or data loss affecting all users. Requires immediate response."
+title: "[P1] "
+labels: ["incident", "P1-critical", "urgent"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P1 — Critical Incident
+        **SLA**: Acknowledge within **5 minutes**. War room within **15 minutes**.
+        Complete service outage, data loss, or security breach affecting all users.
+
+  - type: input
+    id: incident-commander
+    attributes:
+      label: Incident Commander
+      description: Who is leading the response?
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode
+      description: Select the primary failure mode (see RUNBOOK.md for details).
+      options:
+        - "FM-1: Database Failure (SQLite)"
+        - "FM-2: API Server Crash / Unresponsive"
+        - "FM-3: Authentication & Authorization Errors"
+        - "FM-4: Memory Leak / OOM"
+        - "FM-5: Dependency / npm Failure"
+        - "FM-6: Rate Limiting Blocking Legitimate Users"
+        - "FM-7: CSV/PDF Export Failure"
+        - "FM-8: Frontend Build / Serving Failure"
+        - "FM-9: Docker Container Health Check Failure"
+        - "FM-10: Network / CORS Errors"
+        - "Other / Unknown"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe who is affected and how.
+      value: |
+        **Users affected**: [all / percentage / specific group]
+        **Functionality broken**: [e.g., all API endpoints, login, data export]
+        **Data loss**: [yes / no / unknown]
+        **Revenue / business impact**: [describe]
+        **External customer impact**: [yes / no — describe if yes]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Record key events with UTC timestamps. Update as incident progresses.
+      value: |
+        | Time (UTC) | Event |
+        |---|---|
+        | YYYY-MM-DD HH:MM | Incident detected / reported by [source] |
+        | | On-call acknowledged |
+        | | Investigation started |
+        | | Root cause identified |
+        | | Mitigation applied |
+        | | Service restored |
+        | | Incident closed |
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Incident Description
+      description: What happened? Include error messages, logs, and screenshots.
+      placeholder: "Describe the incident in detail..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause
+      description: What caused the incident? (Fill in during or after investigation.)
+      placeholder: "To be determined during investigation..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Mitigation Steps Taken
+      description: What was done to restore service?
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution & Follow-up
+      description: Permanent fix and preventive actions.
+      value: |
+        **Permanent fix**: [describe or link to PR]
+        **Follow-up actions**:
+        - [ ] Post-incident review scheduled
+        - [ ] Monitoring / alerting improved
+        - [ ] Runbook updated
+        - [ ] Root cause permanently resolved
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Where did this occur?
+      value: |
+        **Environment**: [production / staging / development]
+        **Deployment method**: [Docker / bare metal / cloud service]
+        **Node.js version**: 
+        **Last deploy**: [date/time or commit SHA]
+    validations:
+      required: true
