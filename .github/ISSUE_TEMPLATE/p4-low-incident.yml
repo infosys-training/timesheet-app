@@ -1,0 +1,95 @@
+name: "P4 — Low Priority Issue"
+description: "Cosmetic issue, minor improvement, or non-urgent technical debt."
+title: "[P4] "
+labels: ["incident", "P4-low"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 — Low Priority Issue
+        Use this template for **cosmetic bugs**, **minor improvements**, or **technical debt** that does not affect functionality. Expected response time: **next sprint / backlog**.
+
+  - type: input
+    id: detected_at
+    attributes:
+      label: Detection Time
+      description: "When was the issue first noticed? (UTC)"
+      placeholder: "YYYY-MM-DD HH:MM UTC"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Production
+        - Staging
+        - Development
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      options:
+        - Backend API (Express)
+        - Frontend (React/Vite)
+        - Database (SQLite)
+        - Authentication
+        - Report Generation (CSV/PDF)
+        - Docker / Infrastructure
+        - CI/CD Pipeline
+        - Multiple / Unknown
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: "What is the user-facing effect? Is there a workaround?"
+      placeholder: |
+        - Date picker shows wrong timezone offset for users in UTC-8
+        - Workaround: manually adjust date after entry
+        - Low frequency — affects <5% of entries
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms / Description
+      description: "Describe the issue. Include screenshots if applicable."
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: "When was this noticed and any relevant context."
+      placeholder: |
+        - YYYY-MM-DD — Noticed during routine testing
+    validations:
+      required: false
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Proposed Resolution
+      description: "Suggested fix or improvement."
+    validations:
+      required: false
+
+  - type: textarea
+    id: action_items
+    attributes:
+      label: Action Items
+      description: "Tasks to address this issue."
+      placeholder: |
+        - [ ] Fix timezone handling in date picker component
+        - [ ] Add unit test for date serialization
+    validations:
+      required: false

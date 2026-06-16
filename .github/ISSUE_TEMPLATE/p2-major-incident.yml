@@ -1,0 +1,119 @@
+name: "P2 — Major Incident"
+description: "Degraded service or partial outage affecting core functionality."
+title: "[P2] "
+labels: ["incident", "P2-major"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 — Major Incident
+        Use this template when core functionality is **degraded** or a **partial outage** is occurring (e.g., reports fail but CRUD works, one API route returns 500s). Expected response time: **< 30 minutes**.
+
+  - type: input
+    id: detected_at
+    attributes:
+      label: Detection Time
+      description: "When was the incident first detected? (UTC)"
+      placeholder: "YYYY-MM-DD HH:MM UTC"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Production
+        - Staging
+        - Development
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      options:
+        - Backend API (Express)
+        - Frontend (React/Vite)
+        - Database (SQLite)
+        - Authentication
+        - Report Generation (CSV/PDF)
+        - Docker / Infrastructure
+        - CI/CD Pipeline
+        - Multiple / Unknown
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: "Who and what is affected? Describe the scope of degradation."
+      placeholder: |
+        - PDF export fails for all users
+        - CSV export works as a workaround
+        - ~20 users affected, can still log time entries
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms
+      description: "What is being observed? Include error messages, HTTP status codes, log excerpts."
+      placeholder: |
+        - GET /api/reports/export/pdf/:id returns 500
+        - Logs: "Error creating PDF: ENOMEM"
+        - Other endpoints respond normally
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: "Chronological record of events. Update as the incident progresses."
+      placeholder: |
+        - HH:MM UTC — User reported PDF export failure
+        - HH:MM UTC — Confirmed reproducible
+        - HH:MM UTC — Root cause identified
+        - HH:MM UTC — Fix deployed
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: "What was done to resolve the incident?"
+    validations:
+      required: false
+
+  - type: textarea
+    id: root_cause
+    attributes:
+      label: Root Cause
+      description: "What caused the incident? Fill in after investigation."
+    validations:
+      required: false
+
+  - type: textarea
+    id: action_items
+    attributes:
+      label: Follow-Up Action Items
+      description: "Preventive measures or improvements."
+      placeholder: |
+        - [ ] Add memory limit monitoring for report generation
+        - [ ] Implement streaming PDF generation for large datasets
+    validations:
+      required: false
+
+  - type: input
+    id: resolved_at
+    attributes:
+      label: Resolution Time
+      description: "When was the incident resolved? (UTC)"
+      placeholder: "YYYY-MM-DD HH:MM UTC"
+    validations:
+      required: false
