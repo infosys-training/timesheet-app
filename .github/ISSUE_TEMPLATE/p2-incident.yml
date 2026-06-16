@@ -1,0 +1,132 @@
+name: "P2 Incident – High / Major Degradation"
+description: "Significant service degradation affecting core functionality. Requires response within 30 minutes."
+title: "[P2] "
+labels: ["incident", "P2-high", "priority:high"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P2 Incident Report – High
+        **Response SLA:** < 30 minutes to acknowledge
+        **Escalation:** On-call engineer → Team lead within 1 hour
+
+        > Use this template for: partial outage, data loss on restart (in-memory DB),
+        > rate limiting blocking users, authentication failures, or degraded performance.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief, descriptive title of the incident
+      placeholder: "e.g., Rate limiter blocking legitimate users – 429 errors across multiple clients"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode Category
+      description: Select the category that best matches this incident (see RUNBOOK.md)
+      options:
+        - "INC-03: In-Memory Database Data Loss on Restart"
+        - "INC-04: API Rate Limiting Blocking Legitimate Traffic"
+        - "INC-05: Authentication Middleware Failures"
+        - "INC-09: Dependency Vulnerability (CVE) – High Severity"
+        - "Performance Degradation"
+        - "Other (describe below)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the scope and impact of this incident
+      value: |
+        **Users affected:** [subset / percentage]
+        **Features affected:** [login / clients / work entries / reports]
+        **Workaround available:** [yes – describe / no]
+        **Data impact:** [none / data loss on restart]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: Chronological log of events
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue reported / detected |
+        | YYYY-MM-DD HH:MM | Investigation started |
+        | YYYY-MM-DD HH:MM | Root cause identified |
+        | YYYY-MM-DD HH:MM | Fix applied |
+        | YYYY-MM-DD HH:MM | Normal service confirmed |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Observations
+      description: What is the observable behavior? Include error messages and affected endpoints.
+      placeholder: |
+        - Endpoint affected: POST /api/auth/login
+        - Error response: 429 Too Many Requests
+        - Frequency: affects users sharing the same IP (office network)
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution-steps
+    attributes:
+      label: Resolution Steps
+      description: Steps taken or planned to resolve the incident
+      value: |
+        ### Diagnosis
+        - [ ] Identified affected component (backend / frontend / database)
+        - [ ] Reproduced the issue
+        - [ ] Reviewed application logs
+        - [ ] Checked relevant RUNBOOK.md procedure
+
+        ### Resolution
+        - [ ] Root cause: [describe]
+        - [ ] Fix applied: [describe]
+        - [ ] Verified with health check script
+        - [ ] Monitored for recurrence (30 min window)
+
+        ### Runbook Reference
+        - Procedure followed: [e.g., INC-03, INC-04, INC-05]
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause Analysis
+      description: What caused the incident? (Fill in after resolution)
+    validations:
+      required: false
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-Up Actions
+      description: Post-incident improvements
+      value: |
+        - [ ] Action item 1
+        - [ ] Action item 2
+        - [ ] Update RUNBOOK.md if needed
+    validations:
+      required: false
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Where did this occur?
+      placeholder: "production / staging / development"
+    validations:
+      required: true

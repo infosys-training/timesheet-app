@@ -1,0 +1,124 @@
+name: "P3 Incident – Moderate / Feature Degradation"
+description: "Non-critical feature impairment. Response within 4 hours during business hours."
+title: "[P3] "
+labels: ["incident", "P3-moderate", "priority:medium"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P3 Incident Report – Moderate
+        **Response SLA:** < 4 hours (business hours)
+        **Escalation:** Assigned engineer during business hours
+
+        > Use this template for: report export failures (PDF/CSV), frontend proxy issues
+        > in development, moderate dependency vulnerabilities, or cosmetic/non-blocking errors.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief, descriptive title of the incident
+      placeholder: "e.g., PDF report export returning 500 for clients with > 200 entries"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Failure Mode Category
+      description: Select the category that best matches this incident (see RUNBOOK.md)
+      options:
+        - "INC-06: Report Generation Failures (PDF/CSV)"
+        - "INC-07: Frontend-to-Backend Connectivity Loss (dev)"
+        - "INC-09: Dependency Vulnerability (CVE) – Moderate Severity"
+        - "Validation / Input Handling Error"
+        - "UI / Display Issue"
+        - "Other (describe below)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe what is affected and any available workarounds
+      value: |
+        **Feature affected:** [e.g., CSV export, PDF reports]
+        **Users affected:** [specific users / conditions to trigger]
+        **Workaround:** [describe workaround or "none"]
+        **Data impact:** [none expected]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Incident Timeline
+      description: When was this discovered and what has been done so far?
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue reported |
+        | YYYY-MM-DD HH:MM | Triaged and assigned |
+        | YYYY-MM-DD HH:MM | Investigation started |
+        | YYYY-MM-DD HH:MM | Fix applied |
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Symptoms & Observations
+      description: Describe the issue, including steps to reproduce
+      placeholder: |
+        Steps to reproduce:
+        1. Log in as any user
+        2. Navigate to client with > 200 work entries
+        3. Click "Export PDF"
+        4. Observe: 500 error returned
+
+        Error in logs: "FATAL ERROR: Allocation failed - JavaScript heap out of memory"
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution-steps
+    attributes:
+      label: Resolution Steps
+      description: Steps taken or planned to resolve the incident
+      value: |
+        ### Diagnosis
+        - [ ] Reproduced the issue
+        - [ ] Identified root cause
+        - [ ] Checked relevant RUNBOOK.md procedure
+
+        ### Resolution
+        - [ ] Fix applied: [describe]
+        - [ ] Tested fix
+        - [ ] Deployed to affected environment
+
+        ### Runbook Reference
+        - Procedure followed: [e.g., INC-06]
+    validations:
+      required: true
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Follow-Up Actions
+      description: Improvements to prevent recurrence
+      value: |
+        - [ ] Action item 1
+        - [ ] Update RUNBOOK.md if needed
+    validations:
+      required: false
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Where did this occur?
+      placeholder: "production / staging / development"
+    validations:
+      required: true

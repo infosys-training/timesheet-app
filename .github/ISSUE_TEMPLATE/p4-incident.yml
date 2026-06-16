@@ -1,0 +1,108 @@
+name: "P4 Incident – Low / Improvement"
+description: "Minor issues, tech debt, or operational improvements. Planned for next sprint."
+title: "[P4] "
+labels: ["incident", "P4-low", "priority:low"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## P4 Incident Report – Low
+        **Response SLA:** Next sprint / planned work
+        **Escalation:** Backlog grooming
+
+        > Use this template for: minor logging gaps, documentation updates, temp file cleanup
+        > improvements, non-critical configuration tweaks, or operational hardening tasks.
+
+  - type: input
+    id: incident-title
+    attributes:
+      label: Incident Title
+      description: Brief, descriptive title
+      placeholder: "e.g., Orphaned CSV temp files not cleaned up after failed exports"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure-mode
+    attributes:
+      label: Category
+      description: Select the relevant category
+      options:
+        - "Operational Improvement"
+        - "Tech Debt / Code Quality"
+        - "Logging / Monitoring Gap"
+        - "Documentation Update"
+        - "Configuration Hardening"
+        - "Dependency Maintenance"
+        - "Other (describe below)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Describe the current impact and potential risk if not addressed
+      value: |
+        **Current impact:** [minimal / cosmetic / no user-facing impact]
+        **Risk if unaddressed:** [describe potential escalation]
+        **Affected component:** [backend / frontend / docker / CI]
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Discovery Timeline
+      description: When and how was this identified?
+      value: |
+        | Time (UTC) | Event |
+        |------------|-------|
+        | YYYY-MM-DD HH:MM | Issue identified during [routine check / code review / incident investigation] |
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Detailed Description
+      description: Describe the issue, including any relevant code references or configuration details
+      placeholder: |
+        The CSV export in reports.js creates temp files in backend/temp/ but only cleans
+        them up on successful download. Failed exports leave orphaned files that accumulate
+        over time. See RUNBOOK.md INC-06 for context.
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolution-steps
+    attributes:
+      label: Proposed Resolution
+      description: What changes would address this issue?
+      value: |
+        - [ ] Describe proposed fix
+        - [ ] Estimate effort: [small / medium / large]
+        - [ ] PR link (when ready): #
+    validations:
+      required: true
+
+  - type: textarea
+    id: follow-up
+    attributes:
+      label: Acceptance Criteria
+      description: How will we know this is resolved?
+      value: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+    validations:
+      required: false
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Where does this apply?
+      placeholder: "all / production / staging / development"
+    validations:
+      required: true
