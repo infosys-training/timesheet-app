@@ -19,6 +19,8 @@ export default defineConfig({
     trace: 'on-first-retry',
     video: 'on',
     screenshot: 'only-on-failure',
+    // Optional slow-motion for demos/recordings: PW_SLOWMO=350 npm run test:headed
+    launchOptions: { slowMo: Number(process.env.PW_SLOWMO) || 0 },
   },
   projects: [
     {
