@@ -2,6 +2,7 @@ const {
   clientSchema,
   workEntrySchema,
   updateWorkEntrySchema,
+  rejectWorkEntrySchema,
   updateClientSchema,
   emailSchema
 } = require('../../validation/schemas');
@@ -250,6 +251,22 @@ describe('Validation Schemas', () => {
 
       const { error } = updateWorkEntrySchema.validate(update);
       expect(error).toBeUndefined();
+    });
+  });
+
+  describe('rejectWorkEntrySchema', () => {
+    test('should allow an optional trimmed reason', () => {
+      const { error, value } = rejectWorkEntrySchema.validate({ reason: '  Needs correction  ' });
+      expect(error).toBeUndefined();
+      expect(value.reason).toBe('Needs correction');
+    });
+
+    test('should allow a missing reason', () => {
+      expect(rejectWorkEntrySchema.validate({}).error).toBeUndefined();
+    });
+
+    test('should reject a reason longer than 1000 characters', () => {
+      expect(rejectWorkEntrySchema.validate({ reason: 'a'.repeat(1001) }).error).toBeDefined();
     });
   });
 

@@ -113,6 +113,7 @@ PORT=3001
 NODE_ENV=development
 FRONTEND_URL=http://localhost:5173
 JWT_SECRET=your-secure-secret-key-change-this
+APPROVER_EMAILS=approver@example.com,manager@example.com
 ```
 
 5. Start the development server:
@@ -261,6 +262,7 @@ See `backend/DEPLOYMENT.md` for detailed production deployment instructions.
 
 ### Quick Production Checklist
 - [ ] Set strong `JWT_SECRET` in environment variables
+- [ ] Set comma-separated approver addresses in `APPROVER_EMAILS`
 - [ ] Configure proper `FRONTEND_URL` for CORS
 - [ ] Consider switching to file-based SQLite for data persistence
 - [ ] Set up HTTPS/SSL certificates
@@ -273,7 +275,7 @@ See `backend/DEPLOYMENT.md` for detailed production deployment instructions.
 
 1. **In-memory database** - All data is lost on server restart
 2. **Email-only auth** - No password protection, assumes trusted network
-3. **No user roles** - All users have equal access to all data
+3. **Email-only roles** - Users listed in `APPROVER_EMAILS` can approve submitted work
 4. **Single-server architecture** - Not designed for horizontal scaling
 5. **No real-time updates** - Changes require page refresh
 

@@ -1,4 +1,4 @@
-const { authenticateUser } = require('../../middleware/auth');
+const { authenticateUser, requireApprover } = require('../../middleware/auth');
 const { getDatabase } = require('../../database/init');
 
 jest.mock('../../database/init');
@@ -69,13 +69,14 @@ describe('Authentication Middleware', () => {
       req.headers['x-user-email'] = 'existing@example.com';
       
       mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, { email: 'existing@example.com' });
+        callback(null, { email: 'existing@example.com', role: 'approver' });
       });
 
       authenticateUser(req, res, next);
 
       setImmediate(() => {
         expect(req.userEmail).toBe('existing@example.com');
+        expect(req.userRole).toBe('approver');
         expect(next).toHaveBeenCalled();
         expect(res.status).not.toHaveBeenCalled();
         done();
@@ -118,8 +119,8 @@ describe('Authentication Middleware', () => {
 
       setImmediate(() => {
         expect(mockDb.run).toHaveBeenCalledWith(
-          'INSERT INTO users (email) VALUES (?)',
-          ['newuser@example.com'],
+          'INSERT INTO users (email, role) VALUES (?, ?)',
+          ['newuser@example.com', 'user'],
           expect.any(Function)
         );
         expect(req.userEmail).toBe('newuser@example.com');
@@ -147,6 +148,28 @@ describe('Authentication Middleware', () => {
           error: 'Failed to create user'
         });
         expect(next).not.toHaveBeenCalled();
+        done();
+      });
+    });
+
+    test('should assign approver role to designated new users', (done) => {
+      const previousApprovers = process.env.APPROVER_EMAILS;
+      process.env.APPROVER_EMAILS = 'newuser@example.com';
+      req.headers['x-user-email'] = 'newuser@example.com';
+
+      mockDb.get.mockImplementation((query, params, callback) => callback(null, null));
+      mockDb.run.mockImplementation((query, params, callback) => callback(null));
+
+      authenticateUser(req, res, next);
+
+      setImmediate(() => {
+        expect(mockDb.run).toHaveBeenCalledWith(
+          'INSERT INTO users (email, role) VALUES (?, ?)',
+          ['newuser@example.com', 'approver'],
+          expect.any(Function)
+        );
+        expect(req.userRole).toBe('approver');
+        process.env.APPROVER_EMAILS = previousApprovers;
         done();
       });
     });
@@ -180,6 +203,23 @@ describe('Authentication Middleware', () => {
 
       authenticateUser(req, res, next);
       expect(mockDb.get).toHaveBeenCalled();
+    });
+  });
+
+  describe('Approver authorization', () => {
+    test('should allow approvers', () => {
+      req.userRole = 'approver';
+      requireApprover(req, res, next);
+      expect(next).toHaveBeenCalled();
+      expect(res.status).not.toHaveBeenCalled();
+    });
+
+    test('should reject regular users', () => {
+      req.userRole = 'user';
+      requireApprover(req, res, next);
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({ error: 'Approver role required' });
+      expect(next).not.toHaveBeenCalled();
     });
   });
 });
