@@ -102,6 +102,7 @@ describe('Database Initialization', () => {
       expect(queries.some(q => q.includes('CREATE INDEX IF NOT EXISTS idx_work_entries_client_id'))).toBe(true);
       expect(queries.some(q => q.includes('CREATE INDEX IF NOT EXISTS idx_work_entries_user_email'))).toBe(true);
       expect(queries.some(q => q.includes('CREATE INDEX IF NOT EXISTS idx_work_entries_date'))).toBe(true);
+      expect(queries.some(q => q.includes('CREATE INDEX IF NOT EXISTS idx_work_entries_status'))).toBe(true);
     });
 
     test('should log success message', async () => {
@@ -155,6 +156,7 @@ describe('Database Initialization', () => {
 
       expect(userTableQuery).toBeDefined();
       expect(userTableQuery[0]).toContain('email TEXT PRIMARY KEY');
+      expect(userTableQuery[0]).toContain('role TEXT NOT NULL DEFAULT');
       expect(userTableQuery[0]).toContain('created_at DATETIME DEFAULT CURRENT_TIMESTAMP');
     });
 
@@ -182,6 +184,7 @@ describe('Database Initialization', () => {
       expect(workEntriesQuery).toBeDefined();
       expect(workEntriesQuery[0]).toContain('FOREIGN KEY (client_id) REFERENCES clients (id) ON DELETE CASCADE');
       expect(workEntriesQuery[0]).toContain('FOREIGN KEY (user_email) REFERENCES users (email) ON DELETE CASCADE');
+      expect(workEntriesQuery[0]).toContain('status TEXT NOT NULL DEFAULT');
     });
   });
 });

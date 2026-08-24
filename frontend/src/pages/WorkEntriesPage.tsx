@@ -23,11 +23,13 @@ import {
   Select,
   MenuItem,
   Chip,
+  Tooltip,
 } from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
+  Send as SendIcon,
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -93,6 +95,17 @@ const WorkEntriesPage: React.FC = () => {
     onError: (err: unknown) => {
       const error = err as { response?: { data?: { error?: string } } };
       setError(error.response?.data?.error || 'Failed to delete work entry');
+    },
+  });
+
+  const submitMutation = useMutation({
+    mutationFn: (id: number) => apiClient.submitWorkEntry(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workEntries'] });
+    },
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { error?: string } } };
+      setError(error.response?.data?.error || 'Failed to submit work entry');
     },
   });
 
@@ -218,6 +231,7 @@ const WorkEntriesPage: React.FC = () => {
                     <TableCell>Client</TableCell>
                     <TableCell>Date</TableCell>
                     <TableCell>Hours</TableCell>
+                    <TableCell>Status</TableCell>
                     <TableCell>Description</TableCell>
                     <TableCell align="right">Actions</TableCell>
                   </TableRow>
@@ -237,11 +251,32 @@ const WorkEntriesPage: React.FC = () => {
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Chip 
-                            label={`${entry.hours} hours`} 
-                            color="primary" 
-                            variant="outlined" 
+                          <Chip
+                            label={`${entry.hours} hours`}
+                            color="primary"
+                            variant="outlined"
                           />
+                        </TableCell>
+                        <TableCell>
+                          {entry.status === 'rejected' && entry.rejection_reason ? (
+                            <Tooltip title={entry.rejection_reason}>
+                              <Chip label={entry.status} color="error" size="small" />
+                            </Tooltip>
+                          ) : (
+                            <Chip
+                              label={entry.status}
+                              color={
+                                entry.status === 'submitted'
+                                  ? 'info'
+                                  : entry.status === 'approved'
+                                    ? 'success'
+                                    : entry.status === 'rejected'
+                                      ? 'error'
+                                      : 'default'
+                              }
+                              size="small"
+                            />
+                          )}
                         </TableCell>
                         <TableCell>
                           {entry.description ? (
@@ -253,26 +288,41 @@ const WorkEntriesPage: React.FC = () => {
                           )}
                         </TableCell>
                         <TableCell align="right">
-                          <IconButton
-                            onClick={() => handleOpen(entry)}
-                            color="primary"
-                            size="small"
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            onClick={() => handleDelete(entry)}
-                            color="error"
-                            size="small"
-                          >
-                            <DeleteIcon />
-                          </IconButton>
+                          {(entry.status === 'draft' || entry.status === 'rejected') && (
+                            <IconButton
+                              onClick={() => submitMutation.mutate(entry.id)}
+                              color="success"
+                              size="small"
+                              disabled={submitMutation.isPending}
+                              title="Submit for approval"
+                            >
+                              <SendIcon />
+                            </IconButton>
+                          )}
+                          {entry.status !== 'submitted' && entry.status !== 'approved' && (
+                            <>
+                              <IconButton
+                                onClick={() => handleOpen(entry)}
+                                color="primary"
+                                size="small"
+                              >
+                                <EditIcon />
+                              </IconButton>
+                              <IconButton
+                                onClick={() => handleDelete(entry)}
+                                color="error"
+                                size="small"
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={5} align="center">
+                      <TableCell colSpan={6} align="center">
                         <Typography color="text.secondary" sx={{ py: 3 }}>
                           No work entries found. Add your first work entry to get started.
                         </Typography>

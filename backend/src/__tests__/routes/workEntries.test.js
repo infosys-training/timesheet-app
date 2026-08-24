@@ -2,14 +2,31 @@ const request = require('supertest');
 const express = require('express');
 const workEntryRoutes = require('../../routes/workEntries');
 const { getDatabase } = require('../../database/init');
+const { setMockAuth } = require('../../middleware/auth');
 
 jest.mock('../../database/init');
-jest.mock('../../middleware/auth', () => ({
-  authenticateUser: (req, res, next) => {
-    req.userEmail = 'test@example.com';
-    next();
-  }
-}));
+jest.mock('../../middleware/auth', () => {
+  let userEmail = 'test@example.com';
+  let userRole = 'user';
+
+  return {
+    setMockAuth: (email, role) => {
+      userEmail = email;
+      userRole = role;
+    },
+    authenticateUser: (req, res, next) => {
+      req.userEmail = userEmail;
+      req.userRole = userRole;
+      next();
+    },
+    requireApprover: (req, res, next) => {
+      if (req.userRole !== 'approver') {
+        return res.status(403).json({ error: 'Approver role required' });
+      }
+      next();
+    }
+  };
+});
 
 const app = express();
 app.use(express.json());
@@ -32,6 +49,7 @@ describe('Work Entry Routes', () => {
       run: jest.fn()
     };
     getDatabase.mockReturnValue(mockDb);
+    setMockAuth('test@example.com', 'user');
   });
 
   afterEach(() => {
@@ -583,6 +601,273 @@ describe('Work Entry Routes', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('Work entry updated successfully');
+    });
+  });
+
+  describe('Approval workflow', () => {
+    const retrievedEntry = (status, extras = {}) => ({
+      id: 1,
+      client_id: 1,
+      user_email: 'owner@example.com',
+      hours: 5,
+      date: '2024-01-15',
+      client_name: 'Client A',
+      status,
+      submitted_at: null,
+      reviewed_at: null,
+      reviewed_by: null,
+      rejection_reason: null,
+      ...extras
+    });
+
+    test('should submit a draft entry', async () => {
+      setMockAuth('owner@example.com', 'user');
+      mockDb.get
+        .mockImplementationOnce((query, params, callback) => callback(null, { id: 1, status: 'draft' }))
+        .mockImplementationOnce((query, params, callback) => callback(null, retrievedEntry('submitted')));
+      mockDb.run.mockImplementation((query, params, callback) => callback(null));
+
+      const response = await request(app).post('/api/work-entries/1/submit');
+
+      expect(response.status).toBe(200);
+      expect(response.body.workEntry.status).toBe('submitted');
+      expect(mockDb.run).toHaveBeenCalledWith(
+        expect.stringContaining("status = 'submitted'"),
+        [1, 'owner@example.com'],
+        expect.any(Function)
+      );
+    });
+
+    test('should resubmit a rejected entry and clear review fields', async () => {
+      setMockAuth('owner@example.com', 'user');
+      mockDb.get
+        .mockImplementationOnce((query, params, callback) => callback(null, { id: 1, status: 'rejected' }))
+        .mockImplementationOnce((query, params, callback) => callback(null, retrievedEntry('submitted')));
+      mockDb.run.mockImplementation((query, params, callback) => callback(null));
+
+      const response = await request(app).post('/api/work-entries/1/submit');
+
+      expect(response.status).toBe(200);
+      expect(mockDb.run.mock.calls[0][0]).toEqual(expect.stringContaining('rejection_reason = NULL'));
+      expect(mockDb.run.mock.calls[0][0]).toEqual(expect.stringContaining('reviewed_at = NULL'));
+      expect(mockDb.run.mock.calls[0][0]).toEqual(expect.stringContaining('reviewed_by = NULL'));
+    });
+
+    test('should approve a submitted entry as an approver', async () => {
+      setMockAuth('approver@example.com', 'approver');
+      mockDb.get
+        .mockImplementationOnce((query, params, callback) => callback(null, {
+          id: 1, user_email: 'owner@example.com', status: 'submitted'
+        }))
+        .mockImplementationOnce((query, params, callback) => callback(null, retrievedEntry('approved', {
+          reviewed_by: 'approver@example.com'
+        })));
+      mockDb.run.mockImplementation((query, params, callback) => callback(null));
+
+      const response = await request(app).post('/api/work-entries/1/approve');
+
+      expect(response.status).toBe(200);
+      expect(response.body.workEntry.status).toBe('approved');
+      expect(mockDb.run).toHaveBeenCalledWith(
+        expect.stringContaining("status = ?"),
+        ['approved', 'approver@example.com', null, 1],
+        expect.any(Function)
+      );
+    });
+
+    test('should reject a submitted entry without a reason', async () => {
+      setMockAuth('approver@example.com', 'approver');
+      mockDb.get
+        .mockImplementationOnce((query, params, callback) => callback(null, {
+          id: 1, user_email: 'owner@example.com', status: 'submitted'
+        }))
+        .mockImplementationOnce((query, params, callback) => callback(null, retrievedEntry('rejected')));
+      mockDb.run.mockImplementation((query, params, callback) => callback(null));
+
+      const response = await request(app).post('/api/work-entries/1/reject').send({});
+
+      expect(response.status).toBe(200);
+      expect(response.body.workEntry.status).toBe('rejected');
+      expect(mockDb.run.mock.calls[0][1]).toEqual(['rejected', 'approver@example.com', null, 1]);
+    });
+
+    test('should reject a submitted entry with a reason', async () => {
+      setMockAuth('approver@example.com', 'approver');
+      mockDb.get
+        .mockImplementationOnce((query, params, callback) => callback(null, {
+          id: 1, user_email: 'owner@example.com', status: 'submitted'
+        }))
+        .mockImplementationOnce((query, params, callback) => callback(null, retrievedEntry('rejected', {
+          rejection_reason: 'Please add more detail'
+        })));
+      mockDb.run.mockImplementation((query, params, callback) => callback(null));
+
+      const response = await request(app)
+        .post('/api/work-entries/1/reject')
+        .send({ reason: '  Please add more detail  ' });
+
+      expect(response.status).toBe(200);
+      expect(mockDb.run.mock.calls[0][1]).toEqual([
+        'rejected', 'approver@example.com', 'Please add more detail', 1
+      ]);
+    });
+
+    test.each([
+      ['submit', 'submitted', '/api/work-entries/1/submit', 'owner@example.com', 'user'],
+      ['submit', 'approved', '/api/work-entries/1/submit', 'owner@example.com', 'user'],
+      ['approve', 'draft', '/api/work-entries/1/approve', 'approver@example.com', 'approver'],
+      ['approve', 'approved', '/api/work-entries/1/approve', 'approver@example.com', 'approver'],
+      ['approve', 'rejected', '/api/work-entries/1/approve', 'approver@example.com', 'approver'],
+      ['reject', 'draft', '/api/work-entries/1/reject', 'approver@example.com', 'approver'],
+      ['reject', 'approved', '/api/work-entries/1/reject', 'approver@example.com', 'approver'],
+      ['reject', 'rejected', '/api/work-entries/1/reject', 'approver@example.com', 'approver']
+    ])('should reject %s from %s with 409', async (action, status, path, email, role) => {
+      setMockAuth(email, role);
+      mockDb.get.mockImplementation((query, params, callback) => callback(null, {
+        id: 1,
+        user_email: 'owner@example.com',
+        status
+      }));
+
+      const response = await request(app).post(path).send({});
+
+      expect(response.status).toBe(409);
+      expect(response.body.error).toContain(status);
+      expect(mockDb.run).not.toHaveBeenCalled();
+    });
+
+    test.each(['/approve', '/reject'])(
+      'should reject non-approver %s requests',
+      async (action) => {
+        setMockAuth('user@example.com', 'user');
+
+        const response = await request(app).post(`/api/work-entries/1${action}`).send({});
+
+        expect(response.status).toBe(403);
+        expect(response.body).toEqual({ error: 'Approver role required' });
+        expect(mockDb.get).not.toHaveBeenCalled();
+      }
+    );
+
+    test('should reject pending approvals request from a non-approver', async () => {
+      setMockAuth('user@example.com', 'user');
+
+      const response = await request(app).get('/api/work-entries/pending-approvals');
+
+      expect(response.status).toBe(403);
+      expect(response.body).toEqual({ error: 'Approver role required' });
+    });
+
+    test('should return pending submitted entries across users to an approver', async () => {
+      setMockAuth('approver@example.com', 'approver');
+      const entries = [
+        retrievedEntry('submitted', { user_email: 'one@example.com' }),
+        retrievedEntry('submitted', { id: 2, user_email: 'two@example.com' })
+      ];
+      mockDb.all.mockImplementation((query, params, callback) => {
+        expect(params).toEqual([]);
+        expect(query).toContain("WHERE we.status = 'submitted'");
+        expect(query).not.toContain('we.user_email = ?');
+        callback(null, entries);
+      });
+
+      const response = await request(app).get('/api/work-entries/pending-approvals');
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ workEntries: entries });
+    });
+
+    test.each([
+      ['/submit', 'owner@example.com', 'user'],
+      ['/approve', 'approver@example.com', 'approver'],
+      ['/reject', 'approver@example.com', 'approver']
+    ])('should return 404 for nonexistent %s transition', async (action, email, role) => {
+      setMockAuth(email, role);
+      mockDb.get.mockImplementation((query, params, callback) => callback(null, null));
+
+      const response = await request(app).post(`/api/work-entries/999${action}`).send({});
+
+      expect(response.status).toBe(404);
+    });
+
+    test('should return 404 when submitting another user entry', async () => {
+      setMockAuth('owner@example.com', 'user');
+      mockDb.get.mockImplementation((query, params, callback) => callback(null, null));
+
+      const response = await request(app).post('/api/work-entries/1/submit');
+
+      expect(response.status).toBe(404);
+    });
+
+    test.each(['/approve', '/reject'])('should prevent self-%s', async (action) => {
+      setMockAuth('owner@example.com', 'approver');
+      mockDb.get.mockImplementation((query, params, callback) => callback(null, {
+        id: 1,
+        user_email: 'owner@example.com',
+        status: 'submitted'
+      }));
+
+      const response = await request(app).post(`/api/work-entries/1${action}`).send({});
+
+      expect(response.status).toBe(403);
+      expect(response.body.error).toContain('your own work entry');
+    });
+
+    test.each([
+      ['put', 'submitted'],
+      ['put', 'approved'],
+      ['delete', 'submitted'],
+      ['delete', 'approved']
+    ])('should lock %s for %s entries', async (method, status) => {
+      setMockAuth('owner@example.com', 'user');
+      mockDb.get.mockImplementation((query, params, callback) => callback(null, {
+        id: 1, status
+      }));
+
+      const response = method === 'put'
+        ? await request(app).put('/api/work-entries/1').send({ hours: 8 })
+        : await request(app).delete('/api/work-entries/1');
+
+      expect(response.status).toBe(409);
+      expect(mockDb.run).not.toHaveBeenCalled();
+    });
+
+    test.each(['draft', 'rejected'])('should allow editing and deleting %s entries', async (status) => {
+      setMockAuth('owner@example.com', 'user');
+      mockDb.get
+        .mockImplementationOnce((query, params, callback) => callback(null, { id: 1, status }))
+        .mockImplementationOnce((query, params, callback) => callback(null, retrievedEntry(status)));
+      mockDb.run.mockImplementation((query, params, callback) => callback(null));
+
+      const updateResponse = await request(app).put('/api/work-entries/1').send({ hours: 8 });
+      expect(updateResponse.status).toBe(200);
+
+      mockDb.get.mockImplementationOnce((query, params, callback) => callback(null, { id: 1, status }));
+      const deleteResponse = await request(app).delete('/api/work-entries/1');
+      expect(deleteResponse.status).toBe(200);
+    });
+
+    test('should filter the list by status', async () => {
+      mockDb.all.mockImplementation((query, params, callback) => {
+        expect(params).toEqual(['test@example.com', 'rejected']);
+        callback(null, []);
+      });
+
+      const response = await request(app).get('/api/work-entries?status=rejected');
+
+      expect(response.status).toBe(200);
+      expect(mockDb.all).toHaveBeenCalledWith(
+        expect.stringContaining('AND we.status = ?'),
+        ['test@example.com', 'rejected'],
+        expect.any(Function)
+      );
+    });
+
+    test('should reject an invalid list status filter', async () => {
+      const response = await request(app).get('/api/work-entries?status=unknown');
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({ error: 'Invalid status' });
     });
   });
 });
