@@ -7,6 +7,13 @@ jest.mock('../../database/init');
 jest.mock('../../middleware/auth', () => ({
   authenticateUser: (req, res, next) => {
     req.userEmail = 'test@example.com';
+    req.isApprover = false;
+    next();
+  },
+  requireApprover: (req, res, next) => {
+    if (!req.isApprover) {
+      return res.status(403).json({ error: 'Approver role required' });
+    }
     next();
   }
 }));
