@@ -1,7 +1,10 @@
 export interface User {
   email: string;
+  isApprover: boolean;
   createdAt: string;
 }
+
+export type WorkEntryStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 
 export interface Client {
   id: number;
@@ -19,9 +22,19 @@ export interface WorkEntry {
   hours: number;
   description: string | null;
   date: string;
+  status: WorkEntryStatus;
+  submitted_at: string | null;
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+  rejection_reason: string | null;
   created_at: string;
   updated_at: string;
   client_name?: string;
+}
+
+// Entries awaiting review belong to other users, so they carry the owner's email
+export interface PendingWorkEntry extends WorkEntry {
+  user_email: string;
 }
 
 export interface WorkEntryWithClient extends WorkEntry {

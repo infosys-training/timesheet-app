@@ -1,5 +1,6 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const { DEFAULT_STATUS } = require('../workflow/workEntryStatus');
 
 let db = null;
 let isClosing = false;
@@ -31,6 +32,7 @@ async function initializeDatabase() {
       database.run(`
         CREATE TABLE IF NOT EXISTS users (
           email TEXT PRIMARY KEY,
+          is_approver INTEGER NOT NULL DEFAULT 0,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
       `);
@@ -59,6 +61,11 @@ async function initializeDatabase() {
           hours DECIMAL(5,2) NOT NULL,
           description TEXT,
           date DATE NOT NULL,
+          status TEXT NOT NULL DEFAULT '${DEFAULT_STATUS}',
+          submitted_at DATETIME,
+          reviewed_at DATETIME,
+          reviewed_by TEXT,
+          rejection_reason TEXT,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (client_id) REFERENCES clients (id) ON DELETE CASCADE,
@@ -71,10 +78,31 @@ async function initializeDatabase() {
       database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_client_id ON work_entries (client_id)`);
       database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_user_email ON work_entries (user_email)`);
       database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_date ON work_entries (date)`);
+      database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_status ON work_entries (status)`);
+
+      seedApprovers(database);
 
       console.log('Database tables created successfully');
       resolve();
     });
+  });
+}
+
+// Approvers are configured out of band via APPROVER_EMAILS (comma separated)
+function getConfiguredApproverEmails() {
+  return (process.env.APPROVER_EMAILS || '')
+    .split(',')
+    .map(email => email.trim())
+    .filter(email => email.length > 0);
+}
+
+function seedApprovers(database) {
+  getConfiguredApproverEmails().forEach(email => {
+    database.run(
+      `INSERT INTO users (email, is_approver) VALUES (?, 1)
+       ON CONFLICT(email) DO UPDATE SET is_approver = 1`,
+      [email]
+    );
   });
 }
 
@@ -121,5 +149,6 @@ function closeDatabase() {
 module.exports = {
   getDatabase,
   initializeDatabase,
-  closeDatabase
+  closeDatabase,
+  getConfiguredApproverEmails
 };

@@ -23,18 +23,25 @@ import {
   Select,
   MenuItem,
   Chip,
+  Tooltip,
 } from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
+  Send as SendIcon,
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import apiClient from '../api/client';
+import WorkEntryStatusChip from '../components/WorkEntryStatusChip';
 import { type WorkEntry } from '../types/api';
+
+// Approved entries are locked; only draft and rejected entries can be submitted
+const isLocked = (entry: WorkEntry) => entry.status === 'approved';
+const canSubmit = (entry: WorkEntry) => entry.status === 'draft' || entry.status === 'rejected';
 
 const WorkEntriesPage: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -82,6 +89,17 @@ const WorkEntriesPage: React.FC = () => {
     onError: (err: unknown) => {
       const error = err as { response?: { data?: { error?: string } } };
       setError(error.response?.data?.error || 'Failed to update work entry');
+    },
+  });
+
+  const submitMutation = useMutation({
+    mutationFn: (id: number) => apiClient.submitWorkEntry(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workEntries'] });
+    },
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { error?: string } } };
+      setError(error.response?.data?.error || 'Failed to submit work entry');
     },
   });
 
@@ -170,6 +188,11 @@ const WorkEntriesPage: React.FC = () => {
     }
   };
 
+  const handleSubmitForApproval = (entry: WorkEntry) => {
+    setError('');
+    submitMutation.mutate(entry.id);
+  };
+
   const handleDelete = (entry: WorkEntry) => {
     if (window.confirm(`Are you sure you want to delete this ${entry.hours} hour entry for ${entry.client_name}?`)) {
       deleteMutation.mutate(entry.id);
@@ -219,6 +242,7 @@ const WorkEntriesPage: React.FC = () => {
                     <TableCell>Date</TableCell>
                     <TableCell>Hours</TableCell>
                     <TableCell>Description</TableCell>
+                    <TableCell>Status</TableCell>
                     <TableCell align="right">Actions</TableCell>
                   </TableRow>
                 </TableHead>
@@ -252,27 +276,55 @@ const WorkEntriesPage: React.FC = () => {
                             <Chip label="No description" size="small" variant="outlined" />
                           )}
                         </TableCell>
+                        <TableCell>
+                          <WorkEntryStatusChip
+                            status={entry.status}
+                            rejectionReason={entry.rejection_reason}
+                          />
+                        </TableCell>
                         <TableCell align="right">
-                          <IconButton
-                            onClick={() => handleOpen(entry)}
-                            color="primary"
-                            size="small"
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            onClick={() => handleDelete(entry)}
-                            color="error"
-                            size="small"
-                          >
-                            <DeleteIcon />
-                          </IconButton>
+                          <Tooltip title={canSubmit(entry) ? 'Submit for approval' : 'Already submitted or approved'}>
+                            <span>
+                              <IconButton
+                                onClick={() => handleSubmitForApproval(entry)}
+                                color="primary"
+                                size="small"
+                                disabled={!canSubmit(entry) || submitMutation.isPending}
+                              >
+                                <SendIcon />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                          <Tooltip title={isLocked(entry) ? 'Approved entries cannot be edited' : 'Edit'}>
+                            <span>
+                              <IconButton
+                                onClick={() => handleOpen(entry)}
+                                color="primary"
+                                size="small"
+                                disabled={isLocked(entry)}
+                              >
+                                <EditIcon />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                          <Tooltip title={isLocked(entry) ? 'Approved entries cannot be deleted' : 'Delete'}>
+                            <span>
+                              <IconButton
+                                onClick={() => handleDelete(entry)}
+                                color="error"
+                                size="small"
+                                disabled={isLocked(entry)}
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
                         </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={5} align="center">
+                      <TableCell colSpan={6} align="center">
                         <Typography color="text.secondary" sx={{ py: 3 }}>
                           No work entries found. Add your first work entry to get started.
                         </Typography>
