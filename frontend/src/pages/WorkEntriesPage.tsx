@@ -28,13 +28,18 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
+  Send as SendIcon,
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import apiClient from '../api/client';
+import WorkEntryStatusChip from '../components/WorkEntryStatusChip';
 import { type WorkEntry } from '../types/api';
+
+const isApproved = (entry: WorkEntry) => entry.status === 'approved';
+const canSubmit = (entry: WorkEntry) => entry.status === 'draft' || entry.status === 'rejected';
 
 const WorkEntriesPage: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -82,6 +87,17 @@ const WorkEntriesPage: React.FC = () => {
     onError: (err: unknown) => {
       const error = err as { response?: { data?: { error?: string } } };
       setError(error.response?.data?.error || 'Failed to update work entry');
+    },
+  });
+
+  const submitMutation = useMutation({
+    mutationFn: (id: number) => apiClient.submitWorkEntry(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workEntries'] });
+    },
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { error?: string } } };
+      setError(error.response?.data?.error || 'Failed to submit work entry');
     },
   });
 
@@ -219,6 +235,7 @@ const WorkEntriesPage: React.FC = () => {
                     <TableCell>Date</TableCell>
                     <TableCell>Hours</TableCell>
                     <TableCell>Description</TableCell>
+                    <TableCell>Status</TableCell>
                     <TableCell align="right">Actions</TableCell>
                   </TableRow>
                 </TableHead>
@@ -252,11 +269,28 @@ const WorkEntriesPage: React.FC = () => {
                             <Chip label="No description" size="small" variant="outlined" />
                           )}
                         </TableCell>
+                        <TableCell>
+                          <WorkEntryStatusChip
+                            status={entry.status}
+                            reviewNote={entry.review_note}
+                            reviewedBy={entry.reviewed_by}
+                          />
+                        </TableCell>
                         <TableCell align="right">
+                          <Button
+                            size="small"
+                            startIcon={<SendIcon />}
+                            onClick={() => submitMutation.mutate(entry.id)}
+                            disabled={!canSubmit(entry) || submitMutation.isPending}
+                          >
+                            {entry.status === 'rejected' ? 'Resubmit' : 'Submit'}
+                          </Button>
                           <IconButton
                             onClick={() => handleOpen(entry)}
                             color="primary"
                             size="small"
+                            disabled={isApproved(entry)}
+                            title={isApproved(entry) ? 'Approved entries cannot be edited' : 'Edit'}
                           >
                             <EditIcon />
                           </IconButton>
@@ -264,6 +298,8 @@ const WorkEntriesPage: React.FC = () => {
                             onClick={() => handleDelete(entry)}
                             color="error"
                             size="small"
+                            disabled={isApproved(entry)}
+                            title={isApproved(entry) ? 'Approved entries cannot be deleted' : 'Delete'}
                           >
                             <DeleteIcon />
                           </IconButton>
@@ -272,7 +308,7 @@ const WorkEntriesPage: React.FC = () => {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={5} align="center">
+                      <TableCell colSpan={6} align="center">
                         <Typography color="text.secondary" sx={{ py: 3 }}>
                           No work entries found. Add your first work entry to get started.
                         </Typography>

@@ -181,6 +181,8 @@ describe('Database Initialization', () => {
 
       expect(workEntriesQuery).toBeDefined();
       expect(workEntriesQuery[0]).toContain('FOREIGN KEY (client_id) REFERENCES clients (id) ON DELETE CASCADE');
+      expect(workEntriesQuery[0]).toContain("status TEXT NOT NULL DEFAULT 'draft'");
+      expect(workEntriesQuery[0]).toContain("CHECK (status IN ('draft', 'submitted', 'approved', 'rejected'))");
       expect(workEntriesQuery[0]).toContain('FOREIGN KEY (user_email) REFERENCES users (email) ON DELETE CASCADE');
     });
   });

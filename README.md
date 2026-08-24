@@ -113,7 +113,10 @@ PORT=3001
 NODE_ENV=development
 FRONTEND_URL=http://localhost:5173
 JWT_SECRET=your-secure-secret-key-change-this
+APPROVER_EMAILS=approver@example.com
 ```
+
+`APPROVER_EMAILS` is a comma-separated list of emails allowed to view pending approvals and approve or reject submitted work entries.
 
 5. Start the development server:
 ```bash
