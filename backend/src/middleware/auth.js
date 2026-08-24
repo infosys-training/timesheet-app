@@ -1,5 +1,24 @@
 const { getDatabase } = require('../database/init');
 
+function isApproverEmail(email) {
+  return (process.env.APPROVER_EMAILS || '')
+    .split(',')
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean)
+    .includes(email.toLowerCase());
+}
+
+function reconcileUserRole(db, email, currentRole, callback) {
+  const role = isApproverEmail(email) ? 'approver' : 'member';
+  if (currentRole === role) {
+    return callback(null, role);
+  }
+
+  db.run('UPDATE users SET role = ? WHERE email = ?', [role, email], (err) => {
+    callback(err, role);
+  });
+}
+
 // Simple email-based authentication middleware
 function authenticateUser(req, res, next) {
   const userEmail = req.headers['x-user-email'];
@@ -17,7 +36,7 @@ function authenticateUser(req, res, next) {
   const db = getDatabase();
   
   // Check if user exists, create if not
-  db.get('SELECT email FROM users WHERE email = ?', [userEmail], (err, row) => {
+  db.get('SELECT email, role FROM users WHERE email = ?', [userEmail], (err, row) => {
     if (err) {
       console.error('Database error:', err);
       return res.status(500).json({ error: 'Internal server error' });
@@ -31,16 +50,39 @@ function authenticateUser(req, res, next) {
           return res.status(500).json({ error: 'Failed to create user' });
         }
         
-        req.userEmail = userEmail;
-        next();
+        reconcileUserRole(db, userEmail, null, (roleError, role) => {
+          if (roleError) {
+            console.error('Error reconciling user role:', roleError);
+            return res.status(500).json({ error: 'Internal server error' });
+          }
+          req.userEmail = userEmail;
+          req.role = role;
+          next();
+        });
       });
     } else {
-      req.userEmail = userEmail;
-      next();
+      reconcileUserRole(db, userEmail, row.role || 'member', (roleError, role) => {
+        if (roleError) {
+          console.error('Error reconciling user role:', roleError);
+          return res.status(500).json({ error: 'Internal server error' });
+        }
+        req.userEmail = userEmail;
+        req.role = role;
+        next();
+      });
     }
   });
 }
 
+function requireApprover(req, res, next) {
+  if (req.role !== 'approver') {
+    return res.status(403).json({ error: 'Approver access required' });
+  }
+  next();
+}
+
 module.exports = {
-  authenticateUser
+  authenticateUser,
+  requireApprover,
+  isApproverEmail
 };

@@ -37,7 +37,9 @@ router.get('/client/:clientId', (req, res) => {
       
       // Get work entries for this client
       db.all(
-        `SELECT id, hours, description, date, created_at, updated_at
+        `SELECT id, user_email, hours, description, date, status,
+                submitted_at, reviewed_at, reviewed_by, review_note,
+                created_at, updated_at
          FROM work_entries 
          WHERE client_id = ? AND user_email = ? 
          ORDER BY date DESC`,
@@ -89,7 +91,8 @@ router.get('/export/csv/:clientId', (req, res) => {
       
       // Get work entries
       db.all(
-        `SELECT hours, description, date, created_at
+        `SELECT hours, description, date, status, submitted_at, reviewed_at,
+                reviewed_by, review_note, created_at
          FROM work_entries 
          WHERE client_id = ? AND user_email = ? 
          ORDER BY date DESC`,
@@ -172,7 +175,8 @@ router.get('/export/pdf/:clientId', (req, res) => {
       
       // Get work entries
       db.all(
-        `SELECT hours, description, date, created_at
+        `SELECT hours, description, date, status, submitted_at, reviewed_at,
+                reviewed_by, review_note, created_at
          FROM work_entries 
          WHERE client_id = ? AND user_email = ? 
          ORDER BY date DESC`,
