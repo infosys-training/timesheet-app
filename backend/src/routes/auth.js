@@ -18,7 +18,7 @@ router.post('/login', async (req, res, next) => {
 
     // Check if user exists
     const role = resolveRole(email);
-    db.get('SELECT email, created_at FROM users WHERE email = ?', [email], (err, row) => {
+    db.get('SELECT email, created_at, role FROM users WHERE email = ?', [email], (err, row) => {
       if (err) {
         console.error('Database error:', err);
         return res.status(500).json({ error: 'Internal server error' });
@@ -26,7 +26,13 @@ router.post('/login', async (req, res, next) => {
 
       if (row) {
         // Keep the role synchronized with the current configuration.
-        db.run('UPDATE users SET role = ? WHERE email = ?', [role, email], () => {});
+        if (row.role !== role) {
+          db.run('UPDATE users SET role = ? WHERE email = ?', [role, email], (updateErr) => {
+            if (updateErr) {
+              console.error('Database error:', updateErr);
+            }
+          });
+        }
         return res.json({
           message: 'Login successful',
           user: {

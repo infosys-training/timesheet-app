@@ -30,7 +30,7 @@ function authenticateUser(req, res, next) {
   const db = getDatabase();
   
   // Check if user exists, create if not
-  db.get('SELECT email FROM users WHERE email = ?', [userEmail], (err, row) => {
+  db.get('SELECT email, role FROM users WHERE email = ?', [userEmail], (err, row) => {
     if (err) {
       console.error('Database error:', err);
       return res.status(500).json({ error: 'Internal server error' });
@@ -52,7 +52,13 @@ function authenticateUser(req, res, next) {
       });
     } else {
       // Resolve the role on every request so environment changes take effect.
-      db.run('UPDATE users SET role = ? WHERE email = ?', [role, userEmail], () => {});
+      if (row.role !== role) {
+        db.run('UPDATE users SET role = ? WHERE email = ?', [role, userEmail], (updateErr) => {
+          if (updateErr) {
+            console.error('Database error:', updateErr);
+          }
+        });
+      }
       req.userEmail = userEmail;
       req.userRole = role;
       next();

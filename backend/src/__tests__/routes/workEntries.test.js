@@ -645,6 +645,28 @@ describe('Work Entry Routes', () => {
       );
     });
 
+    test('rejects an invalid transition with a valid note before updating', async () => {
+      mockTransition('rejected');
+      const response = await request(app)
+        .post('/api/work-entries/1/reject')
+        .set('x-user-role', 'approver')
+        .send({ note: 'This entry was already rejected' });
+
+      expect(response.status).toBe(409);
+      expect(response.body.error).toBe('Cannot transition work entry from rejected to rejected');
+      expect(mockDb.run).not.toHaveBeenCalled();
+    });
+
+    test('rejects unknown fields in a rejection body with 400', async () => {
+      const response = await request(app)
+        .post('/api/work-entries/1/reject')
+        .set('x-user-role', 'approver')
+        .send({ unexpected: true });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe('Validation error');
+    });
+
     test.each([
       ['submitted', 'submit', '/api/work-entries/1/submit'],
       ['approved', 'submit', '/api/work-entries/1/submit'],

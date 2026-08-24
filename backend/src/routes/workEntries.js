@@ -261,7 +261,7 @@ router.put('/:id', (req, res, next) => {
 
             // Return updated work entry with client name
             db.get(
-                      `SELECT ${workEntryFields}
+              `SELECT ${workEntryFields}
                FROM work_entries we
                JOIN clients c ON we.client_id = c.id
                WHERE we.id = ?`,
