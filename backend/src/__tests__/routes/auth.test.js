@@ -29,13 +29,15 @@ describe('Auth Routes', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+    delete process.env.APPROVER_EMAILS;
   });
 
   describe('POST /api/auth/login', () => {
     test('should login existing user', async () => {
       const existingUser = {
         email: 'existing@example.com',
-        created_at: '2024-01-01T00:00:00.000Z'
+        created_at: '2024-01-01T00:00:00.000Z',
+        role: 'employee'
       };
 
       mockDb.get.mockImplementation((query, params, callback) => {
@@ -49,6 +51,8 @@ describe('Auth Routes', () => {
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('Login successful');
       expect(response.body.user.email).toBe('existing@example.com');
+      expect(response.body.user.role).toBe('employee');
+      expect(mockDb.run).not.toHaveBeenCalled();
     });
 
     test('should create new user on first login', async () => {
@@ -68,8 +72,8 @@ describe('Auth Routes', () => {
       expect(response.body.message).toBe('User created and logged in successfully');
       expect(response.body.user.email).toBe('newuser@example.com');
       expect(mockDb.run).toHaveBeenCalledWith(
-        'INSERT INTO users (email) VALUES (?)',
-        ['newuser@example.com'],
+        'INSERT INTO users (email, role) VALUES (?, ?)',
+        ['newuser@example.com', 'employee'],
         expect.any(Function)
       );
     });
@@ -134,13 +138,31 @@ describe('Auth Routes', () => {
       expect(response.status).toBe(500);
       expect(response.body).toEqual({ error: 'Internal server error' });
     });
+
+    test('should return approver role configured by APPROVER_EMAILS', async () => {
+      process.env.APPROVER_EMAILS = ' boss@example.com ';
+      mockDb.get.mockImplementation((query, params, callback) => {
+        callback(null, null);
+      });
+      mockDb.run.mockImplementation(function(query, params, callback) {
+        callback.call(this, null);
+      });
+
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'boss@example.com' });
+
+      expect(response.status).toBe(201);
+      expect(response.body.user.role).toBe('approver');
+    });
   });
 
   describe('GET /api/auth/me', () => {
     test('should return current user info', async () => {
       const user = {
         email: 'test@example.com',
-        created_at: '2024-01-01T00:00:00.000Z'
+        created_at: '2024-01-01T00:00:00.000Z',
+        role: 'employee'
       };
 
       mockDb.get.mockImplementation((query, params, callback) => {
@@ -154,6 +176,7 @@ describe('Auth Routes', () => {
       expect(response.status).toBe(200);
       expect(response.body.user.email).toBe('test@example.com');
       expect(response.body.user.createdAt).toBe('2024-01-01T00:00:00.000Z');
+      expect(response.body.user.role).toBe('employee');
     });
 
     test('should return 401 if no email header provided', async () => {
@@ -165,7 +188,7 @@ describe('Auth Routes', () => {
 
     test('should return 404 if user not found', async () => {
       mockDb.get.mockImplementation((query, params, callback) => {
-        if (query.includes('SELECT email FROM users WHERE email = ?')) {
+        if (query.includes('SELECT email, role FROM users WHERE email = ?')) {
           // Auth middleware check
           callback(null, { email: 'test@example.com' });
         } else {
@@ -184,7 +207,7 @@ describe('Auth Routes', () => {
 
     test('should handle database error', async () => {
       mockDb.get.mockImplementation((query, params, callback) => {
-        if (query.includes('SELECT email FROM users WHERE email = ?')) {
+        if (query.includes('SELECT email, role FROM users WHERE email = ?')) {
           callback(null, { email: 'test@example.com' });
         } else {
           callback(new Error('Database error'), null);

@@ -96,6 +96,17 @@ const WorkEntriesPage: React.FC = () => {
     },
   });
 
+  const submitMutation = useMutation({
+    mutationFn: (id: number) => apiClient.submitWorkEntry(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workEntries'] });
+    },
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { error?: string } } };
+      setError(error.response?.data?.error || 'Failed to submit work entry');
+    },
+  });
+
   const workEntries = workEntriesData?.workEntries || [];
   const clients = clientsData?.clients || [];
 
@@ -219,6 +230,7 @@ const WorkEntriesPage: React.FC = () => {
                     <TableCell>Date</TableCell>
                     <TableCell>Hours</TableCell>
                     <TableCell>Description</TableCell>
+                    <TableCell>Status</TableCell>
                     <TableCell align="right">Actions</TableCell>
                   </TableRow>
                 </TableHead>
@@ -252,11 +264,29 @@ const WorkEntriesPage: React.FC = () => {
                             <Chip label="No description" size="small" variant="outlined" />
                           )}
                         </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={entry.status}
+                            color={{
+                              draft: 'default',
+                              submitted: 'warning',
+                              approved: 'success',
+                              rejected: 'error',
+                            }[entry.status]}
+                            size="small"
+                          />
+                          {entry.status === 'rejected' && entry.review_note && (
+                            <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+                              {entry.review_note}
+                            </Typography>
+                          )}
+                        </TableCell>
                         <TableCell align="right">
                           <IconButton
                             onClick={() => handleOpen(entry)}
                             color="primary"
                             size="small"
+                            disabled={entry.status === 'approved'}
                           >
                             <EditIcon />
                           </IconButton>
@@ -264,15 +294,27 @@ const WorkEntriesPage: React.FC = () => {
                             onClick={() => handleDelete(entry)}
                             color="error"
                             size="small"
+                            disabled={entry.status === 'approved'}
                           >
                             <DeleteIcon />
                           </IconButton>
+                          {(entry.status === 'draft' || entry.status === 'rejected') && (
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              onClick={() => submitMutation.mutate(entry.id)}
+                              disabled={submitMutation.isPending}
+                              sx={{ ml: 1 }}
+                            >
+                              Submit
+                            </Button>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={5} align="center">
+                      <TableCell colSpan={6} align="center">
                         <Typography color="text.secondary" sx={{ py: 3 }}>
                           No work entries found. Add your first work entry to get started.
                         </Typography>

@@ -155,6 +155,7 @@ describe('Database Initialization', () => {
 
       expect(userTableQuery).toBeDefined();
       expect(userTableQuery[0]).toContain('email TEXT PRIMARY KEY');
+      expect(userTableQuery[0]).toContain("role TEXT NOT NULL DEFAULT 'employee'");
       expect(userTableQuery[0]).toContain('created_at DATETIME DEFAULT CURRENT_TIMESTAMP');
     });
 
@@ -180,6 +181,8 @@ describe('Database Initialization', () => {
       );
 
       expect(workEntriesQuery).toBeDefined();
+      expect(workEntriesQuery[0]).toContain("status TEXT NOT NULL DEFAULT 'draft'");
+      expect(workEntriesQuery[0]).toContain('review_note TEXT');
       expect(workEntriesQuery[0]).toContain('FOREIGN KEY (client_id) REFERENCES clients (id) ON DELETE CASCADE');
       expect(workEntriesQuery[0]).toContain('FOREIGN KEY (user_email) REFERENCES users (email) ON DELETE CASCADE');
     });
