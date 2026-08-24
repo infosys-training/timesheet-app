@@ -48,6 +48,9 @@ npm install
 cp .env.example .env
 ```
 
+Set `APPROVER_EMAILS` to a comma-separated list of email addresses that can
+approve or reject submitted work entries.
+
 3. Start the development server:
 ```bash
 npm run dev
