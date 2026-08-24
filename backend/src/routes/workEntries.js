@@ -48,6 +48,26 @@ function returnEntry(db, id, res, message, errorMessage) {
   });
 }
 
+function withOwnedEntry(req, res, id, callback) {
+  const db = getDatabase();
+  getEntry(db, id, req.userEmail, (err, row) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+    if (!row) return res.status(404).json({ error: 'Work entry not found' });
+    callback(db, row);
+  });
+}
+
+function ensureEditableEntry(res, row, action) {
+  if (!['draft', 'rejected'].includes(row.status)) {
+    invalidState(res, action);
+    return false;
+  }
+  return true;
+}
+
 // Pending approvals must precede /:id.
 router.get('/pending-approvals', requireApprover, (req, res) => {
   const db = getDatabase();
@@ -171,16 +191,8 @@ router.post('/:id/submit', (req, res) => {
   if (isNaN(workEntryId)) {
     return res.status(400).json({ error: 'Invalid work entry ID' });
   }
-  const db = getDatabase();
-  getEntry(db, workEntryId, req.userEmail, (err, row) => {
-    if (err) {
-      console.error('Database error:', err);
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-    if (!row) return res.status(404).json({ error: 'Work entry not found' });
-    if (!['draft', 'rejected'].includes(row.status)) {
-      return invalidState(res, 'submit');
-    }
+  withOwnedEntry(req, res, workEntryId, (db, row) => {
+    if (!ensureEditableEntry(res, row, 'submit')) return;
     db.run(
       `UPDATE work_entries
        SET status = 'submitted', submitted_at = CURRENT_TIMESTAMP,
@@ -249,16 +261,8 @@ router.put('/:id', (req, res, next) => {
     }
     const { error, value } = updateWorkEntrySchema.validate(req.body);
     if (error) return next(error);
-    const db = getDatabase();
-    getEntry(db, workEntryId, req.userEmail, (err, row) => {
-      if (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({ error: 'Internal server error' });
-      }
-      if (!row) return res.status(404).json({ error: 'Work entry not found' });
-      if (!['draft', 'rejected'].includes(row.status)) {
-        return invalidState(res, 'edit');
-      }
+    withOwnedEntry(req, res, workEntryId, (db, row) => {
+      if (!ensureEditableEntry(res, row, 'edit')) return;
 
       const performUpdate = () => {
         const updates = [];
@@ -324,13 +328,7 @@ router.delete('/:id', (req, res) => {
   if (isNaN(workEntryId)) {
     return res.status(400).json({ error: 'Invalid work entry ID' });
   }
-  const db = getDatabase();
-  getEntry(db, workEntryId, req.userEmail, (err, row) => {
-    if (err) {
-      console.error('Database error:', err);
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-    if (!row) return res.status(404).json({ error: 'Work entry not found' });
+  withOwnedEntry(req, res, workEntryId, (db, row) => {
     if (row.status === 'approved') return invalidState(res, 'delete');
     db.run(
       'DELETE FROM work_entries WHERE id = ? AND user_email = ?',

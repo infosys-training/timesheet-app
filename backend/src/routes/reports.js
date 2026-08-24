@@ -11,98 +11,91 @@ const router = express.Router();
 // All routes require authentication
 router.use(authenticateUser);
 
-// Get hourly report for specific client
-router.get('/client/:clientId', (req, res) => {
+function parseClientId(req, res) {
   const clientId = parseInt(req.params.clientId);
-  
   if (isNaN(clientId)) {
-    return res.status(400).json({ error: 'Invalid client ID' });
+    res.status(400).json({ error: 'Invalid client ID' });
+    return null;
   }
-  
+  return clientId;
+}
+
+function getClientReportData(req, clientId, columns, callback) {
   const db = getDatabase();
-  
-  // Verify client belongs to user
   db.get(
     'SELECT id, name FROM clients WHERE id = ? AND user_email = ?',
     [clientId, req.userEmail],
     (err, client) => {
+      if (err || !client) {
+        return callback(err, client);
+      }
+
+      db.all(
+        `SELECT ${columns}
+         FROM work_entries
+         WHERE client_id = ? AND user_email = ?
+         ORDER BY date DESC`,
+        [clientId, req.userEmail],
+        (entriesError, workEntries) => callback(entriesError, client, workEntries)
+      );
+    }
+  );
+}
+
+// Get hourly report for specific client
+router.get('/client/:clientId', (req, res) => {
+  const clientId = parseClientId(req, res);
+  if (clientId === null) return;
+
+  getClientReportData(
+    req,
+    clientId,
+    `id, user_email, hours, description, date, status,
+     submitted_at, reviewed_at, reviewed_by, review_note,
+     created_at, updated_at`,
+    (err, client, workEntries) => {
       if (err) {
         console.error('Database error:', err);
         return res.status(500).json({ error: 'Internal server error' });
       }
-      
+
       if (!client) {
         return res.status(404).json({ error: 'Client not found' });
       }
-      
-      // Get work entries for this client
-      db.all(
-        `SELECT id, user_email, hours, description, date, status,
-                submitted_at, reviewed_at, reviewed_by, review_note,
-                created_at, updated_at
-         FROM work_entries 
-         WHERE client_id = ? AND user_email = ? 
-         ORDER BY date DESC`,
-        [clientId, req.userEmail],
-        (err, workEntries) => {
-          if (err) {
-            console.error('Database error:', err);
-            return res.status(500).json({ error: 'Internal server error' });
-          }
-          
-          // Calculate total hours
-          const totalHours = workEntries.reduce((sum, entry) => sum + parseFloat(entry.hours), 0);
-          
-          res.json({
-            client: client,
-            workEntries: workEntries,
-            totalHours: totalHours,
-            entryCount: workEntries.length
-          });
-        }
-      );
+
+      const totalHours = workEntries.reduce((sum, entry) => sum + parseFloat(entry.hours), 0);
+
+      res.json({
+        client,
+        workEntries,
+        totalHours,
+        entryCount: workEntries.length
+      });
     }
   );
 });
 
 // Export client report as CSV
 router.get('/export/csv/:clientId', (req, res) => {
-  const clientId = parseInt(req.params.clientId);
-  
-  if (isNaN(clientId)) {
-    return res.status(400).json({ error: 'Invalid client ID' });
-  }
-  
-  const db = getDatabase();
-  
-  // Verify client belongs to user and get data
-  db.get(
-    'SELECT id, name FROM clients WHERE id = ? AND user_email = ?',
-    [clientId, req.userEmail],
-    (err, client) => {
+  const clientId = parseClientId(req, res);
+  if (clientId === null) return;
+
+  getClientReportData(
+    req,
+    clientId,
+    `hours, description, date, status, submitted_at, reviewed_at,
+     reviewed_by, review_note, created_at`,
+    (err, client, workEntries) => {
       if (err) {
         console.error('Database error:', err);
         return res.status(500).json({ error: 'Internal server error' });
       }
-      
+
       if (!client) {
         return res.status(404).json({ error: 'Client not found' });
       }
-      
-      // Get work entries
-      db.all(
-        `SELECT hours, description, date, status, submitted_at, reviewed_at,
-                reviewed_by, review_note, created_at
-         FROM work_entries 
-         WHERE client_id = ? AND user_email = ? 
-         ORDER BY date DESC`,
-        [clientId, req.userEmail],
-        (err, workEntries) => {
-          if (err) {
-            console.error('Database error:', err);
-            return res.status(500).json({ error: 'Internal server error' });
-          }
-          
+
+      {
           // Create temporary CSV file
           const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
           const filename = `${client.name.replace(/[^a-zA-Z0-9]/g, '_')}_report_${timestamp}.csv`;
@@ -144,49 +137,31 @@ router.get('/export/csv/:clientId', (req, res) => {
               console.error('Error creating CSV:', error);
               res.status(500).json({ error: 'Failed to generate CSV report' });
             });
-        }
-      );
+      }
     }
   );
 });
 
 // Export client report as PDF
 router.get('/export/pdf/:clientId', (req, res) => {
-  const clientId = parseInt(req.params.clientId);
-  
-  if (isNaN(clientId)) {
-    return res.status(400).json({ error: 'Invalid client ID' });
-  }
-  
-  const db = getDatabase();
-  
-  // Verify client belongs to user and get data
-  db.get(
-    'SELECT id, name FROM clients WHERE id = ? AND user_email = ?',
-    [clientId, req.userEmail],
-    (err, client) => {
+  const clientId = parseClientId(req, res);
+  if (clientId === null) return;
+
+  getClientReportData(
+    req,
+    clientId,
+    'hours, description, date, created_at',
+    (err, client, workEntries) => {
       if (err) {
         console.error('Database error:', err);
         return res.status(500).json({ error: 'Internal server error' });
       }
-      
+
       if (!client) {
         return res.status(404).json({ error: 'Client not found' });
       }
-      
-      // Get work entries
-      db.all(
-        `SELECT hours, description, date, created_at
-         FROM work_entries 
-         WHERE client_id = ? AND user_email = ? 
-         ORDER BY date DESC`,
-        [clientId, req.userEmail],
-        (err, workEntries) => {
-          if (err) {
-            console.error('Database error:', err);
-            return res.status(500).json({ error: 'Internal server error' });
-          }
-          
+
+      {
           // Create PDF
           const doc = new PDFDocument();
           const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -242,8 +217,7 @@ router.get('/export/pdf/:clientId', (req, res) => {
           
           // Finalize PDF
           doc.end();
-        }
-      );
+      }
     }
   );
 });
