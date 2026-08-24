@@ -1,5 +1,6 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const { usersTable, workEntriesTable, workEntriesStatusIndex } = require('./schema');
 
 let db = null;
 let isClosing = false;
@@ -28,13 +29,7 @@ async function initializeDatabase() {
   return new Promise((resolve, reject) => {
     database.serialize(() => {
       // Create users table
-      database.run(`
-        CREATE TABLE IF NOT EXISTS users (
-          email TEXT PRIMARY KEY,
-          role TEXT NOT NULL DEFAULT 'member' CHECK (role IN ('member', 'approver')),
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
+      database.run(usersTable);
 
       // Create clients table
       database.run(`
@@ -52,33 +47,14 @@ async function initializeDatabase() {
       `);
 
       // Create work_entries table
-      database.run(`
-        CREATE TABLE IF NOT EXISTS work_entries (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          client_id INTEGER NOT NULL,
-          user_email TEXT NOT NULL,
-          hours DECIMAL(5,2) NOT NULL,
-          description TEXT,
-          date DATE NOT NULL,
-          status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'submitted', 'approved', 'rejected')),
-          submitted_at DATETIME,
-          reviewed_at DATETIME,
-          reviewed_by TEXT,
-          review_note TEXT,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (client_id) REFERENCES clients (id) ON DELETE CASCADE,
-          FOREIGN KEY (user_email) REFERENCES users (email) ON DELETE CASCADE,
-          FOREIGN KEY (reviewed_by) REFERENCES users (email)
-        )
-      `);
+      database.run(workEntriesTable);
 
       // Create indexes for better performance
       database.run(`CREATE INDEX IF NOT EXISTS idx_clients_user_email ON clients (user_email)`);
       database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_client_id ON work_entries (client_id)`);
       database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_user_email ON work_entries (user_email)`);
       database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_date ON work_entries (date)`);
-      database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_status ON work_entries (status)`);
+      database.run(workEntriesStatusIndex);
 
       console.log('Database tables created successfully');
       resolve();
