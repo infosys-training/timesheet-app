@@ -155,6 +155,7 @@ describe('Database Initialization', () => {
 
       expect(userTableQuery).toBeDefined();
       expect(userTableQuery[0]).toContain('email TEXT PRIMARY KEY');
+      expect(userTableQuery[0]).toContain("role TEXT NOT NULL DEFAULT 'employee'");
       expect(userTableQuery[0]).toContain('created_at DATETIME DEFAULT CURRENT_TIMESTAMP');
     });
 
@@ -182,6 +183,24 @@ describe('Database Initialization', () => {
       expect(workEntriesQuery).toBeDefined();
       expect(workEntriesQuery[0]).toContain('FOREIGN KEY (client_id) REFERENCES clients (id) ON DELETE CASCADE');
       expect(workEntriesQuery[0]).toContain('FOREIGN KEY (user_email) REFERENCES users (email) ON DELETE CASCADE');
+    });
+
+    test('work_entries table should have approval columns', async () => {
+      const db = getDatabase();
+      await initializeDatabase();
+
+      const workEntriesQuery = db.run.mock.calls.find(call =>
+        call[0].includes('CREATE TABLE IF NOT EXISTS work_entries')
+      );
+
+      expect(workEntriesQuery[0]).toContain("status TEXT NOT NULL DEFAULT 'draft'");
+      expect(workEntriesQuery[0]).toContain('submitted_at DATETIME');
+      expect(workEntriesQuery[0]).toContain('reviewed_at DATETIME');
+      expect(workEntriesQuery[0]).toContain('reviewed_by TEXT');
+      expect(workEntriesQuery[0]).toContain('review_note TEXT');
+
+      const queries = db.run.mock.calls.map(call => call[0]);
+      expect(queries.some(q => q.includes('CREATE INDEX IF NOT EXISTS idx_work_entries_status'))).toBe(true);
     });
   });
 });

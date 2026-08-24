@@ -1,4 +1,4 @@
-const { authenticateUser } = require('../../middleware/auth');
+const { authenticateUser, requireApprover, roleForEmail } = require('../../middleware/auth');
 const { getDatabase } = require('../../database/init');
 
 jest.mock('../../database/init');
@@ -118,11 +118,12 @@ describe('Authentication Middleware', () => {
 
       setImmediate(() => {
         expect(mockDb.run).toHaveBeenCalledWith(
-          'INSERT INTO users (email) VALUES (?)',
-          ['newuser@example.com'],
+          'INSERT INTO users (email, role) VALUES (?, ?)',
+          ['newuser@example.com', 'employee'],
           expect.any(Function)
         );
         expect(req.userEmail).toBe('newuser@example.com');
+        expect(req.userRole).toBe('employee');
         expect(next).toHaveBeenCalled();
         done();
       });
@@ -149,6 +150,111 @@ describe('Authentication Middleware', () => {
         expect(next).not.toHaveBeenCalled();
         done();
       });
+    });
+  });
+
+  describe('Role Assignment', () => {
+    const originalApprovers = process.env.APPROVER_EMAILS;
+
+    afterEach(() => {
+      if (originalApprovers === undefined) {
+        delete process.env.APPROVER_EMAILS;
+      } else {
+        process.env.APPROVER_EMAILS = originalApprovers;
+      }
+    });
+
+    test('roleForEmail returns approver for configured emails, case-insensitively', () => {
+      process.env.APPROVER_EMAILS = 'Boss@example.com, lead@example.com';
+
+      expect(roleForEmail('boss@EXAMPLE.com')).toBe('approver');
+      expect(roleForEmail('lead@example.com')).toBe('approver');
+      expect(roleForEmail('worker@example.com')).toBe('employee');
+    });
+
+    test('roleForEmail returns employee when no approvers are configured', () => {
+      delete process.env.APPROVER_EMAILS;
+
+      expect(roleForEmail('anyone@example.com')).toBe('employee');
+    });
+
+    test('should create new user with approver role when configured', (done) => {
+      process.env.APPROVER_EMAILS = 'boss@example.com';
+      req.headers['x-user-email'] = 'boss@example.com';
+
+      mockDb.get.mockImplementation((query, params, callback) => callback(null, null));
+      mockDb.run.mockImplementation((query, params, callback) => callback(null));
+
+      authenticateUser(req, res, next);
+
+      setImmediate(() => {
+        expect(mockDb.run).toHaveBeenCalledWith(
+          'INSERT INTO users (email, role) VALUES (?, ?)',
+          ['boss@example.com', 'approver'],
+          expect.any(Function)
+        );
+        expect(req.userRole).toBe('approver');
+        done();
+      });
+    });
+
+    test('should read the stored role for existing users', (done) => {
+      req.headers['x-user-email'] = 'boss@example.com';
+
+      mockDb.get.mockImplementation((query, params, callback) => {
+        callback(null, { email: 'boss@example.com', role: 'approver' });
+      });
+
+      authenticateUser(req, res, next);
+
+      setImmediate(() => {
+        expect(req.userRole).toBe('approver');
+        expect(next).toHaveBeenCalled();
+        done();
+      });
+    });
+
+    test('should default to employee when the stored role is missing', (done) => {
+      req.headers['x-user-email'] = 'legacy@example.com';
+
+      mockDb.get.mockImplementation((query, params, callback) => {
+        callback(null, { email: 'legacy@example.com', role: null });
+      });
+
+      authenticateUser(req, res, next);
+
+      setImmediate(() => {
+        expect(req.userRole).toBe('employee');
+        done();
+      });
+    });
+  });
+
+  describe('requireApprover', () => {
+    test('should call next() for approvers', () => {
+      req.userRole = 'approver';
+
+      requireApprover(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+      expect(res.status).not.toHaveBeenCalled();
+    });
+
+    test('should return 403 for employees', () => {
+      req.userRole = 'employee';
+
+      requireApprover(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({ error: 'Approver role required' });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    test('should return 403 when no role is set', () => {
+      requireApprover(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(next).not.toHaveBeenCalled();
     });
   });
 
