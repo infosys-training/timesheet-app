@@ -49,6 +49,7 @@ describe('Auth Routes', () => {
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('Login successful');
       expect(response.body.user.email).toBe('existing@example.com');
+      expect(response.body.user.isApprover).toBe(false);
     });
 
     test('should create new user on first login', async () => {
@@ -67,6 +68,7 @@ describe('Auth Routes', () => {
       expect(response.status).toBe(201);
       expect(response.body.message).toBe('User created and logged in successfully');
       expect(response.body.user.email).toBe('newuser@example.com');
+      expect(response.body.user.isApprover).toBe(false);
       expect(mockDb.run).toHaveBeenCalledWith(
         'INSERT INTO users (email) VALUES (?)',
         ['newuser@example.com'],
@@ -154,6 +156,7 @@ describe('Auth Routes', () => {
       expect(response.status).toBe(200);
       expect(response.body.user.email).toBe('test@example.com');
       expect(response.body.user.createdAt).toBe('2024-01-01T00:00:00.000Z');
+      expect(response.body.user.isApprover).toBe(false);
     });
 
     test('should return 401 if no email header provided', async () => {

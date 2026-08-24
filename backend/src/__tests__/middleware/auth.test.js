@@ -1,4 +1,4 @@
-const { authenticateUser } = require('../../middleware/auth');
+const { authenticateUser, requireApprover } = require('../../middleware/auth');
 const { getDatabase } = require('../../database/init');
 
 jest.mock('../../database/init');
@@ -180,6 +180,28 @@ describe('Authentication Middleware', () => {
 
       authenticateUser(req, res, next);
       expect(mockDb.get).toHaveBeenCalled();
+    });
+  });
+
+  describe('Approver Authorization', () => {
+    test('should allow an approver through and preserve req.isApprover', () => {
+      req.isApprover = true;
+
+      requireApprover(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+      expect(req.isApprover).toBe(true);
+      expect(res.status).not.toHaveBeenCalled();
+    });
+
+    test('should deny a non-approver', () => {
+      req.isApprover = false;
+
+      requireApprover(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({ error: 'Approver access required' });
+      expect(next).not.toHaveBeenCalled();
     });
   });
 });

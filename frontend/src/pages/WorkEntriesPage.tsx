@@ -28,13 +28,14 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
+  Send as SendIcon,
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import apiClient from '../api/client';
-import { type WorkEntry } from '../types/api';
+import { type WorkEntry, type WorkEntryStatus } from '../types/api';
 
 const WorkEntriesPage: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -93,6 +94,17 @@ const WorkEntriesPage: React.FC = () => {
     onError: (err: unknown) => {
       const error = err as { response?: { data?: { error?: string } } };
       setError(error.response?.data?.error || 'Failed to delete work entry');
+    },
+  });
+
+  const submitMutation = useMutation({
+    mutationFn: (id: number) => apiClient.submitWorkEntry(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workEntries'] });
+    },
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { error?: string } } };
+      setError(error.response?.data?.error || 'Failed to submit work entry');
     },
   });
 
@@ -176,6 +188,23 @@ const WorkEntriesPage: React.FC = () => {
     }
   };
 
+  const handleSubmitEntry = (entry: WorkEntry) => {
+    submitMutation.mutate(entry.id);
+  };
+
+  const statusColor = (status: WorkEntryStatus) => {
+    switch (status) {
+      case 'submitted':
+        return 'info';
+      case 'approved':
+        return 'success';
+      case 'rejected':
+        return 'error';
+      default:
+        return 'default';
+    }
+  };
+
   if (entriesLoading || clientsLoading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
@@ -219,6 +248,7 @@ const WorkEntriesPage: React.FC = () => {
                     <TableCell>Date</TableCell>
                     <TableCell>Hours</TableCell>
                     <TableCell>Description</TableCell>
+                    <TableCell>Status</TableCell>
                     <TableCell align="right">Actions</TableCell>
                   </TableRow>
                 </TableHead>
@@ -252,11 +282,25 @@ const WorkEntriesPage: React.FC = () => {
                             <Chip label="No description" size="small" variant="outlined" />
                           )}
                         </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={entry.status}
+                            color={statusColor(entry.status)}
+                            size="small"
+                            sx={{ textTransform: 'capitalize' }}
+                          />
+                          {entry.rejection_reason && (
+                            <Typography variant="caption" display="block" color="error.main">
+                              {entry.rejection_reason}
+                            </Typography>
+                          )}
+                        </TableCell>
                         <TableCell align="right">
                           <IconButton
                             onClick={() => handleOpen(entry)}
                             color="primary"
                             size="small"
+                            disabled={entry.status === 'approved'}
                           >
                             <EditIcon />
                           </IconButton>
@@ -264,15 +308,28 @@ const WorkEntriesPage: React.FC = () => {
                             onClick={() => handleDelete(entry)}
                             color="error"
                             size="small"
+                            disabled={entry.status === 'approved'}
                           >
                             <DeleteIcon />
                           </IconButton>
+                          {(entry.status === 'draft' || entry.status === 'rejected') && (
+                            <Tooltip title="Submit for approval">
+                              <IconButton
+                                onClick={() => handleSubmitEntry(entry)}
+                                color="success"
+                                size="small"
+                                disabled={submitMutation.isPending}
+                              >
+                                <SendIcon />
+                              </IconButton>
+                            </Tooltip>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={5} align="center">
+                      <TableCell colSpan={6} align="center">
                         <Typography color="text.secondary" sx={{ py: 3 }}>
                           No work entries found. Add your first work entry to get started.
                         </Typography>

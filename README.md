@@ -113,6 +113,8 @@ PORT=3001
 NODE_ENV=development
 FRONTEND_URL=http://localhost:5173
 JWT_SECRET=your-secure-secret-key-change-this
+# Comma-separated approver emails; defaults to approver@example.com when unset
+APPROVER_EMAILS=approver@example.com
 ```
 
 5. Start the development server:
