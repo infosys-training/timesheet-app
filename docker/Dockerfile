@@ -43,9 +43,8 @@ COPY --from=backend-builder /app/backend/node_modules ./node_modules
 COPY backend/src ./src
 COPY backend/package.json ./
 
-# Copy production overrides (modified server.js and database init for file-based SQLite)
+# Copy production override (modified server.js)
 COPY docker/overrides/server.js ./src/server.js
-COPY docker/overrides/database/init.js ./src/database/init.js
 
 # Copy built frontend to be served by backend
 COPY --from=frontend-builder /app/frontend/dist ./public

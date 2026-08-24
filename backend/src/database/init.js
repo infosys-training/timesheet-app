@@ -1,5 +1,6 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs');
 const { usersTable, workEntriesTable, workEntriesStatusIndex } = require('./schema');
 
 let db = null;
@@ -11,13 +12,27 @@ function getDatabase() {
     // Reset state when creating a new database connection
     isClosing = false;
     isClosed = false;
-    // Use in-memory database as specified in requirements
-    db = new sqlite3.Database(':memory:', (err) => {
+    // Use file-based database in production, in-memory for development/testing
+    const dbPath = process.env.DATABASE_PATH || ':memory:';
+
+    // Ensure the directory exists for file-based database
+    if (dbPath !== ':memory:') {
+      const dbDir = path.dirname(dbPath);
+      if (!fs.existsSync(dbDir)) {
+        fs.mkdirSync(dbDir, { recursive: true });
+      }
+    }
+
+    db = new sqlite3.Database(dbPath, (err) => {
       if (err) {
         console.error('Error opening database:', err);
         throw err;
       }
-      console.log('Connected to SQLite in-memory database');
+      if (dbPath === ':memory:') {
+        console.log('Connected to SQLite in-memory database');
+      } else {
+        console.log(`Connected to SQLite database (file: ${dbPath})`);
+      }
     });
   }
   return db;
@@ -28,6 +43,9 @@ async function initializeDatabase() {
   
   return new Promise((resolve, reject) => {
     database.serialize(() => {
+      // Enable foreign keys
+      database.run('PRAGMA foreign_keys = ON');
+
       // Create users table
       database.run(usersTable);
 
