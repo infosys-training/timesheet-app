@@ -7,8 +7,10 @@ jest.mock('../../database/init');
 jest.mock('../../middleware/auth', () => ({
   authenticateUser: (req, res, next) => {
     req.userEmail = 'test@example.com';
+    req.isApprover = false;
     next();
-  }
+  },
+  requireApprover: (req, res, next) => next()
 }));
 
 const app = express();
@@ -203,7 +205,7 @@ describe('Work Entry Routes', () => {
 
     test('should handle database error on insert', async () => {
       mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, { id: 1 });
+        callback(null, { id: 1, status: 'draft' });
       });
 
       mockDb.run.mockImplementation((query, params, callback) => {
@@ -229,7 +231,7 @@ describe('Work Entry Routes', () => {
         if (query.includes('work_entries we')) {
           callback(null, { id: 1, hours: 8, client_name: 'Client A' });
         } else {
-          callback(null, { id: 1 });
+          callback(null, { id: 1, status: 'draft' });
         }
       });
 
@@ -247,7 +249,7 @@ describe('Work Entry Routes', () => {
 
     test('should update work entry client', async () => {
       mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, { id: 1 });
+        callback(null, { id: 1, status: 'draft' });
       });
 
       mockDb.run.mockImplementation((query, params, callback) => {
@@ -294,7 +296,7 @@ describe('Work Entry Routes', () => {
     test('should return 400 if new client not found', async () => {
       mockDb.get.mockImplementation((query, params, callback) => {
         if (query.includes('work_entries')) {
-          callback(null, { id: 1 });
+          callback(null, { id: 1, status: 'draft' });
         } else {
           callback(null, null); // Client doesn't exist
         }
@@ -312,7 +314,7 @@ describe('Work Entry Routes', () => {
   describe('DELETE /api/work-entries/:id', () => {
     test('should delete existing work entry', async () => {
       mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, { id: 1 });
+        callback(null, { id: 1, status: 'draft' });
       });
 
       mockDb.run.mockImplementation((query, params, callback) => {
@@ -345,7 +347,7 @@ describe('Work Entry Routes', () => {
 
     test('should handle database delete error', async () => {
       mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, { id: 1 });
+        callback(null, { id: 1, status: 'draft' });
       });
 
       mockDb.run.mockImplementation((query, params, callback) => {
@@ -449,7 +451,7 @@ describe('Work Entry Routes', () => {
       mockDb.get.mockImplementation((query, params, callback) => {
         callCount++;
         if (callCount === 1) {
-          callback(null, { id: 1 });
+          callback(null, { id: 1, status: 'draft' });
         } else {
           callback(new Error('Database error'), null);
         }
@@ -465,7 +467,7 @@ describe('Work Entry Routes', () => {
 
     test('should handle database error during update', async () => {
       mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, { id: 1 });
+        callback(null, { id: 1, status: 'draft' });
       });
 
       mockDb.run.mockImplementation((query, params, callback) => {
@@ -485,7 +487,7 @@ describe('Work Entry Routes', () => {
       mockDb.get.mockImplementation((query, params, callback) => {
         getCallCount++;
         if (getCallCount === 1) {
-          callback(null, { id: 1 });
+          callback(null, { id: 1, status: 'draft' });
         } else {
           callback(new Error('Retrieval failed'), null);
         }
@@ -508,7 +510,7 @@ describe('Work Entry Routes', () => {
         if (query.includes('work_entries we')) {
           callback(null, { id: 1, date: '2024-02-01', client_name: 'Client A' });
         } else {
-          callback(null, { id: 1 });
+          callback(null, { id: 1, status: 'draft' });
         }
       });
 
@@ -529,7 +531,7 @@ describe('Work Entry Routes', () => {
         if (query.includes('work_entries we')) {
           callback(null, { id: 1, description: 'New description', client_name: 'Client A' });
         } else {
-          callback(null, { id: 1 });
+          callback(null, { id: 1, status: 'draft' });
         }
       });
 
@@ -549,7 +551,7 @@ describe('Work Entry Routes', () => {
         if (query.includes('work_entries we')) {
           callback(null, { id: 1, description: null, client_name: 'Client A' });
         } else {
-          callback(null, { id: 1 });
+          callback(null, { id: 1, status: 'draft' });
         }
       });
 
@@ -569,7 +571,7 @@ describe('Work Entry Routes', () => {
         if (query.includes('work_entries we')) {
           callback(null, { id: 1, hours: 10, description: 'Updated', date: '2024-03-01', client_name: 'Client A' });
         } else {
-          callback(null, { id: 1 });
+          callback(null, { id: 1, status: 'draft' });
         }
       });
 

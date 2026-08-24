@@ -1,4 +1,4 @@
-const { authenticateUser } = require('../../middleware/auth');
+const { authenticateUser, requireApprover } = require('../../middleware/auth');
 const { getDatabase } = require('../../database/init');
 
 jest.mock('../../database/init');
@@ -149,6 +149,78 @@ describe('Authentication Middleware', () => {
         expect(next).not.toHaveBeenCalled();
         done();
       });
+    });
+  });
+
+  describe('Approver Flag', () => {
+    test('should mark user as approver when is_approver is set', (done) => {
+      req.headers['x-user-email'] = 'approver@example.com';
+
+      mockDb.get.mockImplementation((query, params, callback) => {
+        callback(null, { email: 'approver@example.com', is_approver: 1 });
+      });
+
+      authenticateUser(req, res, next);
+
+      setImmediate(() => {
+        expect(req.isApprover).toBe(true);
+        expect(next).toHaveBeenCalled();
+        done();
+      });
+    });
+
+    test('should not mark regular users as approvers', (done) => {
+      req.headers['x-user-email'] = 'user@example.com';
+
+      mockDb.get.mockImplementation((query, params, callback) => {
+        callback(null, { email: 'user@example.com', is_approver: 0 });
+      });
+
+      authenticateUser(req, res, next);
+
+      setImmediate(() => {
+        expect(req.isApprover).toBe(false);
+        done();
+      });
+    });
+
+    test('should not mark newly created users as approvers', (done) => {
+      req.headers['x-user-email'] = 'newuser@example.com';
+
+      mockDb.get.mockImplementation((query, params, callback) => {
+        callback(null, null);
+      });
+      mockDb.run.mockImplementation((query, params, callback) => {
+        callback(null);
+      });
+
+      authenticateUser(req, res, next);
+
+      setImmediate(() => {
+        expect(req.isApprover).toBe(false);
+        done();
+      });
+    });
+  });
+
+  describe('requireApprover', () => {
+    test('should call next() for approvers', () => {
+      req.isApprover = true;
+
+      requireApprover(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+      expect(res.status).not.toHaveBeenCalled();
+    });
+
+    test('should return 403 for non-approvers', () => {
+      req.isApprover = false;
+
+      requireApprover(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({ error: 'Approver role required' });
+      expect(next).not.toHaveBeenCalled();
     });
   });
 
