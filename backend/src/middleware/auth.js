@@ -1,5 +1,15 @@
 const { getDatabase } = require('../database/init');
 
+// Approvers are configured through the APPROVER_EMAILS environment variable
+// (comma separated list of emails)
+function isApproverEmail(email) {
+  return (process.env.APPROVER_EMAILS || '')
+    .split(',')
+    .map((candidate) => candidate.trim().toLowerCase())
+    .filter(Boolean)
+    .includes(email.toLowerCase());
+}
+
 // Simple email-based authentication middleware
 function authenticateUser(req, res, next) {
   const userEmail = req.headers['x-user-email'];
@@ -32,15 +42,28 @@ function authenticateUser(req, res, next) {
         }
         
         req.userEmail = userEmail;
+        req.isApprover = isApproverEmail(userEmail);
         next();
       });
     } else {
       req.userEmail = userEmail;
+      req.isApprover = isApproverEmail(userEmail);
       next();
     }
   });
 }
 
+// Restricts a route to configured approvers, must run after authenticateUser
+function requireApprover(req, res, next) {
+  if (!req.isApprover) {
+    return res.status(403).json({ error: 'Approver role required' });
+  }
+
+  next();
+}
+
 module.exports = {
-  authenticateUser
+  authenticateUser,
+  requireApprover,
+  isApproverEmail
 };
