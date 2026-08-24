@@ -1,12 +1,29 @@
 const sqlite3 = require('sqlite3');
 const { getDatabase, initializeDatabase, closeDatabase } = require('../../database/init');
 
+const mockTableInfoRows = {
+  users: [{ name: 'email' }, { name: 'role' }, { name: 'created_at' }],
+  work_entries: [
+    { name: 'id' }, { name: 'client_id' }, { name: 'user_email' }, { name: 'hours' },
+    { name: 'description' }, { name: 'date' }, { name: 'status' }, { name: 'submitted_at' },
+    { name: 'reviewed_at' }, { name: 'reviewed_by' }, { name: 'rejection_reason' }
+  ]
+};
+
 // Mock sqlite3
 jest.mock('sqlite3', () => {
   const mockDatabase = {
     serialize: jest.fn((callback) => callback()),
-    run: jest.fn((query, callback) => {
-      if (typeof callback === 'function') callback(null);
+    run: jest.fn((query, paramsOrCallback, callback) => {
+      const cb = typeof paramsOrCallback === 'function' ? paramsOrCallback : callback;
+      if (typeof cb === 'function') cb(null);
+    }),
+    all: jest.fn((query, paramsOrCallback, callback) => {
+      const cb = typeof paramsOrCallback === 'function' ? paramsOrCallback : callback;
+      if (typeof cb === 'function') {
+        const table = query.match(/table_info\((\w+)\)/)?.[1];
+        cb(null, mockTableInfoRows[table] || []);
+      }
     }),
     close: jest.fn((callback) => callback(null))
   };
@@ -102,6 +119,7 @@ describe('Database Initialization', () => {
       expect(queries.some(q => q.includes('CREATE INDEX IF NOT EXISTS idx_work_entries_client_id'))).toBe(true);
       expect(queries.some(q => q.includes('CREATE INDEX IF NOT EXISTS idx_work_entries_user_email'))).toBe(true);
       expect(queries.some(q => q.includes('CREATE INDEX IF NOT EXISTS idx_work_entries_date'))).toBe(true);
+      expect(queries.some(q => q.includes('CREATE INDEX IF NOT EXISTS idx_work_entries_status'))).toBe(true);
     });
 
     test('should log success message', async () => {
@@ -112,6 +130,29 @@ describe('Database Initialization', () => {
 
     test('should resolve promise on success', async () => {
       await expect(initializeDatabase()).resolves.toBeUndefined();
+    });
+
+    test('should add missing approval columns during migration', async () => {
+      mockTableInfoRows.users = [{ name: 'email' }, { name: 'created_at' }];
+      mockTableInfoRows.work_entries = [{ name: 'id' }, { name: 'date' }];
+
+      const db = getDatabase();
+      await initializeDatabase();
+
+      const queries = db.run.mock.calls.map((call) => call[0]);
+      expect(queries).toContain("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user'");
+      expect(queries).toContain("ALTER TABLE work_entries ADD COLUMN status TEXT NOT NULL DEFAULT 'draft'");
+      expect(queries).toContain('ALTER TABLE work_entries ADD COLUMN submitted_at DATETIME');
+      expect(queries).toContain('ALTER TABLE work_entries ADD COLUMN reviewed_at DATETIME');
+      expect(queries).toContain('ALTER TABLE work_entries ADD COLUMN reviewed_by TEXT');
+      expect(queries).toContain('ALTER TABLE work_entries ADD COLUMN rejection_reason TEXT');
+
+      mockTableInfoRows.users = [{ name: 'email' }, { name: 'role' }, { name: 'created_at' }];
+      mockTableInfoRows.work_entries = [
+        { name: 'id' }, { name: 'client_id' }, { name: 'user_email' }, { name: 'hours' },
+        { name: 'description' }, { name: 'date' }, { name: 'status' }, { name: 'submitted_at' },
+        { name: 'reviewed_at' }, { name: 'reviewed_by' }, { name: 'rejection_reason' }
+      ];
     });
   });
 
@@ -155,6 +196,7 @@ describe('Database Initialization', () => {
 
       expect(userTableQuery).toBeDefined();
       expect(userTableQuery[0]).toContain('email TEXT PRIMARY KEY');
+      expect(userTableQuery[0]).toContain("role TEXT NOT NULL DEFAULT 'user'");
       expect(userTableQuery[0]).toContain('created_at DATETIME DEFAULT CURRENT_TIMESTAMP');
     });
 
@@ -180,6 +222,11 @@ describe('Database Initialization', () => {
       );
 
       expect(workEntriesQuery).toBeDefined();
+      expect(workEntriesQuery[0]).toContain("status TEXT NOT NULL DEFAULT 'draft'");
+      expect(workEntriesQuery[0]).toContain('submitted_at DATETIME');
+      expect(workEntriesQuery[0]).toContain('reviewed_at DATETIME');
+      expect(workEntriesQuery[0]).toContain('reviewed_by TEXT');
+      expect(workEntriesQuery[0]).toContain('rejection_reason TEXT');
       expect(workEntriesQuery[0]).toContain('FOREIGN KEY (client_id) REFERENCES clients (id) ON DELETE CASCADE');
       expect(workEntriesQuery[0]).toContain('FOREIGN KEY (user_email) REFERENCES users (email) ON DELETE CASCADE');
     });
