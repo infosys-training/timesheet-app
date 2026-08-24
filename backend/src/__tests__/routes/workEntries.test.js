@@ -3,10 +3,18 @@ const express = require('express');
 const workEntryRoutes = require('../../routes/workEntries');
 const { getDatabase } = require('../../database/init');
 
+let mockUserRole = 'user';
+let mockIsApprover = false;
 jest.mock('../../database/init');
 jest.mock('../../middleware/auth', () => ({
   authenticateUser: (req, res, next) => {
     req.userEmail = 'test@example.com';
+    req.userRole = mockUserRole;
+    req.isApprover = mockIsApprover;
+    next();
+  },
+  requireApprover: (req, res, next) => {
+    if (!req.isApprover) return res.status(403).json({ error: 'Approver access required' });
     next();
   }
 }));
@@ -26,6 +34,8 @@ describe('Work Entry Routes', () => {
   let mockDb;
 
   beforeEach(() => {
+    mockUserRole = 'user';
+    mockIsApprover = false;
     mockDb = {
       all: jest.fn(),
       get: jest.fn(),
@@ -583,6 +593,127 @@ describe('Work Entry Routes', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('Work entry updated successfully');
+    });
+  });
+
+  describe('Approval workflow', () => {
+    const entry = (status, userEmail = 'owner@example.com') => ({
+      id: 1,
+      client_id: 1,
+      user_email: userEmail,
+      hours: 4,
+      description: 'Work',
+      date: '2024-01-01',
+      status,
+      client_name: 'Client A'
+    });
+
+    const mockActionDb = (status, userEmail = 'owner@example.com') => {
+      mockDb.get.mockImplementation((query, params, callback) => {
+        if (query.includes('FROM clients')) return callback(null, { id: 1, name: 'Client A' });
+        callback(null, entry(status, userEmail));
+      });
+      mockDb.run.mockImplementation(function(query, params, callback) {
+        callback.call(this, null);
+      });
+    };
+
+    test.each(['draft', 'rejected'])('submits a %s entry', async (status) => {
+      mockActionDb(status);
+      const response = await request(app).post('/api/work-entries/1/submit');
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe('Work entry submitted successfully');
+    });
+
+    test.each(['submitted', 'approved'])('rejects submit from %s', async (status) => {
+      mockActionDb(status);
+      const response = await request(app).post('/api/work-entries/1/submit');
+      expect(response.status).toBe(409);
+      expect(response.body.error).toContain(status);
+    });
+
+    test('approves a submitted entry as an approver', async () => {
+      mockIsApprover = true;
+      mockUserRole = 'approver';
+      mockActionDb('submitted');
+      const response = await request(app).post('/api/work-entries/1/approve');
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe('Work entry approved successfully');
+    });
+
+    test.each(['draft', 'rejected', 'approved'])('rejects approval from %s', async (status) => {
+      mockIsApprover = true;
+      mockActionDb(status);
+      const response = await request(app).post('/api/work-entries/1/approve');
+      expect(response.status).toBe(409);
+      expect(response.body.error).toContain(status);
+    });
+
+    test.each([undefined, 'Needs changes'])('rejects a submitted entry with reason %s', async (reason) => {
+      mockIsApprover = true;
+      mockActionDb('submitted');
+      const response = await request(app).post('/api/work-entries/1/reject').send(reason ? { reason } : {});
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe('Work entry rejected successfully');
+    });
+
+    test.each(['draft', 'rejected', 'approved'])('rejects rejection from %s', async (status) => {
+      mockIsApprover = true;
+      mockActionDb(status);
+      const response = await request(app).post('/api/work-entries/1/reject');
+      expect(response.status).toBe(409);
+      expect(response.body.error).toContain(status);
+    });
+
+    test.each(['/approve', '/reject'])('rejects %s for non-approver', async (action) => {
+      mockActionDb('submitted');
+      const response = await request(app).post(`/api/work-entries/1${action}`);
+      expect(response.status).toBe(403);
+    });
+
+    test.each(['/approve', '/reject'])('rejects approver reviewing own entry at %s', async (action) => {
+      mockIsApprover = true;
+      mockActionDb('submitted', 'test@example.com');
+      const response = await request(app).post(`/api/work-entries/1${action}`);
+      expect(response.status).toBe(403);
+    });
+
+    test.each(['put', 'delete'])('rejects %s for approved entry', async (method) => {
+      mockActionDb('approved');
+      const response = method === 'put'
+        ? await request(app).put('/api/work-entries/1').send({ hours: 2 })
+        : await request(app).delete('/api/work-entries/1');
+      expect(response.status).toBe(409);
+    });
+
+    test('rejects edits to submitted entries', async () => {
+      mockActionDb('submitted');
+      const response = await request(app).put('/api/work-entries/1').send({ hours: 2 });
+      expect(response.status).toBe(409);
+      expect(response.body.error).toContain('submitted');
+    });
+
+    test('rejects pending approvals for non-approver', async () => {
+      const response = await request(app).get('/api/work-entries/pending-approvals');
+      expect(response.status).toBe(403);
+    });
+
+    test.each(['/submit', '/approve', '/reject'])('rejects non-numeric id for %s', async (action) => {
+      mockIsApprover = action !== '/submit';
+      const response = await request(app).post(`/api/work-entries/nope${action}`);
+      expect(response.status).toBe(400);
+    });
+
+    test.each(['/submit', '/approve', '/reject'])('returns 404 for unknown id on %s', async (action) => {
+      mockIsApprover = action !== '/submit';
+      mockDb.get.mockImplementation((query, params, callback) => callback(null, null));
+      const response = await request(app).post(`/api/work-entries/999${action}`);
+      expect(response.status).toBe(404);
+    });
+
+    test('rejects an unknown status filter', async () => {
+      const response = await request(app).get('/api/work-entries?status=unknown');
+      expect(response.status).toBe(400);
     });
   });
 });
