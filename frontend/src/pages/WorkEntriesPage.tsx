@@ -23,7 +23,6 @@ import {
   Select,
   MenuItem,
   Chip,
-  Tooltip,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -284,17 +283,12 @@ const WorkEntriesPage: React.FC = () => {
                           )}
                         </TableCell>
                         <TableCell>
-                          <Tooltip
-                            title={entry.rejection_reason || ''}
-                            disableHoverListener={!entry.rejection_reason}
-                          >
-                            <Chip
-                              label={entry.status}
-                              color={statusColor(entry.status)}
-                              size="small"
-                              sx={{ textTransform: 'capitalize' }}
-                            />
-                          </Tooltip>
+                          <Chip
+                            label={entry.status}
+                            color={statusColor(entry.status)}
+                            size="small"
+                            sx={{ textTransform: 'capitalize' }}
+                          />
                           {entry.rejection_reason && (
                             <Typography variant="caption" display="block" color="error.main">
                               {entry.rejection_reason}
