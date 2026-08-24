@@ -5,6 +5,7 @@ jest.mock('../../database/init');
 
 describe('Authentication Middleware', () => {
   let req, res, next, mockDb;
+  const originalApproverEmails = process.env.APPROVER_EMAILS;
 
   beforeEach(() => {
     req = {
@@ -25,6 +26,11 @@ describe('Authentication Middleware', () => {
   });
 
   afterEach(() => {
+    if (originalApproverEmails === undefined) {
+      delete process.env.APPROVER_EMAILS;
+    } else {
+      process.env.APPROVER_EMAILS = originalApproverEmails;
+    }
     jest.clearAllMocks();
   });
 
@@ -55,7 +61,7 @@ describe('Authentication Middleware', () => {
       req.headers['x-user-email'] = 'test@example.com';
       
       mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, { email: 'test@example.com' });
+        callback(null, { email: 'test@example.com', role: 'user' });
       });
 
       authenticateUser(req, res, next);
@@ -69,7 +75,7 @@ describe('Authentication Middleware', () => {
       req.headers['x-user-email'] = 'existing@example.com';
       
       mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, { email: 'existing@example.com' });
+        callback(null, { email: 'existing@example.com', role: 'user' });
       });
 
       authenticateUser(req, res, next);
@@ -175,11 +181,66 @@ describe('Authentication Middleware', () => {
       req.headers['x-user-email'] = 'test@mail.example.com';
       
       mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, { email: 'test@mail.example.com' });
+        callback(null, { email: 'test@mail.example.com', role: 'user' });
       });
 
       authenticateUser(req, res, next);
       expect(mockDb.get).toHaveBeenCalled();
+    });
+  });
+
+  describe('Approver Role Logic', () => {
+    test('promotes a stored user when email is configured as an approver', (done) => {
+      process.env.APPROVER_EMAILS = ' APPROVER@EXAMPLE.COM ';
+      req.headers['x-user-email'] = 'approver@example.com';
+      mockDb.get.mockImplementationOnce((query, params, callback) => {
+        callback(null, { email: params[0], role: 'user' });
+      });
+
+      authenticateUser(req, res, next);
+
+      setImmediate(() => {
+        expect(req.userRole).toBe('approver');
+        expect(req.isApprover).toBe(true);
+        expect(next).toHaveBeenCalled();
+        done();
+      });
+    });
+
+    test('uses the stored approver role when email is not configured', (done) => {
+      delete process.env.APPROVER_EMAILS;
+      req.headers['x-user-email'] = 'approver@example.com';
+      mockDb.get.mockImplementationOnce((query, params, callback) => {
+        callback(null, { email: params[0], role: 'approver' });
+      });
+
+      authenticateUser(req, res, next);
+
+      setImmediate(() => {
+        expect(req.userRole).toBe('approver');
+        expect(req.isApprover).toBe(true);
+        done();
+      });
+    });
+
+    test('creates configured approvers with the approver role', (done) => {
+      process.env.APPROVER_EMAILS = 'approver@example.com';
+      req.headers['x-user-email'] = 'approver@example.com';
+      mockDb.get.mockImplementation((query, params, callback) => callback(null, null));
+      mockDb.run.mockImplementation((query, params, callback) => callback(null));
+
+      authenticateUser(req, res, next);
+
+      setImmediate(() => {
+        expect(mockDb.run).toHaveBeenCalledWith(
+          'INSERT INTO users (email, role) VALUES (?, ?)',
+          ['approver@example.com', 'approver'],
+          expect.any(Function)
+        );
+        expect(req.userRole).toBe('approver');
+        expect(req.isApprover).toBe(true);
+        done();
+      });
     });
   });
 });

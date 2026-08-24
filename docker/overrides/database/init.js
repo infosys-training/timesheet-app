@@ -46,6 +46,7 @@ async function initializeDatabase() {
       database.run(`
         CREATE TABLE IF NOT EXISTS users (
           email TEXT PRIMARY KEY,
+          role TEXT NOT NULL DEFAULT 'user',
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
       `);
@@ -72,6 +73,11 @@ async function initializeDatabase() {
           hours DECIMAL(5,2) NOT NULL,
           description TEXT,
           date DATE NOT NULL,
+          status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'submitted', 'approved', 'rejected')),
+          submitted_at DATETIME,
+          reviewed_at DATETIME,
+          reviewed_by TEXT,
+          rejection_reason TEXT,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (client_id) REFERENCES clients (id) ON DELETE CASCADE,
@@ -85,8 +91,40 @@ async function initializeDatabase() {
       database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_user_email ON work_entries (user_email)`);
       database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_date ON work_entries (date)`);
 
-      console.log('Database tables created successfully');
-      resolve();
+      const migrations = [
+        ['users', 'role TEXT NOT NULL DEFAULT \'user\''],
+        ['work_entries', 'status TEXT NOT NULL DEFAULT \'draft\''],
+        ['work_entries', 'submitted_at DATETIME'],
+        ['work_entries', 'reviewed_at DATETIME'],
+        ['work_entries', 'reviewed_by TEXT'],
+        ['work_entries', 'rejection_reason TEXT']
+      ];
+      let completed = 0;
+      migrations.forEach(([table, definition]) => {
+        database.run(`ALTER TABLE ${table} ADD COLUMN ${definition}`, (err) => {
+          if (err && !err.message.includes('duplicate column name')) {
+            reject(err);
+            return;
+          }
+          completed += 1;
+          if (completed === migrations.length) {
+            database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_status ON work_entries (status)`, (indexErr) => {
+              if (indexErr) {
+                reject(indexErr);
+                return;
+              }
+              database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_status_date ON work_entries (status, date)`, (compoundIndexErr) => {
+                if (compoundIndexErr) {
+                  reject(compoundIndexErr);
+                  return;
+                }
+                console.log('Database tables created successfully');
+                resolve();
+              });
+            });
+          }
+        });
+      });
     });
   });
 }
