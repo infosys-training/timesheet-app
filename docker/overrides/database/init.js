@@ -72,6 +72,11 @@ async function initializeDatabase() {
           hours DECIMAL(5,2) NOT NULL,
           description TEXT,
           date DATE NOT NULL,
+          status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'submitted', 'approved', 'rejected')),
+          submitted_at DATETIME,
+          reviewed_at DATETIME,
+          reviewed_by TEXT,
+          review_note TEXT,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (client_id) REFERENCES clients (id) ON DELETE CASCADE,
@@ -86,7 +91,57 @@ async function initializeDatabase() {
       database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_date ON work_entries (date)`);
 
       console.log('Database tables created successfully');
-      resolve();
+
+      // Existing file-based databases predate the approval workflow columns
+      migrateApprovalColumns(database)
+        .then(() => {
+          database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_status ON work_entries (status)`);
+          resolve();
+        })
+        .catch(reject);
+    });
+  });
+}
+
+const APPROVAL_COLUMNS = {
+  status: "TEXT NOT NULL DEFAULT 'draft'",
+  submitted_at: 'DATETIME',
+  reviewed_at: 'DATETIME',
+  reviewed_by: 'TEXT',
+  review_note: 'TEXT'
+};
+
+function migrateApprovalColumns(database) {
+  return new Promise((resolve, reject) => {
+    database.all('PRAGMA table_info(work_entries)', (err, columns) => {
+      if (err) {
+        return reject(err);
+      }
+
+      const existing = columns.map((column) => column.name);
+      const missing = Object.keys(APPROVAL_COLUMNS).filter((name) => !existing.includes(name));
+
+      if (missing.length === 0) {
+        return resolve();
+      }
+
+      let remaining = missing.length;
+      let failed = false;
+
+      missing.forEach((name) => {
+        database.run(`ALTER TABLE work_entries ADD COLUMN ${name} ${APPROVAL_COLUMNS[name]}`, (alterErr) => {
+          if (alterErr && !failed) {
+            failed = true;
+            return reject(alterErr);
+          }
+
+          remaining -= 1;
+          if (remaining === 0 && !failed) {
+            console.log(`Migrated work_entries: added ${missing.join(', ')}`);
+            resolve();
+          }
+        });
+      });
     });
   });
 }

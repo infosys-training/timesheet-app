@@ -7,8 +7,11 @@ jest.mock('../../database/init');
 jest.mock('../../middleware/auth', () => ({
   authenticateUser: (req, res, next) => {
     req.userEmail = 'test@example.com';
+    req.isApprover = false;
+    req.userRole = 'employee';
     next();
-  }
+  },
+  requireApprover: (req, res, next) => next()
 }));
 
 const app = express();
@@ -75,6 +78,28 @@ describe('Work Entry Routes', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toEqual({ error: 'Invalid client ID' });
+    });
+
+    test('should filter by status when provided', async () => {
+      mockDb.all.mockImplementation((query, params, callback) => {
+        callback(null, []);
+      });
+
+      const response = await request(app).get('/api/work-entries?status=submitted');
+
+      expect(response.status).toBe(200);
+      expect(mockDb.all).toHaveBeenCalledWith(
+        expect.stringContaining('AND we.status = ?'),
+        ['test@example.com', 'submitted'],
+        expect.any(Function)
+      );
+    });
+
+    test('should return 400 for invalid status filter', async () => {
+      const response = await request(app).get('/api/work-entries?status=archived');
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({ error: 'Invalid status filter' });
     });
 
     test('should handle database error', async () => {
