@@ -1,4 +1,8 @@
-const { authenticateUser } = require('../../middleware/auth');
+const {
+  authenticateUser,
+  requireApprover,
+  isApproverEmail
+} = require('../../middleware/auth');
 const { getDatabase } = require('../../database/init');
 
 jest.mock('../../database/init');
@@ -25,7 +29,47 @@ describe('Authentication Middleware', () => {
   });
 
   afterEach(() => {
+    delete process.env.APPROVER_EMAILS;
     jest.clearAllMocks();
+  });
+
+  describe('Approver authorization', () => {
+    test('should allow approver users', () => {
+      req.userRole = 'approver';
+
+      requireApprover(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+      expect(res.status).not.toHaveBeenCalled();
+    });
+
+    test('should reject non-approver users', () => {
+      req.userRole = 'user';
+
+      requireApprover(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({ error: 'Approver role required' });
+      expect(next).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Approver email configuration', () => {
+    test('should match configured emails case-insensitively', () => {
+      process.env.APPROVER_EMAILS = 'Admin@Example.com, second@example.com';
+
+      expect(isApproverEmail('admin@example.com')).toBe(true);
+      expect(isApproverEmail('SECOND@example.com')).toBe(true);
+      expect(isApproverEmail('other@example.com')).toBe(false);
+    });
+
+    test('should read configuration at call time', () => {
+      process.env.APPROVER_EMAILS = 'first@example.com';
+      expect(isApproverEmail('second@example.com')).toBe(false);
+
+      process.env.APPROVER_EMAILS = 'second@example.com';
+      expect(isApproverEmail('second@example.com')).toBe(true);
+    });
   });
 
   describe('Email Header Validation', () => {
@@ -118,8 +162,8 @@ describe('Authentication Middleware', () => {
 
       setImmediate(() => {
         expect(mockDb.run).toHaveBeenCalledWith(
-          'INSERT INTO users (email) VALUES (?)',
-          ['newuser@example.com'],
+          'INSERT INTO users (email, role) VALUES (?, ?)',
+          ['newuser@example.com', 'user'],
           expect.any(Function)
         );
         expect(req.userEmail).toBe('newuser@example.com');
