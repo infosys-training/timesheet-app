@@ -283,7 +283,7 @@ const WorkEntriesPage: React.FC = () => {
                             disableHoverListener={!entry.rejection_reason}
                           >
                             <Chip
-                              label={entry.status || 'draft'}
+                              label={(entry.status || 'draft').charAt(0).toUpperCase() + (entry.status || 'draft').slice(1)}
                               color={statusColor[entry.status || 'draft']}
                               size="small"
                             />

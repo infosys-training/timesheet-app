@@ -28,7 +28,7 @@ function authenticateUser(req, res, next) {
   const isConfiguredApprover = approverEmails.has(userEmail.toLowerCase());
   
   // Check if user exists, create if not
-  db.get('SELECT email FROM users WHERE email = ?', [userEmail], (err, row) => {
+  db.get('SELECT email, role FROM users WHERE email = ?', [userEmail], (err, row) => {
     if (err) {
       console.error('Database error:', err);
       return res.status(500).json({ error: 'Internal server error' });
@@ -52,35 +52,28 @@ function authenticateUser(req, res, next) {
         next();
       });
     } else {
-      db.get('SELECT role FROM users WHERE email = ?', [userEmail], (roleErr, roleRow) => {
-        if (roleErr) {
-          console.error('Database error:', roleErr);
-          return res.status(500).json({ error: 'Internal server error' });
-        }
-
-        const storedRole = roleRow?.role || row.role || 'user';
-        if (isConfiguredApprover && storedRole !== 'approver') {
-          db.run(
-            'UPDATE users SET role = ? WHERE email = ?',
-            ['approver', userEmail],
-            (updateErr) => {
-              if (updateErr) {
-                console.error('Error updating user role:', updateErr);
-                return res.status(500).json({ error: 'Failed to update user role' });
-              }
-              req.userEmail = userEmail;
-              req.userRole = 'approver';
-              req.isApprover = true;
-              next();
+      const storedRole = row.role || 'user';
+      if (isConfiguredApprover && storedRole !== 'approver') {
+        db.run(
+          'UPDATE users SET role = ? WHERE email = ?',
+          ['approver', userEmail],
+          (updateErr) => {
+            if (updateErr) {
+              console.error('Error updating user role:', updateErr);
+              return res.status(500).json({ error: 'Failed to update user role' });
             }
-          );
-        } else {
-          req.userEmail = userEmail;
-          req.userRole = storedRole;
-          req.isApprover = storedRole === 'approver';
-          next();
-        }
-      });
+            req.userEmail = userEmail;
+            req.userRole = 'approver';
+            req.isApprover = true;
+            next();
+          }
+        );
+      } else {
+        req.userEmail = userEmail;
+        req.userRole = storedRole;
+        req.isApprover = storedRole === 'approver';
+        next();
+      }
     }
   });
 }

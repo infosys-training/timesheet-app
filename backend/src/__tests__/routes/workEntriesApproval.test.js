@@ -49,12 +49,20 @@ describe('Work Entry Approval Routes', () => {
   });
 
   test.each(['draft', 'rejected'])('submits a %s entry', async (status) => {
-    mockDb.get.mockImplementation((query, params, callback) => callback(null, workEntry(status)));
+    const updatedEntry = { ...workEntry('submitted'), client_name: 'Client' };
+    mockDb.get.mockImplementation((query, params, callback) => callback(
+      null,
+      query.includes('we.id') ? updatedEntry : workEntry(status)
+    ));
     mockDb.run.mockImplementation((query, params, callback) => callback(null));
 
     const response = await request(app).post('/api/work-entries/1/submit');
 
     expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      message: 'Work entry submitted successfully',
+      workEntry: updatedEntry
+    });
     expect(mockDb.run).toHaveBeenCalledWith(
       expect.stringContaining("status = 'submitted'"),
       [1, 'owner@example.com'],
@@ -71,14 +79,31 @@ describe('Work Entry Approval Routes', () => {
     expect(response.body.error).toBe(`Cannot submit a work entry with status ${status}`);
   });
 
+  test('returns 404 when submitting a nonexistent entry', async () => {
+    mockDb.get.mockImplementation((query, params, callback) => callback(null, null));
+
+    const response = await request(app).post('/api/work-entries/999/submit');
+
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe('Work entry not found');
+  });
+
   test('approves a submitted entry', async () => {
     mockIsApprover = true;
-    mockDb.get.mockImplementation((query, params, callback) => callback(null, workEntry('submitted')));
+    const updatedEntry = { ...workEntry('approved'), client_name: 'Client' };
+    mockDb.get.mockImplementation((query, params, callback) => callback(
+      null,
+      query.includes('we.id') ? updatedEntry : workEntry('submitted')
+    ));
     mockDb.run.mockImplementation((query, params, callback) => callback(null));
 
     const response = await request(app).post('/api/work-entries/1/approve');
 
     expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      message: 'Work entry approved successfully',
+      workEntry: updatedEntry
+    });
     expect(mockDb.run).toHaveBeenCalledWith(
       expect.stringContaining("status = 'approved'"),
       ['approver@example.com', 1],
@@ -96,9 +121,23 @@ describe('Work Entry Approval Routes', () => {
     expect(response.body.error).toBe(`Cannot approve a work entry with status ${status}`);
   });
 
+  test('returns 404 when approving a nonexistent entry', async () => {
+    mockIsApprover = true;
+    mockDb.get.mockImplementation((query, params, callback) => callback(null, null));
+
+    const response = await request(app).post('/api/work-entries/999/approve');
+
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe('Work entry not found');
+  });
+
   test('rejects a submitted entry with a reason', async () => {
     mockIsApprover = true;
-    mockDb.get.mockImplementation((query, params, callback) => callback(null, workEntry('submitted')));
+    const updatedEntry = { ...workEntry('rejected'), client_name: 'Client' };
+    mockDb.get.mockImplementation((query, params, callback) => callback(
+      null,
+      query.includes('we.id') ? updatedEntry : workEntry('submitted')
+    ));
     mockDb.run.mockImplementation((query, params, callback) => callback(null));
 
     const response = await request(app)
@@ -106,6 +145,10 @@ describe('Work Entry Approval Routes', () => {
       .send({ reason: 'Please add more detail' });
 
     expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      message: 'Work entry rejected successfully',
+      workEntry: updatedEntry
+    });
     expect(mockDb.run).toHaveBeenCalledWith(
       expect.stringContaining("status = 'rejected'"),
       ['approver@example.com', 'Please add more detail', 1],
@@ -121,6 +164,18 @@ describe('Work Entry Approval Routes', () => {
 
     expect(response.status).toBe(409);
     expect(response.body.error).toBe(`Cannot reject a work entry with status ${status}`);
+  });
+
+  test('returns 404 when rejecting a nonexistent entry', async () => {
+    mockIsApprover = true;
+    mockDb.get.mockImplementation((query, params, callback) => callback(null, null));
+
+    const response = await request(app)
+      .post('/api/work-entries/999/reject')
+      .send({});
+
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe('Work entry not found');
   });
 
   test.each(['/approve', '/reject'])('refuses %s for non-approver', async (path) => {
