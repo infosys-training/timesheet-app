@@ -22,9 +22,16 @@ async function initializeDatabase(database, options) {
     getApproverEmails,
     includeClientContactFields = false
   } = options;
-  const clientContactFields = includeClientContactFields
-    ? '          department TEXT,\n          email TEXT,\n'
-    : '';
+  const clientColumns = [
+    'id INTEGER PRIMARY KEY AUTOINCREMENT',
+    'name TEXT NOT NULL',
+    'description TEXT',
+    ...(includeClientContactFields ? ['department TEXT', 'email TEXT'] : []),
+    'user_email TEXT NOT NULL',
+    'created_at DATETIME DEFAULT CURRENT_TIMESTAMP',
+    'updated_at DATETIME DEFAULT CURRENT_TIMESTAMP',
+    'FOREIGN KEY (user_email) REFERENCES users (email) ON DELETE CASCADE'
+  ];
 
   return new Promise((resolve, reject) => {
     database.serialize(async () => {
@@ -43,13 +50,7 @@ async function initializeDatabase(database, options) {
 
         await run(database, `
         CREATE TABLE IF NOT EXISTS clients (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NOT NULL,
-          description TEXT,
-${clientContactFields}          user_email TEXT NOT NULL,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (user_email) REFERENCES users (email) ON DELETE CASCADE
+          ${clientColumns.join(',\n          ')}
         )
         `);
 
