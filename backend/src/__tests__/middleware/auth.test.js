@@ -1,4 +1,4 @@
-const { authenticateUser } = require('../../middleware/auth');
+const { authenticateUser, requireApprover, isApprover } = require('../../middleware/auth');
 const { getDatabase } = require('../../database/init');
 
 jest.mock('../../database/init');
@@ -149,6 +149,88 @@ describe('Authentication Middleware', () => {
         expect(next).not.toHaveBeenCalled();
         done();
       });
+    });
+  });
+
+  describe('Approver Role', () => {
+    const originalApproverEmails = process.env.APPROVER_EMAILS;
+
+    afterEach(() => {
+      if (originalApproverEmails === undefined) {
+        delete process.env.APPROVER_EMAILS;
+      } else {
+        process.env.APPROVER_EMAILS = originalApproverEmails;
+      }
+    });
+
+    test('should recognise configured approver emails case insensitively', () => {
+      process.env.APPROVER_EMAILS = ' Approver@example.com , second@example.com ';
+
+      expect(isApprover('approver@example.com')).toBe(true);
+      expect(isApprover('second@example.com')).toBe(true);
+      expect(isApprover('employee@example.com')).toBe(false);
+    });
+
+    test('should treat everyone as employee when no approvers are configured', () => {
+      delete process.env.APPROVER_EMAILS;
+
+      expect(isApprover('anyone@example.com')).toBe(false);
+    });
+
+    test('should attach approver role to the request', (done) => {
+      process.env.APPROVER_EMAILS = 'approver@example.com';
+      req.headers['x-user-email'] = 'approver@example.com';
+
+      mockDb.get.mockImplementation((query, params, callback) => {
+        callback(null, { email: 'approver@example.com' });
+      });
+
+      authenticateUser(req, res, next);
+
+      setImmediate(() => {
+        expect(req.isApprover).toBe(true);
+        expect(req.userRole).toBe('approver');
+        done();
+      });
+    });
+
+    test('should attach employee role to a non-approver request', (done) => {
+      process.env.APPROVER_EMAILS = 'approver@example.com';
+      req.headers['x-user-email'] = 'employee@example.com';
+
+      mockDb.get.mockImplementation((query, params, callback) => {
+        callback(null, null);
+      });
+      mockDb.run.mockImplementation((query, params, callback) => {
+        callback(null);
+      });
+
+      authenticateUser(req, res, next);
+
+      setImmediate(() => {
+        expect(req.isApprover).toBe(false);
+        expect(req.userRole).toBe('employee');
+        done();
+      });
+    });
+
+    test('requireApprover should call next for an approver', () => {
+      req.isApprover = true;
+
+      requireApprover(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+      expect(res.status).not.toHaveBeenCalled();
+    });
+
+    test('requireApprover should return 403 for a non-approver', () => {
+      req.isApprover = false;
+
+      requireApprover(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({ error: 'Approver role required' });
+      expect(next).not.toHaveBeenCalled();
     });
   });
 
