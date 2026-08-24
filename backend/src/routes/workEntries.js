@@ -216,46 +216,45 @@ router.post('/', (req, res, next) => {
 // Submit a draft or rejected work entry
 router.post('/:id/submit', (req, res) => {
   withOwnedWorkEntry(req, res, (db, workEntryId, row) => {
-      const status = row.status || 'draft';
-      if (status !== 'draft' && status !== 'rejected') {
-        return res.status(409).json({ error: transitionError('submit', status) });
-      }
-
-      db.run(
-        `UPDATE work_entries
-         SET status = 'submitted', submitted_at = CURRENT_TIMESTAMP,
-             reviewed_at = NULL, reviewed_by = NULL, rejection_reason = NULL,
-             updated_at = CURRENT_TIMESTAMP
-         WHERE id = ? AND user_email = ?`,
-        [workEntryId, req.userEmail],
-        (updateErr) => {
-          if (updateErr) {
-            console.error('Database error:', updateErr);
-            return res.status(500).json({ error: 'Failed to submit work entry' });
-          }
-
-          db.get(
-            `SELECT ${workEntryProjection}
-             FROM work_entries we
-             JOIN clients c ON we.client_id = c.id
-             WHERE we.id = ?`,
-            [workEntryId],
-            (err, row) => {
-              if (err) {
-                console.error('Database error:', err);
-                return res.status(500).json({ error: 'Work entry submitted but failed to retrieve' });
-              }
-
-              res.json({
-                message: 'Work entry submitted successfully',
-                workEntry: row
-              });
-            }
-          );
-        }
-      );
+    const status = row.status || 'draft';
+    if (status !== 'draft' && status !== 'rejected') {
+      return res.status(409).json({ error: transitionError('submit', status) });
     }
-  );
+
+    db.run(
+      `UPDATE work_entries
+       SET status = 'submitted', submitted_at = CURRENT_TIMESTAMP,
+           reviewed_at = NULL, reviewed_by = NULL, rejection_reason = NULL,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = ? AND user_email = ?`,
+      [workEntryId, req.userEmail],
+      (updateErr) => {
+        if (updateErr) {
+          console.error('Database error:', updateErr);
+          return res.status(500).json({ error: 'Failed to submit work entry' });
+        }
+
+        db.get(
+          `SELECT ${workEntryProjection}
+           FROM work_entries we
+           JOIN clients c ON we.client_id = c.id
+           WHERE we.id = ?`,
+          [workEntryId],
+          (err, row) => {
+            if (err) {
+              console.error('Database error:', err);
+              return res.status(500).json({ error: 'Work entry submitted but failed to retrieve' });
+            }
+
+            res.json({
+              message: 'Work entry submitted successfully',
+              workEntry: row
+            });
+          }
+        );
+      }
+    );
+  });
 });
 
 function reviewWorkEntry(req, res, action, reason) {
@@ -361,99 +360,99 @@ router.put('/:id', (req, res, next) => {
 
     // Check if work entry exists and belongs to user
     getOwnedWorkEntry(db, workEntryId, req.userEmail, (err, row) => {
-        if (err) {
-          console.error('Database error:', err);
-          return res.status(500).json({ error: 'Internal server error' });
-        }
-        
-        if (!row) {
-          return res.status(404).json({ error: 'Work entry not found' });
-        }
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+      
+      if (!row) {
+        return res.status(404).json({ error: 'Work entry not found' });
+      }
 
-        const status = row.status || 'draft';
-        if (status === 'approved') {
-          return res.status(409).json({ error: transitionError('edit', status) });
-        }
+      const status = row.status || 'draft';
+      if (status === 'approved') {
+        return res.status(409).json({ error: transitionError('edit', status) });
+      }
 
-        // If clientId is being updated, verify it belongs to user
-        if (value.clientId) {
-          db.get(
-            'SELECT id FROM clients WHERE id = ? AND user_email = ?',
-            [value.clientId, req.userEmail],
-            (err, clientRow) => {
-              if (err) {
-                console.error('Database error:', err);
-                return res.status(500).json({ error: 'Internal server error' });
-              }
-              
-              if (!clientRow) {
-                return res.status(400).json({ error: 'Client not found or does not belong to user' });
-              }
-
-              performUpdate();
-            }
-          );
-        } else {
-          performUpdate();
-        }
-
-        function performUpdate() {
-          // Build update query dynamically
-          const updates = [];
-          const values = [];
-
-          if (value.clientId !== undefined) {
-            updates.push('client_id = ?');
-            values.push(value.clientId);
-          }
-
-          if (value.hours !== undefined) {
-            updates.push('hours = ?');
-            values.push(value.hours);
-          }
-
-          if (value.description !== undefined) {
-            updates.push('description = ?');
-            values.push(value.description || null);
-          }
-
-          if (value.date !== undefined) {
-            updates.push('date = ?');
-            values.push(value.date);
-          }
-
-          updates.push('updated_at = CURRENT_TIMESTAMP');
-          values.push(workEntryId, req.userEmail);
-
-          const query = `UPDATE work_entries SET ${updates.join(', ')} WHERE id = ? AND user_email = ?`;
-
-          db.run(query, values, function(err) {
+      // If clientId is being updated, verify it belongs to user
+      if (value.clientId) {
+        db.get(
+          'SELECT id FROM clients WHERE id = ? AND user_email = ?',
+          [value.clientId, req.userEmail],
+          (err, clientRow) => {
             if (err) {
               console.error('Database error:', err);
-              return res.status(500).json({ error: 'Failed to update work entry' });
+              return res.status(500).json({ error: 'Internal server error' });
+            }
+            
+            if (!clientRow) {
+              return res.status(400).json({ error: 'Client not found or does not belong to user' });
             }
 
-            // Return updated work entry with client name
-            db.get(
-              `SELECT ${workEntryProjection}
-               FROM work_entries we
-               JOIN clients c ON we.client_id = c.id
-               WHERE we.id = ?`,
-              [workEntryId],
-              (err, row) => {
-                if (err) {
-                  console.error('Database error:', err);
-                  return res.status(500).json({ error: 'Work entry updated but failed to retrieve' });
-                }
+            performUpdate();
+          }
+        );
+      } else {
+        performUpdate();
+      }
 
-                res.json({
-                  message: 'Work entry updated successfully',
-                  workEntry: row
-                });
-              }
-            );
-          });
+      function performUpdate() {
+        // Build update query dynamically
+        const updates = [];
+        const values = [];
+
+        if (value.clientId !== undefined) {
+          updates.push('client_id = ?');
+          values.push(value.clientId);
         }
+
+        if (value.hours !== undefined) {
+          updates.push('hours = ?');
+          values.push(value.hours);
+        }
+
+        if (value.description !== undefined) {
+          updates.push('description = ?');
+          values.push(value.description || null);
+        }
+
+        if (value.date !== undefined) {
+          updates.push('date = ?');
+          values.push(value.date);
+        }
+
+        updates.push('updated_at = CURRENT_TIMESTAMP');
+        values.push(workEntryId, req.userEmail);
+
+        const query = `UPDATE work_entries SET ${updates.join(', ')} WHERE id = ? AND user_email = ?`;
+
+        db.run(query, values, function(err) {
+          if (err) {
+            console.error('Database error:', err);
+            return res.status(500).json({ error: 'Failed to update work entry' });
+          }
+
+          // Return updated work entry with client name
+          db.get(
+            `SELECT ${workEntryProjection}
+             FROM work_entries we
+             JOIN clients c ON we.client_id = c.id
+             WHERE we.id = ?`,
+            [workEntryId],
+            (err, row) => {
+              if (err) {
+                console.error('Database error:', err);
+                return res.status(500).json({ error: 'Work entry updated but failed to retrieve' });
+              }
+
+              res.json({
+                message: 'Work entry updated successfully',
+                workEntry: row
+              });
+            }
+          );
+        });
+      }
       }
     );
   } catch (error) {
@@ -465,26 +464,25 @@ router.put('/:id', (req, res, next) => {
 router.delete('/:id', (req, res) => {
   // Check if work entry exists and belongs to user
   withOwnedWorkEntry(req, res, (db, workEntryId, row) => {
-      const status = row.status || 'draft';
-      if (status === 'approved') {
-        return res.status(409).json({ error: transitionError('delete', status) });
-      }
-
-      // Delete work entry
-      db.run(
-        'DELETE FROM work_entries WHERE id = ? AND user_email = ?',
-        [workEntryId, req.userEmail],
-        function(err) {
-          if (err) {
-            console.error('Database error:', err);
-            return res.status(500).json({ error: 'Failed to delete work entry' });
-          }
-
-          res.json({ message: 'Work entry deleted successfully' });
-        }
-      );
+    const status = row.status || 'draft';
+    if (status === 'approved') {
+      return res.status(409).json({ error: transitionError('delete', status) });
     }
-  );
+
+    // Delete work entry
+    db.run(
+      'DELETE FROM work_entries WHERE id = ? AND user_email = ?',
+      [workEntryId, req.userEmail],
+      function(err) {
+        if (err) {
+          console.error('Database error:', err);
+          return res.status(500).json({ error: 'Failed to delete work entry' });
+        }
+
+        res.json({ message: 'Work entry deleted successfully' });
+      }
+    );
+  });
 });
 
 module.exports = router;
