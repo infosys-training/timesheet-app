@@ -1,4 +1,4 @@
-const { authenticateUser } = require('../../middleware/auth');
+const { authenticateUser, requireApprover, isApprover } = require('../../middleware/auth');
 const { getDatabase } = require('../../database/init');
 
 jest.mock('../../database/init');
@@ -180,6 +180,76 @@ describe('Authentication Middleware', () => {
 
       authenticateUser(req, res, next);
       expect(mockDb.get).toHaveBeenCalled();
+    });
+  });
+
+  describe('Approver Role', () => {
+    afterEach(() => {
+      delete process.env.APPROVER_EMAILS;
+    });
+
+    test('isApprover recognises a configured approver', () => {
+      process.env.APPROVER_EMAILS = 'lead@example.com, manager@example.com';
+
+      expect(isApprover('manager@example.com')).toBe(true);
+    });
+
+    test('isApprover ignores casing', () => {
+      process.env.APPROVER_EMAILS = 'Lead@Example.com';
+
+      expect(isApprover('lead@example.com')).toBe(true);
+    });
+
+    test('isApprover rejects a user that is not configured', () => {
+      process.env.APPROVER_EMAILS = 'lead@example.com';
+
+      expect(isApprover('test@example.com')).toBe(false);
+    });
+
+    test('isApprover returns false when no approvers are configured', () => {
+      expect(isApprover('lead@example.com')).toBe(false);
+    });
+
+    test('isApprover returns false without an email', () => {
+      process.env.APPROVER_EMAILS = 'lead@example.com';
+
+      expect(isApprover(undefined)).toBe(false);
+    });
+
+    test('authenticateUser exposes the approver flag on the request', (done) => {
+      process.env.APPROVER_EMAILS = 'lead@example.com';
+      req.headers['x-user-email'] = 'lead@example.com';
+
+      mockDb.get.mockImplementation((query, params, callback) => {
+        callback(null, { email: 'lead@example.com' });
+      });
+      next.mockImplementation(() => {
+        expect(req.isApprover).toBe(true);
+        done();
+      });
+
+      authenticateUser(req, res, next);
+    });
+
+    test('requireApprover allows an approver through', () => {
+      process.env.APPROVER_EMAILS = 'lead@example.com';
+      req.userEmail = 'lead@example.com';
+
+      requireApprover(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+      expect(res.status).not.toHaveBeenCalled();
+    });
+
+    test('requireApprover returns 403 for a non approver', () => {
+      process.env.APPROVER_EMAILS = 'lead@example.com';
+      req.userEmail = 'test@example.com';
+
+      requireApprover(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({ error: 'Approver role required' });
+      expect(next).not.toHaveBeenCalled();
     });
   });
 });

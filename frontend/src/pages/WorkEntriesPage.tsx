@@ -23,11 +23,13 @@ import {
   Select,
   MenuItem,
   Chip,
+  Tooltip,
 } from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
+  Send as SendIcon,
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -35,6 +37,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import apiClient from '../api/client';
 import { type WorkEntry } from '../types/api';
+import { STATUS_COLORS, STATUS_LABELS, canEdit, canSubmit } from '../utils/workEntryStatus';
 
 const WorkEntriesPage: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -93,6 +96,17 @@ const WorkEntriesPage: React.FC = () => {
     onError: (err: unknown) => {
       const error = err as { response?: { data?: { error?: string } } };
       setError(error.response?.data?.error || 'Failed to delete work entry');
+    },
+  });
+
+  const submitMutation = useMutation({
+    mutationFn: (id: number) => apiClient.submitWorkEntry(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workEntries'] });
+    },
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { error?: string } } };
+      setError(error.response?.data?.error || 'Failed to submit work entry');
     },
   });
 
@@ -170,6 +184,11 @@ const WorkEntriesPage: React.FC = () => {
     }
   };
 
+  const handleSubmitForApproval = (entry: WorkEntry) => {
+    setError('');
+    submitMutation.mutate(entry.id);
+  };
+
   const handleDelete = (entry: WorkEntry) => {
     if (window.confirm(`Are you sure you want to delete this ${entry.hours} hour entry for ${entry.client_name}?`)) {
       deleteMutation.mutate(entry.id);
@@ -219,6 +238,7 @@ const WorkEntriesPage: React.FC = () => {
                     <TableCell>Date</TableCell>
                     <TableCell>Hours</TableCell>
                     <TableCell>Description</TableCell>
+                    <TableCell>Status</TableCell>
                     <TableCell align="right">Actions</TableCell>
                   </TableRow>
                 </TableHead>
@@ -252,27 +272,66 @@ const WorkEntriesPage: React.FC = () => {
                             <Chip label="No description" size="small" variant="outlined" />
                           )}
                         </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={STATUS_LABELS[entry.status] || entry.status}
+                            color={STATUS_COLORS[entry.status] || 'default'}
+                            size="small"
+                          />
+                          {entry.status === 'rejected' && entry.rejection_reason && (
+                            <Typography variant="caption" color="error" display="block" sx={{ mt: 0.5 }}>
+                              {entry.rejection_reason}
+                            </Typography>
+                          )}
+                          {entry.status === 'approved' && entry.reviewed_by && (
+                            <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                              by {entry.reviewed_by}
+                            </Typography>
+                          )}
+                        </TableCell>
                         <TableCell align="right">
-                          <IconButton
-                            onClick={() => handleOpen(entry)}
-                            color="primary"
-                            size="small"
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            onClick={() => handleDelete(entry)}
-                            color="error"
-                            size="small"
-                          >
-                            <DeleteIcon />
-                          </IconButton>
+                          <Tooltip title={canSubmit(entry.status) ? 'Submit for approval' : 'Only draft or rejected entries can be submitted'}>
+                            <span>
+                              <IconButton
+                                onClick={() => handleSubmitForApproval(entry)}
+                                color="success"
+                                size="small"
+                                disabled={!canSubmit(entry.status) || submitMutation.isPending}
+                              >
+                                <SendIcon />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                          <Tooltip title={canEdit(entry.status) ? 'Edit' : 'An approved entry can no longer be edited'}>
+                            <span>
+                              <IconButton
+                                onClick={() => handleOpen(entry)}
+                                color="primary"
+                                size="small"
+                                disabled={!canEdit(entry.status)}
+                              >
+                                <EditIcon />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                          <Tooltip title={canEdit(entry.status) ? 'Delete' : 'An approved entry can no longer be deleted'}>
+                            <span>
+                              <IconButton
+                                onClick={() => handleDelete(entry)}
+                                color="error"
+                                size="small"
+                                disabled={!canEdit(entry.status)}
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
                         </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={5} align="center">
+                      <TableCell colSpan={6} align="center">
                         <Typography color="text.secondary" sx={{ py: 3 }}>
                           No work entries found. Add your first work entry to get started.
                         </Typography>
