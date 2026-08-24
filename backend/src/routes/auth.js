@@ -1,7 +1,7 @@
 const express = require('express');
 const { getDatabase } = require('../database/init');
 const { emailSchema } = require('../validation/schemas');
-const { authenticateUser } = require('../middleware/auth');
+const { authenticateUser, resolveRole } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -17,6 +17,7 @@ router.post('/login', async (req, res, next) => {
     const db = getDatabase();
 
     // Check if user exists
+    const role = resolveRole(email);
     db.get('SELECT email, created_at FROM users WHERE email = ?', [email], (err, row) => {
       if (err) {
         console.error('Database error:', err);
@@ -24,17 +25,19 @@ router.post('/login', async (req, res, next) => {
       }
 
       if (row) {
-        // User exists
+        // Keep the role synchronized with the current configuration.
+        db.run('UPDATE users SET role = ? WHERE email = ?', [role, email], () => {});
         return res.json({
           message: 'Login successful',
           user: {
             email: row.email,
-            createdAt: row.created_at
+            createdAt: row.created_at,
+            role
           }
         });
       } else {
         // Create new user
-        db.run('INSERT INTO users (email) VALUES (?)', [email], function(err) {
+        db.run('INSERT INTO users (email, role) VALUES (?, ?)', [email, role], function(err) {
           if (err) {
             console.error('Error creating user:', err);
             return res.status(500).json({ error: 'Failed to create user' });
@@ -44,7 +47,8 @@ router.post('/login', async (req, res, next) => {
             message: 'User created and logged in successfully',
             user: {
               email: email,
-              createdAt: new Date().toISOString()
+              createdAt: new Date().toISOString(),
+              role
             }
           });
         });
@@ -72,7 +76,8 @@ router.get('/me', authenticateUser, (req, res) => {
     res.json({
       user: {
         email: row.email,
-        createdAt: row.created_at
+        createdAt: row.created_at,
+        role: req.userRole
       }
     });
   });

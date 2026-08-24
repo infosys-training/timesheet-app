@@ -7,6 +7,13 @@ jest.mock('../../database/init');
 jest.mock('../../middleware/auth', () => ({
   authenticateUser: (req, res, next) => {
     req.userEmail = 'test@example.com';
+    req.userRole = req.headers['x-user-role'] || 'employee';
+    next();
+  },
+  requireApprover: (req, res, next) => {
+    if (req.userRole !== 'approver') {
+      return res.status(403).json({ error: 'Approver role required' });
+    }
     next();
   }
 }));
@@ -583,6 +590,120 @@ describe('Work Entry Routes', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('Work entry updated successfully');
+    });
+  });
+
+  describe('Approval workflow', () => {
+    const mockTransition = (status, returnedStatus = status) => {
+      mockDb.get.mockImplementation((query, params, callback) => {
+        if (query.includes('SELECT id, status')) {
+          callback(null, { id: 1, status });
+        } else {
+          callback(null, {
+            id: 1,
+            status: returnedStatus,
+            client_id: 1,
+            user_email: 'test@example.com',
+            client_name: 'Client A'
+          });
+        }
+      });
+      mockDb.run.mockImplementation(function(query, params, callback) {
+        callback(null);
+      });
+    };
+
+    test.each([
+      ['draft', 'submit', '/api/work-entries/1/submit', 'submitted'],
+      ['rejected', 'resubmit', '/api/work-entries/1/submit', 'submitted'],
+      ['submitted', 'approve', '/api/work-entries/1/approve', 'approved'],
+      ['submitted', 'reject', '/api/work-entries/1/reject', 'rejected']
+    ])('allows %s -> %s transition', async (status, action, path, result) => {
+      mockTransition(status, result);
+      const requestBuilder = request(app).post(path);
+      if (action === 'approve' || action === 'reject') {
+        requestBuilder.set('x-user-role', 'approver');
+      }
+      if (action === 'reject') requestBuilder.send({ note: 'Please correct the date' });
+      const response = await requestBuilder;
+
+      expect(response.status).toBe(200);
+      expect(response.body.workEntry.status).toBe(result);
+    });
+
+    test('allows rejection without a note', async () => {
+      mockTransition('submitted', 'rejected');
+      const response = await request(app)
+        .post('/api/work-entries/1/reject')
+        .set('x-user-role', 'approver');
+
+      expect(response.status).toBe(200);
+      expect(mockDb.run).toHaveBeenCalledWith(
+        expect.stringContaining('review_note = ?'),
+        ['rejected', 'test@example.com', null, 1],
+        expect.any(Function)
+      );
+    });
+
+    test.each([
+      ['submitted', 'submit', '/api/work-entries/1/submit'],
+      ['approved', 'submit', '/api/work-entries/1/submit'],
+      ['draft', 'approve', '/api/work-entries/1/approve'],
+      ['approved', 'approve', '/api/work-entries/1/approve'],
+      ['rejected', 'approve', '/api/work-entries/1/approve'],
+      ['draft', 'reject', '/api/work-entries/1/reject'],
+      ['approved', 'reject', '/api/work-entries/1/reject'],
+      ['rejected', 'reject', '/api/work-entries/1/reject']
+    ])('rejects %s -> %s transition', async (status, action, path) => {
+      mockTransition(status);
+      const response = await request(app)
+        .post(path)
+        .set('x-user-role', action === 'submit' ? 'employee' : 'approver');
+
+      expect(response.status).toBe(409);
+      expect(response.body.error).toContain(`from ${status}`);
+      expect(response.body.error).toContain(`to ${action === 'submit' ? 'submitted' : action === 'approve' ? 'approved' : 'rejected'}`);
+    });
+
+    test.each(['/approve', '/reject'])('returns 403 to employees for %s', async (action) => {
+      const response = await request(app).post(`/api/work-entries/1${action}`);
+      expect(response.status).toBe(403);
+      expect(response.body).toEqual({ error: 'Approver role required' });
+    });
+
+    test('returns pending approvals only to approvers and routes before /:id', async () => {
+      mockDb.all.mockImplementation((query, params, callback) => {
+        callback(null, [{ id: 1, status: 'submitted', user_email: 'employee@example.com' }]);
+      });
+
+      const employeeResponse = await request(app).get('/api/work-entries/pending-approvals');
+      expect(employeeResponse.status).toBe(403);
+
+      const approverResponse = await request(app)
+        .get('/api/work-entries/pending-approvals')
+        .set('x-user-role', 'approver');
+      expect(approverResponse.status).toBe(200);
+      expect(approverResponse.body.workEntries[0].user_email).toBe('employee@example.com');
+    });
+
+    test.each(['put', 'delete'])('returns 409 when an approved entry is %s', async (method) => {
+      mockDb.get.mockImplementation((query, params, callback) => {
+        callback(null, { id: 1, status: 'approved' });
+      });
+      const response = method === 'put'
+        ? await request(app).put('/api/work-entries/1').send({ hours: 8 })
+        : await request(app).delete('/api/work-entries/1');
+
+      expect(response.status).toBe(409);
+      expect(response.body.error).toContain('Approved work entries cannot be');
+    });
+
+    test.each(['/submit', '/approve', '/reject'])('returns 400 for invalid transition id %s', async (action) => {
+      const response = await request(app)
+        .post(`/api/work-entries/invalid${action}`)
+        .set('x-user-role', action === '/submit' ? 'employee' : 'approver');
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({ error: 'Invalid work entry ID' });
     });
   });
 });
