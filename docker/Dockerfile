@@ -7,7 +7,7 @@ WORKDIR /app/frontend
 COPY frontend/package*.json ./
 
 # Install frontend dependencies
-RUN npm ci --ignore-scripts
+RUN npm ci
 
 # Copy frontend source
 COPY frontend/ ./
@@ -24,7 +24,7 @@ WORKDIR /app/backend
 COPY backend/package*.json ./
 
 # Install production dependencies only
-RUN npm ci --only=production --ignore-scripts
+RUN npm ci --only=production
 
 # Production stage
 FROM node:20-alpine AS production
