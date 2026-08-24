@@ -37,7 +37,8 @@ router.get('/client/:clientId', (req, res) => {
       
       // Get work entries for this client
       db.all(
-        `SELECT id, hours, description, date, created_at, updated_at
+        `SELECT id, hours, description, date, status, submitted_at, reviewed_at,
+                reviewed_by, rejection_reason, created_at, updated_at
          FROM work_entries 
          WHERE client_id = ? AND user_email = ? 
          ORDER BY date DESC`,
