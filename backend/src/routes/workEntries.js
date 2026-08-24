@@ -20,6 +20,14 @@ function transitionError(action, status) {
   return `Cannot ${action} a work entry with status ${status}`;
 }
 
+function getOwnedWorkEntry(db, workEntryId, userEmail, callback) {
+  db.get(
+    'SELECT id, status FROM work_entries WHERE id = ? AND user_email = ?',
+    [workEntryId, userEmail],
+    callback
+  );
+}
+
 // All routes require authentication
 router.use(authenticateUser);
 
@@ -193,10 +201,7 @@ router.post('/:id/submit', (req, res) => {
   }
 
   const db = getDatabase();
-  db.get(
-    'SELECT id, status FROM work_entries WHERE id = ? AND user_email = ?',
-    [workEntryId, req.userEmail],
-    (err, row) => {
+  getOwnedWorkEntry(db, workEntryId, req.userEmail, (err, row) => {
       if (err) {
         console.error('Database error:', err);
         return res.status(500).json({ error: 'Internal server error' });
@@ -349,10 +354,7 @@ router.put('/:id', (req, res, next) => {
     const db = getDatabase();
 
     // Check if work entry exists and belongs to user
-    db.get(
-      'SELECT id, status FROM work_entries WHERE id = ? AND user_email = ?',
-      [workEntryId, req.userEmail],
-      (err, row) => {
+    getOwnedWorkEntry(db, workEntryId, req.userEmail, (err, row) => {
         if (err) {
           console.error('Database error:', err);
           return res.status(500).json({ error: 'Internal server error' });
@@ -464,10 +466,7 @@ router.delete('/:id', (req, res) => {
   const db = getDatabase();
   
   // Check if work entry exists and belongs to user
-  db.get(
-    'SELECT id, status FROM work_entries WHERE id = ? AND user_email = ?',
-    [workEntryId, req.userEmail],
-    (err, row) => {
+  getOwnedWorkEntry(db, workEntryId, req.userEmail, (err, row) => {
       if (err) {
         console.error('Database error:', err);
         return res.status(500).json({ error: 'Internal server error' });
