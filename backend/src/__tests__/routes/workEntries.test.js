@@ -4,9 +4,21 @@ const workEntryRoutes = require('../../routes/workEntries');
 const { getDatabase } = require('../../database/init');
 
 jest.mock('../../database/init');
+const mockAuthState = {
+  userEmail: 'test@example.com',
+  isApprover: false
+};
 jest.mock('../../middleware/auth', () => ({
   authenticateUser: (req, res, next) => {
-    req.userEmail = 'test@example.com';
+    req.userEmail = mockAuthState.userEmail;
+    req.userRole = mockAuthState.isApprover ? 'approver' : 'employee';
+    req.isApprover = mockAuthState.isApprover;
+    next();
+  },
+  requireApprover: (req, res, next) => {
+    if (!req.isApprover) {
+      return res.status(403).json({ error: 'Approver role required' });
+    }
     next();
   }
 }));
@@ -26,6 +38,8 @@ describe('Work Entry Routes', () => {
   let mockDb;
 
   beforeEach(() => {
+    mockAuthState.userEmail = 'test@example.com';
+    mockAuthState.isApprover = false;
     mockDb = {
       all: jest.fn(),
       get: jest.fn(),
@@ -583,6 +597,185 @@ describe('Work Entry Routes', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('Work entry updated successfully');
+    });
+  });
+
+  describe('Approval workflow', () => {
+    const mockTransitionEntry = (status) => {
+      mockDb.get.mockImplementation((query, params, callback) => {
+        callback(null, { id: 1, status });
+      });
+      mockDb.run.mockImplementation((query, params, callback) => callback(null));
+    };
+
+    test.each(['draft', 'rejected'])('should submit a %s entry', async (status) => {
+      mockTransitionEntry(status);
+      const response = await request(app).post('/api/work-entries/1/submit');
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ message: 'Work entry submitted successfully' });
+      expect(mockDb.run).toHaveBeenCalledWith(
+        expect.stringContaining("status = 'submitted'"),
+        [1, 'test@example.com'],
+        expect.any(Function)
+      );
+    });
+
+    test.each(['submitted', 'approved'])('should reject submitting a %s entry', async (status) => {
+      mockTransitionEntry(status);
+      const response = await request(app).post('/api/work-entries/1/submit');
+      expect(response.status).toBe(409);
+      expect(response.body.error).toContain(status);
+    });
+
+    test('should approve a submitted entry', async () => {
+      mockAuthState.isApprover = true;
+      mockTransitionEntry('submitted');
+      const response = await request(app).post('/api/work-entries/1/approve');
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ message: 'Work entry approved successfully' });
+      expect(mockDb.run).toHaveBeenCalledWith(
+        expect.stringContaining("status = 'approved'"),
+        ['test@example.com', 1],
+        expect.any(Function)
+      );
+    });
+
+    test.each(['draft', 'approved', 'rejected'])('should reject approving a %s entry', async (status) => {
+      mockAuthState.isApprover = true;
+      mockTransitionEntry(status);
+      const response = await request(app).post('/api/work-entries/1/approve');
+      expect(response.status).toBe(409);
+      expect(response.body.error).toContain(status);
+    });
+
+    test('should reject a submitted entry without a reason', async () => {
+      mockAuthState.isApprover = true;
+      mockTransitionEntry('submitted');
+      const response = await request(app).post('/api/work-entries/1/reject').send({});
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ message: 'Work entry rejected successfully' });
+      expect(mockDb.run).toHaveBeenCalledWith(
+        expect.stringContaining("status = 'rejected'"),
+        ['test@example.com', null, 1],
+        expect.any(Function)
+      );
+    });
+
+    test('should reject a submitted entry with a reason', async () => {
+      mockAuthState.isApprover = true;
+      mockTransitionEntry('submitted');
+      const response = await request(app)
+        .post('/api/work-entries/1/reject')
+        .send({ reason: 'Please add more detail' });
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ message: 'Work entry rejected successfully' });
+      expect(mockDb.run).toHaveBeenCalledWith(
+        expect.stringContaining("status = 'rejected'"),
+        ['test@example.com', 'Please add more detail', 1],
+        expect.any(Function)
+      );
+    });
+
+    test.each(['draft', 'approved', 'rejected'])('should reject rejecting a %s entry', async (status) => {
+      mockAuthState.isApprover = true;
+      mockTransitionEntry(status);
+      const response = await request(app).post('/api/work-entries/1/reject');
+      expect(response.status).toBe(409);
+      expect(response.body.error).toContain(status);
+    });
+
+    test.each(['/api/work-entries/1/approve', '/api/work-entries/1/reject'])(
+      'should reject %s for a non-approver',
+      async (path) => {
+        const response = await request(app).post(path);
+        expect(response.status).toBe(403);
+        expect(response.body).toEqual({ error: 'Approver role required' });
+      }
+    );
+
+    test.each(['/api/work-entries/1/submit', '/api/work-entries/1/approve', '/api/work-entries/1/reject'])(
+      'should return 404 for missing entry at %s',
+      async (path) => {
+        mockAuthState.isApprover = path !== '/api/work-entries/1/submit';
+        mockDb.get.mockImplementation((query, params, callback) => callback(null, null));
+        const response = await request(app).post(path);
+        expect(response.status).toBe(404);
+        expect(response.body).toEqual({ error: 'Work entry not found' });
+      }
+    );
+
+    test.each(['/api/work-entries/invalid/submit', '/api/work-entries/invalid/approve', '/api/work-entries/invalid/reject'])(
+      'should return 400 for invalid id at %s',
+      async (path) => {
+        mockAuthState.isApprover = path.includes('approve') || path.includes('reject');
+        const response = await request(app).post(path);
+        expect(response.status).toBe(400);
+        expect(response.body).toEqual({ error: 'Invalid work entry ID' });
+      }
+    );
+
+    test('should reject an over-long rejection reason', async () => {
+      mockAuthState.isApprover = true;
+      const response = await request(app)
+        .post('/api/work-entries/1/reject')
+        .send({ reason: 'x'.repeat(1001) });
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({ error: 'Validation error' });
+    });
+
+    test('should return pending submitted entries to an approver', async () => {
+      mockAuthState.isApprover = true;
+      const pendingEntries = [{ id: 1, status: 'submitted', user_email: 'employee@example.com', client_name: 'Client A' }];
+      mockDb.all.mockImplementation((query, params, callback) => callback(null, pendingEntries));
+      const response = await request(app).get('/api/work-entries/pending');
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ workEntries: pendingEntries });
+      expect(mockDb.all).toHaveBeenCalledWith(
+        expect.stringContaining("WHERE we.status = 'submitted'"),
+        [],
+        expect.any(Function)
+      );
+    });
+
+    test('should forbid pending entries for a non-approver', async () => {
+      const response = await request(app).get('/api/work-entries/pending');
+      expect(response.status).toBe(403);
+      expect(response.body).toEqual({ error: 'Approver role required' });
+    });
+  });
+
+  describe('Status filtering', () => {
+    test('should filter work entries by a valid status', async () => {
+      mockDb.all.mockImplementation((query, params, callback) => callback(null, []));
+      const response = await request(app).get('/api/work-entries?status=submitted');
+      expect(response.status).toBe(200);
+      expect(mockDb.all).toHaveBeenCalledWith(
+        expect.stringContaining('AND we.status = ?'),
+        ['test@example.com', 'submitted'],
+        expect.any(Function)
+      );
+    });
+
+    test('should return 400 for an invalid status filter', async () => {
+      const response = await request(app).get('/api/work-entries?status=unknown');
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({ error: 'Invalid work entry status' });
+    });
+  });
+
+  describe('Approved work entries', () => {
+    test('should refuse to update an approved entry', async () => {
+      mockDb.get.mockImplementation((query, params, callback) => callback(null, { id: 1, status: 'approved' }));
+      const response = await request(app).put('/api/work-entries/1').send({ hours: 8 });
+      expect(response.status).toBe(409);
+      expect(response.body).toEqual({ error: 'Approved work entries cannot be modified' });
+    });
+
+    test('should refuse to delete an approved entry', async () => {
+      mockDb.get.mockImplementation((query, params, callback) => callback(null, { id: 1, status: 'approved' }));
+      const response = await request(app).delete('/api/work-entries/1');
+      expect(response.status).toBe(409);
+      expect(response.body).toEqual({ error: 'Approved work entries cannot be deleted' });
     });
   });
 });

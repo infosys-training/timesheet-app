@@ -1,12 +1,15 @@
-const { authenticateUser } = require('../../middleware/auth');
+const { authenticateUser, requireApprover } = require('../../middleware/auth');
 const { getDatabase } = require('../../database/init');
 
 jest.mock('../../database/init');
 
 describe('Authentication Middleware', () => {
   let req, res, next, mockDb;
+  let originalApproverEmails;
 
   beforeEach(() => {
+    originalApproverEmails = process.env.APPROVER_EMAILS;
+    process.env.APPROVER_EMAILS = '';
     req = {
       headers: {}
     };
@@ -25,6 +28,11 @@ describe('Authentication Middleware', () => {
   });
 
   afterEach(() => {
+    if (originalApproverEmails === undefined) {
+      delete process.env.APPROVER_EMAILS;
+    } else {
+      process.env.APPROVER_EMAILS = originalApproverEmails;
+    }
     jest.clearAllMocks();
   });
 
@@ -69,7 +77,7 @@ describe('Authentication Middleware', () => {
       req.headers['x-user-email'] = 'existing@example.com';
       
       mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, { email: 'existing@example.com' });
+        callback(null, { email: 'existing@example.com', role: 'employee' });
       });
 
       authenticateUser(req, res, next);
@@ -118,8 +126,8 @@ describe('Authentication Middleware', () => {
 
       setImmediate(() => {
         expect(mockDb.run).toHaveBeenCalledWith(
-          'INSERT INTO users (email) VALUES (?)',
-          ['newuser@example.com'],
+          'INSERT INTO users (email, role) VALUES (?, ?)',
+          ['newuser@example.com', 'employee'],
           expect.any(Function)
         );
         expect(req.userEmail).toBe('newuser@example.com');
@@ -180,6 +188,65 @@ describe('Authentication Middleware', () => {
 
       authenticateUser(req, res, next);
       expect(mockDb.get).toHaveBeenCalled();
+    });
+  });
+
+  describe('Role handling', () => {
+    test('should create an approver for a configured email', (done) => {
+      process.env.APPROVER_EMAILS = ' first@example.com, APPROVER@example.com ';
+      req.headers['x-user-email'] = 'approver@example.com';
+      mockDb.get.mockImplementation((query, params, callback) => callback(null, null));
+      mockDb.run.mockImplementation((query, params, callback) => callback(null));
+
+      authenticateUser(req, res, next);
+
+      setImmediate(() => {
+        expect(mockDb.run).toHaveBeenCalledWith(
+          'INSERT INTO users (email, role) VALUES (?, ?)',
+          ['approver@example.com', 'approver'],
+          expect.any(Function)
+        );
+        expect(req.userRole).toBe('approver');
+        expect(req.isApprover).toBe(true);
+        done();
+      });
+    });
+
+    test('should reconcile an existing user role with configuration', (done) => {
+      process.env.APPROVER_EMAILS = 'approver@example.com';
+      req.headers['x-user-email'] = 'approver@example.com';
+      mockDb.get.mockImplementation((query, params, callback) => {
+        callback(null, { email: 'approver@example.com', role: 'employee' });
+      });
+      mockDb.run.mockImplementation((query, params, callback) => callback(null));
+
+      authenticateUser(req, res, next);
+
+      setImmediate(() => {
+        expect(mockDb.run).toHaveBeenCalledWith(
+          'UPDATE users SET role = ? WHERE email = ?',
+          ['approver', 'approver@example.com'],
+          expect.any(Function)
+        );
+        expect(req.userRole).toBe('approver');
+        expect(req.isApprover).toBe(true);
+        done();
+      });
+    });
+
+    test('should allow approvers through requireApprover', () => {
+      req.isApprover = true;
+      requireApprover(req, res, next);
+      expect(next).toHaveBeenCalled();
+      expect(res.status).not.toHaveBeenCalled();
+    });
+
+    test('should reject non-approvers through requireApprover', () => {
+      req.isApprover = false;
+      requireApprover(req, res, next);
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({ error: 'Approver role required' });
+      expect(next).not.toHaveBeenCalled();
     });
   });
 });
