@@ -2,6 +2,7 @@ const express = require('express');
 const { getDatabase } = require('../database/init');
 const { emailSchema } = require('../validation/schemas');
 const { authenticateUser } = require('../middleware/auth');
+const { getApproverEmails } = require('../approvers');
 
 const router = express.Router();
 
@@ -17,10 +18,7 @@ router.post('/login', async (req, res, next) => {
     const db = getDatabase();
 
     // Check if user exists
-    const isApprover = (process.env.APPROVER_EMAILS || '')
-      .split(',')
-      .map((approverEmail) => approverEmail.trim().toLowerCase())
-      .includes(email.toLowerCase());
+    const isApprover = getApproverEmails().includes(email.toLowerCase());
 
     db.get('SELECT email, role, created_at FROM users WHERE email = ?', [email], (err, row) => {
       if (err) {

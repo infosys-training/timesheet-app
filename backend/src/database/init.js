@@ -1,14 +1,8 @@
 const sqlite3 = require('sqlite3').verbose();
+const { getApproverEmails } = require('../approvers');
 let db = null;
 let isClosing = false;
 let isClosed = false;
-
-function getApproverEmails() {
-  return (process.env.APPROVER_EMAILS || '')
-    .split(',')
-    .map((email) => email.trim().toLowerCase())
-    .filter(Boolean);
-}
 
 function run(database, query, params = []) {
   return new Promise((resolve, reject) => {

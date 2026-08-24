@@ -274,8 +274,18 @@ const WorkEntriesPage: React.FC = () => {
                           )}
                           {entry.rejection_reason && (
                             <Tooltip title={`Rejection reason: ${entry.rejection_reason}`}>
-                              <Typography variant="caption" color="error" display="block">
-                                Rejection reason
+                              <Typography
+                                variant="caption"
+                                color="error"
+                                display="block"
+                                sx={{
+                                  maxWidth: 200,
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                {entry.rejection_reason}
                               </Typography>
                             </Tooltip>
                           )}

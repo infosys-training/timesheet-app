@@ -1,11 +1,5 @@
 const { getDatabase } = require('../database/init');
-
-function isApproverEmail(email) {
-  return (process.env.APPROVER_EMAILS || '')
-    .split(',')
-    .map((approverEmail) => approverEmail.trim().toLowerCase())
-    .includes(email.toLowerCase());
-}
+const { getApproverEmails } = require('../approvers');
 
 // Simple email-based authentication middleware
 function authenticateUser(req, res, next) {
@@ -32,7 +26,7 @@ function authenticateUser(req, res, next) {
     
     if (!row) {
       // Create new user
-      const role = isApproverEmail(userEmail) ? 'approver' : 'user';
+      const role = getApproverEmails().includes(userEmail.toLowerCase()) ? 'approver' : 'user';
       db.run('INSERT INTO users (email, role) VALUES (?, ?)', [userEmail, role], (err) => {
         if (err) {
           console.error('Error creating user:', err);
