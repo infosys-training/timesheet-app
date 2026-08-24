@@ -28,6 +28,10 @@ const updateClientSchema = Joi.object({
   email: Joi.string().trim().email().max(255).optional().allow('')
 }).min(1); // At least one field must be provided
 
+const rejectWorkEntrySchema = Joi.object({
+  reason: Joi.string().trim().max(1000).required()
+});
+
 const emailSchema = Joi.object({
   email: Joi.string().email().required()
 });
@@ -37,5 +41,6 @@ module.exports = {
   workEntrySchema,
   updateWorkEntrySchema,
   updateClientSchema,
+  rejectWorkEntrySchema,
   emailSchema
 };
