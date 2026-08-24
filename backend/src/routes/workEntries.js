@@ -28,6 +28,26 @@ function getOwnedWorkEntry(db, workEntryId, userEmail, callback) {
   );
 }
 
+function withOwnedWorkEntry(req, res, callback) {
+  const workEntryId = parsePositiveIntParam(req.params.id);
+  if (workEntryId === null) {
+    return res.status(400).json({ error: 'Invalid work entry ID' });
+  }
+
+  const db = getDatabase();
+  getOwnedWorkEntry(db, workEntryId, req.userEmail, (err, row) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+    if (!row) {
+      return res.status(404).json({ error: 'Work entry not found' });
+    }
+
+    callback(db, workEntryId, row);
+  });
+}
+
 // All routes require authentication
 router.use(authenticateUser);
 
@@ -195,21 +215,7 @@ router.post('/', (req, res, next) => {
 
 // Submit a draft or rejected work entry
 router.post('/:id/submit', (req, res) => {
-  const workEntryId = parsePositiveIntParam(req.params.id);
-  if (workEntryId === null) {
-    return res.status(400).json({ error: 'Invalid work entry ID' });
-  }
-
-  const db = getDatabase();
-  getOwnedWorkEntry(db, workEntryId, req.userEmail, (err, row) => {
-      if (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({ error: 'Internal server error' });
-      }
-      if (!row) {
-        return res.status(404).json({ error: 'Work entry not found' });
-      }
-
+  withOwnedWorkEntry(req, res, (db, workEntryId, row) => {
       const status = row.status || 'draft';
       if (status !== 'draft' && status !== 'rejected') {
         return res.status(409).json({ error: transitionError('submit', status) });
@@ -457,25 +463,8 @@ router.put('/:id', (req, res, next) => {
 
 // Delete work entry
 router.delete('/:id', (req, res) => {
-  const workEntryId = parsePositiveIntParam(req.params.id);
-  
-  if (workEntryId === null) {
-    return res.status(400).json({ error: 'Invalid work entry ID' });
-  }
-
-  const db = getDatabase();
-  
   // Check if work entry exists and belongs to user
-  getOwnedWorkEntry(db, workEntryId, req.userEmail, (err, row) => {
-      if (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({ error: 'Internal server error' });
-      }
-      
-      if (!row) {
-        return res.status(404).json({ error: 'Work entry not found' });
-      }
-
+  withOwnedWorkEntry(req, res, (db, workEntryId, row) => {
       const status = row.status || 'draft';
       if (status === 'approved') {
         return res.status(409).json({ error: transitionError('delete', status) });
