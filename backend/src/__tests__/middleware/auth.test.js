@@ -1,12 +1,15 @@
-const { authenticateUser } = require('../../middleware/auth');
+const { authenticateUser, requireApprover } = require('../../middleware/auth');
 const { getDatabase } = require('../../database/init');
+const { isApproverEmail } = require('../../config/approvers');
 
 jest.mock('../../database/init');
 
 describe('Authentication Middleware', () => {
   let req, res, next, mockDb;
+  const originalApproverEmails = process.env.APPROVER_EMAILS;
 
   beforeEach(() => {
+    process.env.APPROVER_EMAILS = '';
     req = {
       headers: {}
     };
@@ -25,6 +28,11 @@ describe('Authentication Middleware', () => {
   });
 
   afterEach(() => {
+    if (originalApproverEmails === undefined) {
+      delete process.env.APPROVER_EMAILS;
+    } else {
+      process.env.APPROVER_EMAILS = originalApproverEmails;
+    }
     jest.clearAllMocks();
   });
 
@@ -76,8 +84,26 @@ describe('Authentication Middleware', () => {
 
       setImmediate(() => {
         expect(req.userEmail).toBe('existing@example.com');
+        expect(req.isApprover).toBe(false);
         expect(next).toHaveBeenCalled();
         expect(res.status).not.toHaveBeenCalled();
+        done();
+      });
+    });
+
+    test('should identify an approver case-insensitively from the environment allowlist', (done) => {
+      process.env.APPROVER_EMAILS = ' first@example.com, APPROVER@Example.COM ';
+      req.headers['x-user-email'] = 'approver@example.com';
+
+      mockDb.get.mockImplementation((query, params, callback) => {
+        callback(null, { email: 'approver@example.com' });
+      });
+
+      authenticateUser(req, res, next);
+
+      setImmediate(() => {
+        expect(req.isApprover).toBe(true);
+        expect(next).toHaveBeenCalled();
         done();
       });
     });
@@ -97,6 +123,59 @@ describe('Authentication Middleware', () => {
           error: 'Internal server error'
         });
         expect(next).not.toHaveBeenCalled();
+        done();
+      });
+    });
+  });
+
+  describe('requireApprover', () => {
+    test('should compare allowlisted emails case-insensitively at call time', () => {
+      process.env.APPROVER_EMAILS = '  APPROVER@EXAMPLE.COM,other@example.com ';
+
+      expect(isApproverEmail('approver@example.com')).toBe(true);
+      expect(isApproverEmail('missing@example.com')).toBe(false);
+
+      process.env.APPROVER_EMAILS = 'new@example.com';
+      expect(isApproverEmail('approver@example.com')).toBe(false);
+      expect(isApproverEmail('new@example.com')).toBe(true);
+    });
+
+    test('should return false when the allowlist is unset', () => {
+      delete process.env.APPROVER_EMAILS;
+
+      expect(isApproverEmail('approver@example.com')).toBe(false);
+    });
+
+    test('should return 403 when approver flag is false', () => {
+      req.isApprover = false;
+
+      requireApprover(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({ error: 'Approver role required' });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    test('should call next for an approver', () => {
+      req.isApprover = true;
+
+      requireApprover(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+      expect(res.status).not.toHaveBeenCalled();
+    });
+
+    test('should treat an empty allowlist as non-approver', (done) => {
+      process.env.APPROVER_EMAILS = '';
+      req.headers['x-user-email'] = 'user@example.com';
+      mockDb.get.mockImplementation((query, params, callback) => {
+        callback(null, { email: 'user@example.com' });
+      });
+
+      authenticateUser(req, res, next);
+
+      setImmediate(() => {
+        expect(req.isApprover).toBe(false);
         done();
       });
     });

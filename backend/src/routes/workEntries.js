@@ -1,28 +1,63 @@
 const express = require('express');
 const { getDatabase } = require('../database/init');
-const { authenticateUser } = require('../middleware/auth');
-const { workEntrySchema, updateWorkEntrySchema } = require('../validation/schemas');
+const { authenticateUser, requireApprover } = require('../middleware/auth');
+const {
+  workEntrySchema,
+  updateWorkEntrySchema,
+  rejectWorkEntrySchema
+} = require('../validation/schemas');
 
 const router = express.Router();
+const validStatuses = ['draft', 'submitted', 'approved', 'rejected'];
+const workEntryColumns = `
+  we.id, we.client_id, we.hours, we.description, we.date,
+  we.status, we.submitted_at, we.reviewed_at, we.reviewed_by, we.rejection_reason,
+  we.created_at, we.updated_at, c.name as client_name
+`;
+
+function getWorkEntryQuery(whereClause) {
+  return `
+    SELECT ${workEntryColumns}
+    FROM work_entries we
+    JOIN clients c ON we.client_id = c.id
+    ${whereClause}
+  `;
+}
+
+function getWorkEntryById(db, id, callback) {
+  db.get(getWorkEntryQuery('WHERE we.id = ?'), [id], callback);
+}
+
+function respondWithWorkEntry(db, id, res, message, retrievalError) {
+  getWorkEntryById(db, id, (err, row) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ error: retrievalError });
+    }
+
+    res.json({ message, workEntry: row });
+  });
+}
+
+function invalidStatusResponse(res, action, status) {
+  return res.status(409).json({ error: `Cannot ${action} a work entry with status ${status}` });
+}
 
 // All routes require authentication
 router.use(authenticateUser);
 
 // Get all work entries for authenticated user (with optional client filter)
 router.get('/', (req, res) => {
-  const { clientId } = req.query;
+  const { clientId, status } = req.query;
   const db = getDatabase();
-  
-  let query = `
-    SELECT we.id, we.client_id, we.hours, we.description, we.date, 
-           we.created_at, we.updated_at, c.name as client_name
-    FROM work_entries we
-    JOIN clients c ON we.client_id = c.id
-    WHERE we.user_email = ?
-  `;
-  
+
+  if (status !== undefined && !validStatuses.includes(status)) {
+    return res.status(400).json({ error: 'Invalid status' });
+  }
+
+  let query = getWorkEntryQuery('WHERE we.user_email = ?');
   const params = [req.userEmail];
-  
+
   if (clientId) {
     const clientIdNum = parseInt(clientId);
     if (isNaN(clientIdNum)) {
@@ -31,7 +66,12 @@ router.get('/', (req, res) => {
     query += ' AND we.client_id = ?';
     params.push(clientIdNum);
   }
-  
+
+  if (status !== undefined) {
+    query += ' AND we.status = ?';
+    params.push(status);
+  }
+
   query += ' ORDER BY we.date DESC, we.created_at DESC';
   
   db.all(query, params, (err, rows) => {
@@ -40,6 +80,28 @@ router.get('/', (req, res) => {
       return res.status(500).json({ error: 'Internal server error' });
     }
     
+    res.json({ workEntries: rows });
+  });
+});
+
+router.get('/pending', requireApprover, (req, res) => {
+  const db = getDatabase();
+  const query = `
+    SELECT we.id, we.client_id, we.user_email, we.hours, we.description, we.date,
+           we.status, we.submitted_at, we.reviewed_at, we.reviewed_by, we.rejection_reason,
+           we.created_at, we.updated_at, c.name as client_name
+    FROM work_entries we
+    JOIN clients c ON we.client_id = c.id
+    WHERE we.status = 'submitted'
+    ORDER BY we.date DESC, we.created_at DESC
+  `;
+
+  db.all(query, [], (err, rows) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+
     res.json({ workEntries: rows });
   });
 });
@@ -55,11 +117,7 @@ router.get('/:id', (req, res) => {
   const db = getDatabase();
   
   db.get(
-    `SELECT we.id, we.client_id, we.hours, we.description, we.date, 
-            we.created_at, we.updated_at, c.name as client_name
-     FROM work_entries we
-     JOIN clients c ON we.client_id = c.id
-     WHERE we.id = ? AND we.user_email = ?`,
+    getWorkEntryQuery('WHERE we.id = ? AND we.user_email = ?'),
     [workEntryId, req.userEmail],
     (err, row) => {
       if (err) {
@@ -111,25 +169,177 @@ router.post('/', (req, res, next) => {
               return res.status(500).json({ error: 'Failed to create work entry' });
             }
 
-            // Return the created work entry with client name
-            db.get(
-              `SELECT we.id, we.client_id, we.hours, we.description, we.date, 
-                      we.created_at, we.updated_at, c.name as client_name
-               FROM work_entries we
-               JOIN clients c ON we.client_id = c.id
-               WHERE we.id = ?`,
-              [this.lastID],
-              (err, row) => {
-                if (err) {
-                  console.error('Database error:', err);
-                  return res.status(500).json({ error: 'Work entry created but failed to retrieve' });
-                }
-
-                res.status(201).json({
-                  message: 'Work entry created successfully',
-                  workEntry: row
-                });
+            getWorkEntryById(db, this.lastID, (err, row) => {
+              if (err) {
+                console.error('Database error:', err);
+                return res.status(500).json({ error: 'Work entry created but failed to retrieve' });
               }
+
+              res.status(201).json({
+                message: 'Work entry created successfully',
+                workEntry: row
+              });
+            });
+          }
+        );
+      }
+    );
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/:id/submit', (req, res) => {
+  const workEntryId = parseInt(req.params.id);
+
+  if (isNaN(workEntryId)) {
+    return res.status(400).json({ error: 'Invalid work entry ID' });
+  }
+
+  const db = getDatabase();
+  db.get(
+    'SELECT id, status FROM work_entries WHERE id = ? AND user_email = ?',
+    [workEntryId, req.userEmail],
+    (err, row) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+
+      if (!row) {
+        return res.status(404).json({ error: 'Work entry not found' });
+      }
+
+      if (!['draft', 'rejected'].includes(row.status)) {
+        return invalidStatusResponse(res, 'submit', row.status);
+      }
+
+      db.run(
+        `UPDATE work_entries
+         SET status = 'submitted', submitted_at = CURRENT_TIMESTAMP,
+             reviewed_at = NULL, reviewed_by = NULL, rejection_reason = NULL,
+             updated_at = CURRENT_TIMESTAMP
+         WHERE id = ? AND user_email = ?`,
+        [workEntryId, req.userEmail],
+        (err) => {
+          if (err) {
+            console.error('Database error:', err);
+            return res.status(500).json({ error: 'Failed to submit work entry' });
+          }
+
+          respondWithWorkEntry(
+            db,
+            workEntryId,
+            res,
+            'Work entry submitted successfully',
+            'Work entry submitted but failed to retrieve'
+          );
+        }
+      );
+    }
+  );
+});
+
+router.post('/:id/approve', requireApprover, (req, res) => {
+  const workEntryId = parseInt(req.params.id);
+
+  if (isNaN(workEntryId)) {
+    return res.status(400).json({ error: 'Invalid work entry ID' });
+  }
+
+  const db = getDatabase();
+  db.get(
+    'SELECT id, status FROM work_entries WHERE id = ?',
+    [workEntryId],
+    (err, row) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+
+      if (!row) {
+        return res.status(404).json({ error: 'Work entry not found' });
+      }
+
+      if (row.status !== 'submitted') {
+        return invalidStatusResponse(res, 'approve', row.status);
+      }
+
+      db.run(
+        `UPDATE work_entries
+         SET status = 'approved', reviewed_at = CURRENT_TIMESTAMP,
+             reviewed_by = ?, rejection_reason = NULL, updated_at = CURRENT_TIMESTAMP
+         WHERE id = ?`,
+        [req.userEmail, workEntryId],
+        (err) => {
+          if (err) {
+            console.error('Database error:', err);
+            return res.status(500).json({ error: 'Failed to approve work entry' });
+          }
+
+          respondWithWorkEntry(
+            db,
+            workEntryId,
+            res,
+            'Work entry approved successfully',
+            'Work entry approved but failed to retrieve'
+          );
+        }
+      );
+    }
+  );
+});
+
+router.post('/:id/reject', requireApprover, (req, res, next) => {
+  try {
+    const workEntryId = parseInt(req.params.id);
+
+    if (isNaN(workEntryId)) {
+      return res.status(400).json({ error: 'Invalid work entry ID' });
+    }
+
+    const { error, value } = rejectWorkEntrySchema.validate(req.body);
+    if (error) {
+      return next(error);
+    }
+
+    const db = getDatabase();
+    db.get(
+      'SELECT id, status FROM work_entries WHERE id = ?',
+      [workEntryId],
+      (err, row) => {
+        if (err) {
+          console.error('Database error:', err);
+          return res.status(500).json({ error: 'Internal server error' });
+        }
+
+        if (!row) {
+          return res.status(404).json({ error: 'Work entry not found' });
+        }
+
+        if (row.status !== 'submitted') {
+          return invalidStatusResponse(res, 'reject', row.status);
+        }
+
+        const rejectionReason = value.reason === undefined ? null : value.reason;
+        db.run(
+          `UPDATE work_entries
+           SET status = 'rejected', reviewed_at = CURRENT_TIMESTAMP,
+               reviewed_by = ?, rejection_reason = ?, updated_at = CURRENT_TIMESTAMP
+           WHERE id = ?`,
+          [req.userEmail, rejectionReason, workEntryId],
+          (err) => {
+            if (err) {
+              console.error('Database error:', err);
+              return res.status(500).json({ error: 'Failed to reject work entry' });
+            }
+
+            respondWithWorkEntry(
+              db,
+              workEntryId,
+              res,
+              'Work entry rejected successfully',
+              'Work entry rejected but failed to retrieve'
             );
           }
         );
@@ -156,9 +366,8 @@ router.put('/:id', (req, res, next) => {
 
     const db = getDatabase();
 
-    // Check if work entry exists and belongs to user
     db.get(
-      'SELECT id FROM work_entries WHERE id = ? AND user_email = ?',
+      'SELECT id, status FROM work_entries WHERE id = ? AND user_email = ?',
       [workEntryId, req.userEmail],
       (err, row) => {
         if (err) {
@@ -168,6 +377,10 @@ router.put('/:id', (req, res, next) => {
 
         if (!row) {
           return res.status(404).json({ error: 'Work entry not found' });
+        }
+
+        if (row.status === 'approved') {
+          return invalidStatusResponse(res, 'edit', row.status);
         }
 
         // If clientId is being updated, verify it belongs to user
@@ -228,25 +441,12 @@ router.put('/:id', (req, res, next) => {
               return res.status(500).json({ error: 'Failed to update work entry' });
             }
 
-            // Return updated work entry with client name
-            db.get(
-              `SELECT we.id, we.client_id, we.hours, we.description, we.date, 
-                      we.created_at, we.updated_at, c.name as client_name
-               FROM work_entries we
-               JOIN clients c ON we.client_id = c.id
-               WHERE we.id = ?`,
-              [workEntryId],
-              (err, row) => {
-                if (err) {
-                  console.error('Database error:', err);
-                  return res.status(500).json({ error: 'Work entry updated but failed to retrieve' });
-                }
-
-                res.json({
-                  message: 'Work entry updated successfully',
-                  workEntry: row
-                });
-              }
+            respondWithWorkEntry(
+              db,
+              workEntryId,
+              res,
+              'Work entry updated successfully',
+              'Work entry updated but failed to retrieve'
             );
           });
         }
@@ -267,9 +467,8 @@ router.delete('/:id', (req, res) => {
   
   const db = getDatabase();
   
-  // Check if work entry exists and belongs to user
   db.get(
-    'SELECT id FROM work_entries WHERE id = ? AND user_email = ?',
+    'SELECT id, status FROM work_entries WHERE id = ? AND user_email = ?',
     [workEntryId, req.userEmail],
     (err, row) => {
       if (err) {
@@ -280,8 +479,11 @@ router.delete('/:id', (req, res) => {
       if (!row) {
         return res.status(404).json({ error: 'Work entry not found' });
       }
-      
-      // Delete work entry
+
+      if (row.status === 'approved') {
+        return invalidStatusResponse(res, 'delete', row.status);
+      }
+
       db.run(
         'DELETE FROM work_entries WHERE id = ? AND user_email = ?',
         [workEntryId, req.userEmail],
