@@ -1,5 +1,18 @@
 const { getDatabase } = require('../database/init');
 
+function getApproverEmails() {
+  return new Set(
+    (process.env.APPROVER_EMAILS || '')
+      .split(',')
+      .map(email => email.trim().toLowerCase())
+      .filter(Boolean)
+  );
+}
+
+function isConfiguredApprover(email) {
+  return getApproverEmails().has(email.toLowerCase());
+}
+
 // Simple email-based authentication middleware
 function authenticateUser(req, res, next) {
   const userEmail = req.headers['x-user-email'];
@@ -25,22 +38,45 @@ function authenticateUser(req, res, next) {
     
     if (!row) {
       // Create new user
-      db.run('INSERT INTO users (email) VALUES (?)', [userEmail], (err) => {
+      const role = isConfiguredApprover(userEmail) ? 'approver' : 'user';
+      const insert = role === 'approver'
+        ? ['INSERT INTO users (email, role) VALUES (?, ?)', [userEmail, role]]
+        : ['INSERT INTO users (email) VALUES (?)', [userEmail]];
+      db.run(insert[0], insert[1], (err) => {
         if (err) {
           console.error('Error creating user:', err);
           return res.status(500).json({ error: 'Failed to create user' });
         }
         
         req.userEmail = userEmail;
+        req.userRole = role;
+        req.isApprover = role === 'approver';
         next();
       });
     } else {
-      req.userEmail = userEmail;
-      next();
+      db.get('SELECT role FROM users WHERE email = ?', [userEmail], (roleErr, roleRow) => {
+        if (roleErr) {
+          console.error('Database error:', roleErr);
+          return res.status(500).json({ error: 'Internal server error' });
+        }
+        req.userEmail = userEmail;
+        req.userRole = isConfiguredApprover(userEmail) ? 'approver' : (roleRow?.role || 'user');
+        req.isApprover = req.userRole === 'approver';
+        next();
+      });
     }
   });
 }
 
+function requireApprover(req, res, next) {
+  if (!req.isApprover) {
+    return res.status(403).json({ error: 'Approver access required' });
+  }
+  next();
+}
+
 module.exports = {
-  authenticateUser
+  authenticateUser,
+  requireApprover,
+  isConfiguredApprover
 };

@@ -7,8 +7,12 @@ jest.mock('../../database/init');
 jest.mock('../../middleware/auth', () => ({
   authenticateUser: (req, res, next) => {
     req.userEmail = 'test@example.com';
+    req.isApprover = req.headers['x-test-approver'] === 'true';
     next();
-  }
+  },
+  requireApprover: (req, res, next) => req.isApprover
+    ? next()
+    : res.status(403).json({ error: 'Approver access required' })
 }));
 
 const app = express();
@@ -584,5 +588,137 @@ describe('Work Entry Routes', () => {
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('Work entry updated successfully');
     });
+  });
+});
+
+describe('Work Entry Approval Workflow', () => {
+  let mockDb;
+
+  beforeEach(() => {
+    mockDb = { all: jest.fn(), get: jest.fn(), run: jest.fn() };
+    getDatabase.mockReturnValue(mockDb);
+  });
+
+  afterEach(() => jest.clearAllMocks());
+
+  const configureTransition = (status, entry = { id: 1, status, client_name: 'Client A' }) => {
+    mockDb.get.mockImplementation((query, params, callback) => {
+      if (query.includes('SELECT id, status')) callback(null, { id: 1, status });
+      else callback(null, entry);
+    });
+    mockDb.run.mockImplementation(function(query, params, callback) {
+      this.lastID = 1;
+      callback(null);
+    });
+  };
+
+  test.each([
+    ['draft', 'submit', '/submit', false, 200],
+    ['rejected', 'submit', '/submit', false, 200],
+    ['submitted', 'approve', '/approve', true, 200],
+    ['submitted', 'reject', '/reject', true, 200]
+  ])('allows %s to %s', async (status, action, path, approver, expectedStatus) => {
+    configureTransition(status);
+    const response = await request(app)
+      .post(`/api/work-entries/1${path}`)
+      .set('x-test-approver', String(approver))
+      .send(action === 'reject' ? { reason: 'Please correct the date' } : {});
+    expect(response.status).toBe(expectedStatus);
+    expect(response.body.workEntry).toBeDefined();
+  });
+
+  test.each([
+    ['draft', 'approve', '/approve'],
+    ['draft', 'reject', '/reject'],
+    ['submitted', 'submit', '/submit'],
+    ['approved', 'submit', '/submit'],
+    ['approved', 'approve', '/approve'],
+    ['approved', 'reject', '/reject'],
+    ['rejected', 'approve', '/approve'],
+    ['rejected', 'reject', '/reject']
+  ])('rejects %s to %s with 409', async (status, action, path) => {
+    configureTransition(status);
+    const response = await request(app)
+      .post(`/api/work-entries/1${path}`)
+      .set('x-test-approver', 'true');
+    expect(response.status).toBe(409);
+    expect(response.body.error).toContain(`status "${status}"`);
+  });
+
+  test.each(['/approve', '/reject'])(
+    'requires an approver for %s',
+    async path => {
+      const response = await request(app).post(`/api/work-entries/1${path}`);
+      expect(response.status).toBe(403);
+      expect(response.body).toEqual({ error: 'Approver access required' });
+    }
+  );
+
+  test('requires an approver for pending approvals', async () => {
+    const response = await request(app).get('/api/work-entries/pending-approvals');
+    expect(response.status).toBe(403);
+    expect(response.body).toEqual({ error: 'Approver access required' });
+  });
+
+  test('returns pending approvals for approver', async () => {
+    const entries = [{ id: 1, status: 'submitted', user_email: 'worker@example.com', client_name: 'Client A' }];
+    mockDb.all.mockImplementation((query, params, callback) => callback(null, entries));
+    const response = await request(app)
+      .get('/api/work-entries/pending-approvals')
+      .set('x-test-approver', 'true');
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ workEntries: entries });
+    expect(mockDb.all.mock.calls[0][0]).toContain("WHERE we.status = 'submitted'");
+  });
+
+  test('validates status filter', async () => {
+    const response = await request(app).get('/api/work-entries?status=unknown');
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({ error: 'Invalid work entry status' });
+  });
+
+  test.each(['/submit', '/approve', '/reject'])('returns 404 for missing entry %s', async path => {
+    mockDb.get.mockImplementation((query, params, callback) => callback(null, null));
+    const response = await request(app)
+      .post(`/api/work-entries/999${path}`)
+      .set('x-test-approver', 'true');
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({ error: 'Work entry not found' });
+  });
+
+  test('rejects an overly long rejection reason', async () => {
+    configureTransition('submitted');
+    const response = await request(app)
+      .post('/api/work-entries/1/reject')
+      .set('x-test-approver', 'true')
+      .send({ reason: 'x'.repeat(1001) });
+    expect(response.status).toBe(400);
+  });
+
+  test.each(['submitted', 'approved'])('blocks editing %s entries', async status => {
+    mockDb.get.mockImplementation((query, params, callback) => callback(null, { id: 1, status }));
+    const response = await request(app).put('/api/work-entries/1').send({ hours: 8 });
+    expect(response.status).toBe(409);
+    expect(response.body.error).toContain(`status "${status}"`);
+  });
+
+  test.each(['submitted', 'approved'])('blocks deleting %s entries', async status => {
+    mockDb.get.mockImplementation((query, params, callback) => callback(null, { id: 1, status }));
+    const response = await request(app).delete('/api/work-entries/1');
+    expect(response.status).toBe(409);
+    expect(response.body.error).toContain(`status "${status}"`);
+  });
+
+  test.each(['draft', 'rejected'])('allows editing %s entries', async status => {
+    configureTransition(status);
+    const response = await request(app).put('/api/work-entries/1').send({ hours: 8 });
+    expect(response.status).toBe(200);
+  });
+
+  test.each(['draft', 'rejected'])('allows deleting %s entries', async status => {
+    mockDb.get.mockImplementation((query, params, callback) => callback(null, { id: 1, status }));
+    mockDb.run.mockImplementation((query, params, callback) => callback(null));
+    const response = await request(app).delete('/api/work-entries/1');
+    expect(response.status).toBe(200);
   });
 });

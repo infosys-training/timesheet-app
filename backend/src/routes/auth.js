@@ -1,7 +1,7 @@
 const express = require('express');
 const { getDatabase } = require('../database/init');
 const { emailSchema } = require('../validation/schemas');
-const { authenticateUser } = require('../middleware/auth');
+const { authenticateUser, isConfiguredApprover } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -17,7 +17,7 @@ router.post('/login', async (req, res, next) => {
     const db = getDatabase();
 
     // Check if user exists
-    db.get('SELECT email, created_at FROM users WHERE email = ?', [email], (err, row) => {
+    db.get('SELECT email, created_at, role FROM users WHERE email = ?', [email], (err, row) => {
       if (err) {
         console.error('Database error:', err);
         return res.status(500).json({ error: 'Internal server error' });
@@ -25,16 +25,23 @@ router.post('/login', async (req, res, next) => {
 
       if (row) {
         // User exists
+        const role = isConfiguredApprover(row.email) ? 'approver' : (row.role || 'user');
         return res.json({
           message: 'Login successful',
           user: {
             email: row.email,
-            createdAt: row.created_at
+            createdAt: row.created_at,
+            role,
+            isApprover: role === 'approver'
           }
         });
       } else {
         // Create new user
-        db.run('INSERT INTO users (email) VALUES (?)', [email], function(err) {
+        const role = isConfiguredApprover(email) ? 'approver' : 'user';
+        const insert = role === 'approver'
+          ? ['INSERT INTO users (email, role) VALUES (?, ?)', [email, role]]
+          : ['INSERT INTO users (email) VALUES (?)', [email]];
+        db.run(insert[0], insert[1], function(err) {
           if (err) {
             console.error('Error creating user:', err);
             return res.status(500).json({ error: 'Failed to create user' });
@@ -44,7 +51,9 @@ router.post('/login', async (req, res, next) => {
             message: 'User created and logged in successfully',
             user: {
               email: email,
-              createdAt: new Date().toISOString()
+              createdAt: new Date().toISOString(),
+              role,
+              isApprover: role === 'approver'
             }
           });
         });
@@ -72,7 +81,9 @@ router.get('/me', authenticateUser, (req, res) => {
     res.json({
       user: {
         email: row.email,
-        createdAt: row.created_at
+        createdAt: row.created_at,
+        role: req.userRole || row.role || 'user',
+        isApprover: !!req.isApprover
       }
     });
   });

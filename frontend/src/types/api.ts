@@ -1,7 +1,11 @@
 export interface User {
   email: string;
   createdAt: string;
+  role?: 'user' | 'approver';
+  isApprover?: boolean;
 }
+
+export type WorkEntryStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 
 export interface Client {
   id: number;
@@ -22,6 +26,12 @@ export interface WorkEntry {
   created_at: string;
   updated_at: string;
   client_name?: string;
+  user_email?: string;
+  status: WorkEntryStatus;
+  submitted_at: string | null;
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+  rejection_reason: string | null;
 }
 
 export interface WorkEntryWithClient extends WorkEntry {
@@ -70,6 +80,10 @@ export interface LoginRequest {
 export interface LoginResponse {
   message: string;
   user: User;
+}
+
+export interface PendingApprovalsResponse {
+  workEntries: WorkEntry[];
 }
 
 export interface ApiResponse<T> {
