@@ -79,8 +79,11 @@ function updateReviewedWorkEntry(db, id, reviewerEmail, status, reason, callback
   );
 }
 
-function reviewSubmittedWorkEntry(req, res, status, reason) {
-  const workEntryId = parseWorkEntryId(req, res);
+function reviewSubmittedWorkEntry(req, res, status, reason, workEntryId) {
+  if (workEntryId === undefined) {
+    workEntryId = parseWorkEntryId(req, res);
+  }
+
   if (workEntryId === null) {
     return;
   }
@@ -326,12 +329,17 @@ router.post('/:id/approve', requireApprover, (req, res) => {
 
 // Reject a submitted work entry
 router.post('/:id/reject', requireApprover, (req, res, next) => {
+  const workEntryId = parseWorkEntryId(req, res);
+  if (workEntryId === null) {
+    return;
+  }
+
   const { error, value } = rejectWorkEntrySchema.validate(req.body);
   if (error) {
     return next(error);
   }
 
-  reviewSubmittedWorkEntry(req, res, 'rejected', value.reason || null);
+  reviewSubmittedWorkEntry(req, res, 'rejected', value.reason || null, workEntryId);
 });
 
 // Update work entry
