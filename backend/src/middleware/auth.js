@@ -1,4 +1,5 @@
 const { getDatabase } = require('../database/init');
+const { isApproverEmail } = require('../config/approvers');
 
 // Simple email-based authentication middleware
 function authenticateUser(req, res, next) {
@@ -32,15 +33,26 @@ function authenticateUser(req, res, next) {
         }
         
         req.userEmail = userEmail;
+        req.isApprover = isApproverEmail(userEmail);
         next();
       });
     } else {
       req.userEmail = userEmail;
+      req.isApprover = isApproverEmail(userEmail);
       next();
     }
   });
 }
 
+function requireApprover(req, res, next) {
+  if (!req.isApprover) {
+    return res.status(403).json({ error: 'Approver role required' });
+  }
+
+  next();
+}
+
 module.exports = {
-  authenticateUser
+  authenticateUser,
+  requireApprover
 };

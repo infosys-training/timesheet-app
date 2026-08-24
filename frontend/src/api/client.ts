@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance, type AxiosResponse } from 'axios';
+import { type WorkEntryStatus } from '../types/api';
 
 // Use empty string to make requests relative to the current origin
 // Vite proxy will forward /api requests to the backend
@@ -87,9 +88,14 @@ class ApiClient {
   }
 
   // Work entry endpoints
-  async getWorkEntries(clientId?: number) {
-    const params = clientId ? { clientId } : {};
+  async getWorkEntries(clientId?: number, status?: WorkEntryStatus) {
+    const params = { ...(clientId ? { clientId } : {}), ...(status ? { status } : {}) };
     const response = await this.client.get('/api/work-entries', { params });
+    return response.data;
+  }
+
+  async getPendingWorkEntries() {
+    const response = await this.client.get('/api/work-entries/pending');
     return response.data;
   }
 
@@ -100,6 +106,21 @@ class ApiClient {
 
   async createWorkEntry(entryData: { clientId: number; hours: number; description?: string; date: string }) {
     const response = await this.client.post('/api/work-entries', entryData);
+    return response.data;
+  }
+
+  async submitWorkEntry(id: number) {
+    const response = await this.client.post(`/api/work-entries/${id}/submit`);
+    return response.data;
+  }
+
+  async approveWorkEntry(id: number) {
+    const response = await this.client.post(`/api/work-entries/${id}/approve`);
+    return response.data;
+  }
+
+  async rejectWorkEntry(id: number, reason?: string) {
+    const response = await this.client.post(`/api/work-entries/${id}/reject`, reason === undefined ? {} : { reason });
     return response.data;
   }
 

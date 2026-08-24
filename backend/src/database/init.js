@@ -59,6 +59,11 @@ async function initializeDatabase() {
           hours DECIMAL(5,2) NOT NULL,
           description TEXT,
           date DATE NOT NULL,
+          status TEXT NOT NULL DEFAULT 'draft',
+          submitted_at DATETIME,
+          reviewed_at DATETIME,
+          reviewed_by TEXT,
+          rejection_reason TEXT,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (client_id) REFERENCES clients (id) ON DELETE CASCADE,
@@ -71,6 +76,7 @@ async function initializeDatabase() {
       database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_client_id ON work_entries (client_id)`);
       database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_user_email ON work_entries (user_email)`);
       database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_date ON work_entries (date)`);
+      database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_status ON work_entries (status)`);
 
       console.log('Database tables created successfully');
       resolve();

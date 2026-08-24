@@ -2,6 +2,7 @@ const express = require('express');
 const { getDatabase } = require('../database/init');
 const { emailSchema } = require('../validation/schemas');
 const { authenticateUser } = require('../middleware/auth');
+const { isApproverEmail } = require('../config/approvers');
 
 const router = express.Router();
 
@@ -29,7 +30,8 @@ router.post('/login', async (req, res, next) => {
           message: 'Login successful',
           user: {
             email: row.email,
-            createdAt: row.created_at
+            createdAt: row.created_at,
+            isApprover: isApproverEmail(row.email)
           }
         });
       } else {
@@ -44,7 +46,8 @@ router.post('/login', async (req, res, next) => {
             message: 'User created and logged in successfully',
             user: {
               email: email,
-              createdAt: new Date().toISOString()
+              createdAt: new Date().toISOString(),
+              isApprover: isApproverEmail(email)
             }
           });
         });
@@ -72,7 +75,8 @@ router.get('/me', authenticateUser, (req, res) => {
     res.json({
       user: {
         email: row.email,
-        createdAt: row.created_at
+        createdAt: row.created_at,
+        isApprover: req.isApprover
       }
     });
   });

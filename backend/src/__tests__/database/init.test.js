@@ -102,6 +102,7 @@ describe('Database Initialization', () => {
       expect(queries.some(q => q.includes('CREATE INDEX IF NOT EXISTS idx_work_entries_client_id'))).toBe(true);
       expect(queries.some(q => q.includes('CREATE INDEX IF NOT EXISTS idx_work_entries_user_email'))).toBe(true);
       expect(queries.some(q => q.includes('CREATE INDEX IF NOT EXISTS idx_work_entries_date'))).toBe(true);
+      expect(queries.some(q => q.includes('CREATE INDEX IF NOT EXISTS idx_work_entries_status'))).toBe(true);
     });
 
     test('should log success message', async () => {

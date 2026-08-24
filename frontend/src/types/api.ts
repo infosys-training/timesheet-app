@@ -1,6 +1,7 @@
 export interface User {
   email: string;
   createdAt: string;
+  isApprover?: boolean;
 }
 
 export interface Client {
@@ -13,12 +14,20 @@ export interface Client {
   updated_at: string;
 }
 
+export type WorkEntryStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
+
 export interface WorkEntry {
   id: number;
   client_id: number;
+  user_email?: string;
   hours: number;
   description: string | null;
   date: string;
+  status: WorkEntryStatus;
+  submitted_at: string | null;
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+  rejection_reason: string | null;
   created_at: string;
   updated_at: string;
   client_name?: string;
