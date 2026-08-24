@@ -3,8 +3,8 @@ const {
   workEntrySchema,
   updateWorkEntrySchema,
   updateClientSchema,
-  emailSchema
-  , rejectWorkEntrySchema
+  emailSchema,
+  rejectWorkEntrySchema
 } = require('../../validation/schemas');
 
 describe('Validation Schemas', () => {

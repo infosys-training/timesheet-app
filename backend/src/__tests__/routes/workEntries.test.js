@@ -698,6 +698,34 @@ describe('Work Entry Routes', () => {
       expect(response.status).toBe(403);
     });
 
+    test('returns pending approvals for an approver in submission order', async () => {
+      mockIsApprover = true;
+      const pendingEntries = [
+        entry('submitted', 'first@example.com'),
+        entry('submitted', 'second@example.com')
+      ];
+      pendingEntries[0].id = 2;
+      pendingEntries[0].submitted_at = '2024-01-02T09:00:00.000Z';
+      pendingEntries[0].client_name = 'Second Client';
+      pendingEntries[1].id = 1;
+      pendingEntries[1].submitted_at = '2024-01-01T09:00:00.000Z';
+      pendingEntries[1].client_name = 'First Client';
+      mockDb.all.mockImplementation((query, params, callback) => {
+        expect(query).toContain("WHERE we.status = 'submitted'");
+        expect(query).toContain('ORDER BY we.submitted_at ASC');
+        callback(null, [pendingEntries[1], pendingEntries[0]]);
+      });
+
+      const response = await request(app).get('/api/work-entries/pending-approvals');
+
+      expect(response.status).toBe(200);
+      expect(response.body.workEntries).toEqual([pendingEntries[1], pendingEntries[0]]);
+      expect(response.body.workEntries.map(({ user_email }) => user_email)).toEqual([
+        'second@example.com',
+        'first@example.com'
+      ]);
+    });
+
     test.each(['/submit', '/approve', '/reject'])('rejects non-numeric id for %s', async (action) => {
       mockIsApprover = action !== '/submit';
       const response = await request(app).post(`/api/work-entries/nope${action}`);

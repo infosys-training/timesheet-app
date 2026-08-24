@@ -19,8 +19,8 @@ const entrySelect = `SELECT ${entryFields}
   JOIN clients c ON we.client_id = c.id`;
 
 function parseEntryId(value, res) {
-  const id = Number(value);
-  if (!Number.isInteger(id) || id <= 0) {
+  const id = parseInt(value);
+  if (isNaN(id)) {
     res.status(400).json({ error: 'Invalid work entry ID' });
     return null;
   }
@@ -28,10 +28,10 @@ function parseEntryId(value, res) {
 }
 
 function validateEntryId(req, res, next) {
-  if (parseEntryId(req.params.id, res)) next();
+  if (parseEntryId(req.params.id, res) !== null) next();
 }
 
-function sendUpdatedEntry(db, id, res, message, retrievalError = `${message} but failed to retrieve`) {
+function sendUpdatedEntry(db, id, res, message, retrievalError) {
   db.get(`${entrySelect} WHERE we.id = ?`, [id], (err, row) => {
     if (err) {
       console.error('Database error:', err);
@@ -42,7 +42,7 @@ function sendUpdatedEntry(db, id, res, message, retrievalError = `${message} but
 }
 
 // This route must be declared before /:id.
-router.get('/pending-approvals', requireApprover || ((req, res, next) => next()), (req, res) => {
+router.get('/pending-approvals', requireApprover, (req, res) => {
   const db = getDatabase();
   db.all(
     `${entrySelect} WHERE we.status = 'submitted' ORDER BY we.submitted_at ASC, we.created_at ASC`,
@@ -74,8 +74,8 @@ router.get('/', (req, res) => {
   const params = [req.userEmail];
   
   if (clientId) {
-    const clientIdNum = Number(clientId);
-    if (!Number.isInteger(clientIdNum) || clientIdNum <= 0) {
+    const clientIdNum = parseInt(clientId);
+    if (isNaN(clientIdNum)) {
       return res.status(400).json({ error: 'Invalid client ID' });
     }
     query += ' AND we.client_id = ?';
@@ -105,7 +105,7 @@ router.get('/', (req, res) => {
 // Get specific work entry
 router.get('/:id', (req, res) => {
   const workEntryId = parseEntryId(req.params.id, res);
-  if (!workEntryId) return;
+  if (workEntryId === null) return;
   
   const db = getDatabase();
   
@@ -192,7 +192,7 @@ router.post('/', (req, res, next) => {
 router.put('/:id', (req, res, next) => {
   try {
     const workEntryId = parseEntryId(req.params.id, res);
-    if (!workEntryId) return;
+    if (workEntryId === null) return;
 
     const { error, value } = updateWorkEntrySchema.validate(req.body);
     if (error) {
@@ -303,7 +303,7 @@ function transitionError(action, status, res) {
 
 router.post('/:id/submit', (req, res) => {
   const workEntryId = parseEntryId(req.params.id, res);
-  if (!workEntryId) return;
+  if (workEntryId === null) return;
   const db = getDatabase();
 
   db.get(
@@ -330,16 +330,22 @@ router.post('/:id/submit', (req, res) => {
             console.error('Database error:', updateErr);
             return res.status(500).json({ error: 'Failed to submit work entry' });
           }
-          sendUpdatedEntry(db, workEntryId, res, 'Work entry submitted successfully');
+          sendUpdatedEntry(
+            db,
+            workEntryId,
+            res,
+            'Work entry submitted successfully',
+            'Work entry submitted but failed to retrieve'
+          );
         }
       );
     }
   );
 });
 
-function reviewEntry(action, req, res) {
+function reviewEntry(action, req, res, next) {
   const workEntryId = parseEntryId(req.params.id, res);
-  if (!workEntryId) return;
+  if (workEntryId === null) return;
   const db = getDatabase();
 
   db.get(
@@ -359,7 +365,7 @@ function reviewEntry(action, req, res) {
       let reason;
       if (action === 'reject') {
         const validation = rejectWorkEntrySchema.validate(req.body);
-        if (validation.error) return res.status(400).json({ error: 'Validation error' });
+        if (validation.error) return next(validation.error);
         reason = validation.value.reason || null;
       }
       const status = action === 'approve' ? 'approved' : 'rejected';
@@ -377,25 +383,33 @@ function reviewEntry(action, req, res) {
           const resultMessage = action === 'approve'
             ? 'Work entry approved successfully'
             : 'Work entry rejected successfully';
-          sendUpdatedEntry(db, workEntryId, res, resultMessage);
+          sendUpdatedEntry(
+            db,
+            workEntryId,
+            res,
+            resultMessage,
+            action === 'approve'
+              ? 'Work entry approved but failed to retrieve'
+              : 'Work entry rejected but failed to retrieve'
+          );
         }
       );
     }
   );
 }
 
-router.post('/:id/approve', validateEntryId, requireApprover || ((req, res, next) => next()), (req, res) => {
-  reviewEntry('approve', req, res);
+router.post('/:id/approve', validateEntryId, requireApprover, (req, res, next) => {
+  reviewEntry('approve', req, res, next);
 });
 
-router.post('/:id/reject', validateEntryId, requireApprover || ((req, res, next) => next()), (req, res) => {
-  reviewEntry('reject', req, res);
+router.post('/:id/reject', validateEntryId, requireApprover, (req, res, next) => {
+  reviewEntry('reject', req, res, next);
 });
 
 // Delete work entry
 router.delete('/:id', (req, res) => {
   const workEntryId = parseEntryId(req.params.id, res);
-  if (!workEntryId) return;
+  if (workEntryId === null) return;
   
   const db = getDatabase();
   
