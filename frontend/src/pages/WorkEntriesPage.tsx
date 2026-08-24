@@ -304,13 +304,21 @@ const WorkEntriesPage: React.FC = () => {
                               </IconButton>
                             </span>
                           </Tooltip>
-                          <Tooltip title={entry.status === 'approved' ? 'Approved entries cannot be deleted' : ''}>
+                          <Tooltip
+                            title={
+                              entry.status === 'submitted'
+                                ? 'Submitted entries cannot be deleted while awaiting approval'
+                                : entry.status === 'approved'
+                                  ? 'Approved entries cannot be deleted'
+                                  : ''
+                            }
+                          >
                             <span>
                               <IconButton
                                 onClick={() => handleDelete(entry)}
                                 color="error"
                                 size="small"
-                                disabled={entry.status === 'approved'}
+                                disabled={['submitted', 'approved'].includes(entry.status)}
                               >
                                 <DeleteIcon />
                               </IconButton>

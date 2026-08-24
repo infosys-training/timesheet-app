@@ -427,8 +427,10 @@ router.delete('/:id', (req, res) => {
         return res.status(404).json({ error: 'Work entry not found' });
       }
 
-      if (row.status === 'approved') {
-        return res.status(409).json({ error: 'Approved work entries cannot be deleted' });
+      if (row.status === 'submitted' || row.status === 'approved') {
+        return res.status(409).json({
+          error: `Work entry cannot be deleted while it is ${row.status}`
+        });
       }
       
       // Delete work entry

@@ -684,6 +684,14 @@ describe('Work Entry Routes', () => {
         ? await request(app).put('/api/work-entries/1').send({ hours: 2 })
         : await request(app).delete('/api/work-entries/1');
       expect(response.status).toBe(409);
+      expect(response.body.error).toContain('approved');
+    });
+
+    test('rejects delete for submitted entry', async () => {
+      mockActionDb('submitted');
+      const response = await request(app).delete('/api/work-entries/1');
+      expect(response.status).toBe(409);
+      expect(response.body.error).toContain('submitted');
     });
 
     test('rejects edits to submitted entries', async () => {

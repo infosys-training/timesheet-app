@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Box,
@@ -26,6 +26,7 @@ const PendingApprovalsPage: React.FC = () => {
   const [rejectingEntry, setRejectingEntry] = useState<WorkEntry | null>(null);
   const [reason, setReason] = useState('');
   const [error, setError] = useState('');
+  const reasonInputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ['pendingApprovals'],
@@ -47,6 +48,12 @@ const PendingApprovalsPage: React.FC = () => {
     },
     onError: () => setError('Failed to reject work entry'),
   });
+
+  useEffect(() => {
+    if (!rejectingEntry) return undefined;
+    const focusTimer = window.setTimeout(() => reasonInputRef.current?.focus(), 0);
+    return () => window.clearTimeout(focusTimer);
+  }, [rejectingEntry]);
 
   if (isLoading) {
     return <Box display="flex" justifyContent="center" minHeight="400px" alignItems="center"><CircularProgress /></Box>;
@@ -98,7 +105,6 @@ const PendingApprovalsPage: React.FC = () => {
         <DialogTitle>Reject Work Entry</DialogTitle>
         <DialogContent>
           <TextField
-            autoFocus
             fullWidth
             multiline
             rows={3}
@@ -107,6 +113,8 @@ const PendingApprovalsPage: React.FC = () => {
             value={reason}
             onChange={(event) => setReason(event.target.value)}
             inputProps={{ maxLength: 1000 }}
+            inputRef={reasonInputRef}
+            slotProps={{ htmlInput: { autoFocus: true } }}
           />
         </DialogContent>
         <DialogActions>
