@@ -9,6 +9,13 @@ const {
 
 const router = express.Router();
 const VALID_STATUSES = ['draft', 'submitted', 'approved', 'rejected'];
+const workEntrySelect = `
+  SELECT we.id, we.client_id, we.user_email, we.hours, we.description, we.date,
+         we.status, we.submitted_at, we.reviewed_at, we.reviewed_by,
+         we.rejection_reason, we.created_at, we.updated_at, c.name as client_name
+  FROM work_entries we
+  JOIN clients c ON we.client_id = c.id
+`;
 
 // All routes require authentication
 router.use(authenticateUser);
@@ -19,16 +26,23 @@ function transitionError(res, action, status) {
   });
 }
 
+function getWorkEntryId(req, res) {
+  const workEntryId = parseInt(req.params.id);
+
+  if (isNaN(workEntryId)) {
+    res.status(400).json({ error: 'Invalid work entry ID' });
+    return null;
+  }
+
+  return workEntryId;
+}
+
 // Get pending work entries for approvers
 router.get('/pending-approvals', requireApprover, (req, res) => {
   const db = getDatabase();
 
   db.all(
-    `SELECT we.id, we.client_id, we.user_email, we.hours, we.description, we.date,
-            we.status, we.submitted_at, we.reviewed_at, we.reviewed_by,
-            we.rejection_reason, we.created_at, we.updated_at, c.name as client_name
-     FROM work_entries we
-     JOIN clients c ON we.client_id = c.id
+    `${workEntrySelect}
      WHERE we.status = 'submitted'
      ORDER BY we.date DESC, we.created_at DESC`,
     [],
@@ -52,14 +66,7 @@ router.get('/', (req, res) => {
     return res.status(400).json({ error: 'Invalid status' });
   }
 
-  let query = `
-    SELECT we.id, we.client_id, we.user_email, we.hours, we.description, we.date,
-           we.status, we.submitted_at, we.reviewed_at, we.reviewed_by,
-           we.rejection_reason, we.created_at, we.updated_at, c.name as client_name
-    FROM work_entries we
-    JOIN clients c ON we.client_id = c.id
-    WHERE we.user_email = ?
-  `;
+  let query = `${workEntrySelect} WHERE we.user_email = ?`;
   const params = [req.userEmail];
   
   if (clientId) {
@@ -90,21 +97,13 @@ router.get('/', (req, res) => {
 
 // Get specific work entry
 router.get('/:id', (req, res) => {
-  const workEntryId = parseInt(req.params.id);
-  
-  if (isNaN(workEntryId)) {
-    return res.status(400).json({ error: 'Invalid work entry ID' });
-  }
+  const workEntryId = getWorkEntryId(req, res);
+  if (workEntryId === null) return;
   
   const db = getDatabase();
   
   db.get(
-    `SELECT we.id, we.client_id, we.user_email, we.hours, we.description, we.date,
-            we.status, we.submitted_at, we.reviewed_at, we.reviewed_by,
-            we.rejection_reason, we.created_at, we.updated_at, c.name as client_name
-     FROM work_entries we
-     JOIN clients c ON we.client_id = c.id
-     WHERE we.id = ? AND we.user_email = ?`,
+    `${workEntrySelect} WHERE we.id = ? AND we.user_email = ?`,
     [workEntryId, req.userEmail],
     (err, row) => {
       if (err) {
@@ -158,12 +157,7 @@ router.post('/', (req, res, next) => {
 
             // Return the created work entry with client name
             db.get(
-              `SELECT we.id, we.client_id, we.user_email, we.hours, we.description, we.date,
-                      we.status, we.submitted_at, we.reviewed_at, we.reviewed_by,
-                      we.rejection_reason, we.created_at, we.updated_at, c.name as client_name
-               FROM work_entries we
-               JOIN clients c ON we.client_id = c.id
-               WHERE we.id = ?`,
+              `${workEntrySelect} WHERE we.id = ?`,
               [this.lastID],
               (err, row) => {
                 if (err) {
@@ -188,11 +182,8 @@ router.post('/', (req, res, next) => {
 
 // Submit work entry for approval
 router.post('/:id/submit', (req, res) => {
-  const workEntryId = parseInt(req.params.id);
-
-  if (isNaN(workEntryId)) {
-    return res.status(400).json({ error: 'Invalid work entry ID' });
-  }
+  const workEntryId = getWorkEntryId(req, res);
+  if (workEntryId === null) return;
 
   const db = getDatabase();
   db.get(
@@ -225,12 +216,7 @@ router.post('/:id/submit', (req, res) => {
           }
 
           db.get(
-            `SELECT we.id, we.client_id, we.user_email, we.hours, we.description, we.date,
-                    we.status, we.submitted_at, we.reviewed_at, we.reviewed_by,
-                    we.rejection_reason, we.created_at, we.updated_at, c.name as client_name
-             FROM work_entries we
-             JOIN clients c ON we.client_id = c.id
-             WHERE we.id = ?`,
+            `${workEntrySelect} WHERE we.id = ?`,
             [workEntryId],
             (err, workEntry) => {
               if (err) {
@@ -251,11 +237,8 @@ router.post('/:id/submit', (req, res) => {
 });
 
 function reviewWorkEntry(req, res, action, rejectionReason) {
-  const workEntryId = parseInt(req.params.id);
-
-  if (isNaN(workEntryId)) {
-    return res.status(400).json({ error: 'Invalid work entry ID' });
-  }
+  const workEntryId = getWorkEntryId(req, res);
+  if (workEntryId === null) return;
 
   const db = getDatabase();
   db.get(
@@ -296,12 +279,7 @@ function reviewWorkEntry(req, res, action, rejectionReason) {
           }
 
           db.get(
-            `SELECT we.id, we.client_id, we.user_email, we.hours, we.description, we.date,
-                    we.status, we.submitted_at, we.reviewed_at, we.reviewed_by,
-                    we.rejection_reason, we.created_at, we.updated_at, c.name as client_name
-             FROM work_entries we
-             JOIN clients c ON we.client_id = c.id
-             WHERE we.id = ?`,
+            `${workEntrySelect} WHERE we.id = ?`,
             [workEntryId],
             (err, workEntry) => {
               if (err) {
@@ -345,11 +323,8 @@ router.post('/:id/reject', requireApprover, (req, res, next) => {
 // Update work entry
 router.put('/:id', (req, res, next) => {
   try {
-    const workEntryId = parseInt(req.params.id);
-    
-    if (isNaN(workEntryId)) {
-      return res.status(400).json({ error: 'Invalid work entry ID' });
-    }
+    const workEntryId = getWorkEntryId(req, res);
+    if (workEntryId === null) return;
 
     const { error, value } = updateWorkEntrySchema.validate(req.body);
     if (error) {
@@ -438,12 +413,7 @@ router.put('/:id', (req, res, next) => {
 
             // Return updated work entry with client name
             db.get(
-              `SELECT we.id, we.client_id, we.user_email, we.hours, we.description, we.date,
-                      we.status, we.submitted_at, we.reviewed_at, we.reviewed_by,
-                      we.rejection_reason, we.created_at, we.updated_at, c.name as client_name
-               FROM work_entries we
-               JOIN clients c ON we.client_id = c.id
-               WHERE we.id = ?`,
+              `${workEntrySelect} WHERE we.id = ?`,
               [workEntryId],
               (err, row) => {
                 if (err) {
@@ -468,11 +438,8 @@ router.put('/:id', (req, res, next) => {
 
 // Delete work entry
 router.delete('/:id', (req, res) => {
-  const workEntryId = parseInt(req.params.id);
-  
-  if (isNaN(workEntryId)) {
-    return res.status(400).json({ error: 'Invalid work entry ID' });
-  }
+  const workEntryId = getWorkEntryId(req, res);
+  if (workEntryId === null) return;
   
   const db = getDatabase();
   
