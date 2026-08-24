@@ -1,10 +1,8 @@
 const express = require('express');
 const { getDatabase } = require('../database/init');
-const auth = require('../middleware/auth');
+const { authenticateUser, requireApprover } = require('../middleware/auth');
 const { workEntrySchema, updateWorkEntrySchema, reviewSchema } = require('../validation/schemas');
 
-const { authenticateUser } = auth;
-const requireApprover = auth.requireApprover || ((req, res, next) => next());
 const router = express.Router();
 const entryProjection = `
   we.id, we.client_id, we.user_email, we.hours, we.description, we.date,
@@ -109,6 +107,7 @@ router.get('/', (req, res) => {
   });
 });
 
+// Get specific work entry
 router.get('/:id', (req, res) => {
   const workEntryId = parseInt(req.params.id);
   if (isNaN(workEntryId)) {
@@ -124,6 +123,7 @@ router.get('/:id', (req, res) => {
   });
 });
 
+// Create new work entry
 router.post('/', (req, res, next) => {
   try {
     const { error, value } = workEntrySchema.validate(req.body);
@@ -178,7 +178,7 @@ router.post('/:id/submit', (req, res) => {
       return res.status(500).json({ error: 'Internal server error' });
     }
     if (!row) return res.status(404).json({ error: 'Work entry not found' });
-    if ((row.status || 'draft') !== 'draft' && row.status !== 'rejected') {
+    if (!['draft', 'rejected'].includes(row.status)) {
       return invalidState(res, 'submit');
     }
     db.run(
@@ -240,6 +240,7 @@ function reviewEntry(action, status) {
 router.post('/:id/approve', requireApprover, reviewEntry('approve', 'approved'));
 router.post('/:id/reject', requireApprover, reviewEntry('reject', 'rejected'));
 
+// Update work entry
 router.put('/:id', (req, res, next) => {
   try {
     const workEntryId = parseInt(req.params.id);
@@ -255,7 +256,7 @@ router.put('/:id', (req, res, next) => {
         return res.status(500).json({ error: 'Internal server error' });
       }
       if (!row) return res.status(404).json({ error: 'Work entry not found' });
-      if (row.status && !['draft', 'rejected'].includes(row.status)) {
+      if (!['draft', 'rejected'].includes(row.status)) {
         return invalidState(res, 'edit');
       }
 
@@ -317,6 +318,7 @@ router.put('/:id', (req, res, next) => {
   }
 });
 
+// Delete work entry
 router.delete('/:id', (req, res) => {
   const workEntryId = parseInt(req.params.id);
   if (isNaN(workEntryId)) {

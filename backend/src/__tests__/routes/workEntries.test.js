@@ -43,6 +43,10 @@ describe('Work Entry Routes', () => {
     getDatabase.mockReturnValue(mockDb);
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   describe('Approval state machine', () => {
     const entry = { id: 1, status: 'draft', client_id: 1, client_name: 'Client A' };
 
@@ -65,6 +69,26 @@ describe('Work Entry Routes', () => {
       expect(mockDb.run).toHaveBeenCalled();
     });
 
+    test('should clear review fields when resubmitting a rejected entry', async () => {
+      mockEntryLookup(
+        {
+          ...entry,
+          status: 'rejected',
+          reviewed_at: '2024-01-02',
+          reviewed_by: 'approver@example.com',
+          review_note: 'Please add more detail'
+        },
+        { ...entry, status: 'submitted' }
+      );
+      const response = await request(app).post('/api/work-entries/1/submit');
+      expect(response.status).toBe(200);
+      expect(mockDb.run).toHaveBeenCalledWith(
+        expect.stringContaining('reviewed_at = NULL, reviewed_by = NULL, review_note = NULL'),
+        [1, 'test@example.com'],
+        expect.any(Function)
+      );
+    });
+
     test.each(['submitted', 'approved'])('should reject submitting a %s entry', async (status) => {
       mockEntryLookup({ ...entry, status });
       const response = await request(app).post('/api/work-entries/1/submit');
@@ -82,6 +106,13 @@ describe('Work Entry Routes', () => {
         .send(action === 'reject' ? { note: 'Please add more detail' } : {});
       expect(response.status).toBe(200);
       expect(mockDb.run).toHaveBeenCalled();
+    });
+
+    test.each(['approve', 'reject'])('should return 404 for a missing entry on %s', async (action) => {
+      mockRole = 'approver';
+      mockDb.get.mockImplementation((query, params, callback) => callback(null, null));
+      const response = await request(app).post(`/api/work-entries/1/${action}`).send({});
+      expect(response.status).toBe(404);
     });
 
     test.each(['draft', 'approved', 'rejected'])('should reject approving a %s entry', async (status) => {
@@ -134,10 +165,6 @@ describe('Work Entry Routes', () => {
       expect(response.status).toBe(200);
       expect(response.body.workEntries).toEqual([entry]);
     });
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
   });
 
   describe('GET /api/work-entries', () => {
@@ -347,7 +374,7 @@ describe('Work Entry Routes', () => {
     test('should update work entry hours', async () => {
       mockDb.get.mockImplementation((query, params, callback) => {
         if (query.includes('work_entries we')) {
-          callback(null, { id: 1, hours: 8, client_name: 'Client A' });
+          callback(null, { id: 1, status: 'draft', hours: 8, client_name: 'Client A' });
         } else {
           callback(null, { id: 1 });
         }
@@ -367,7 +394,7 @@ describe('Work Entry Routes', () => {
 
     test('should update work entry client', async () => {
       mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, { id: 1 });
+        callback(null, { id: 1, status: 'draft' });
       });
 
       mockDb.run.mockImplementation((query, params, callback) => {
@@ -414,7 +441,7 @@ describe('Work Entry Routes', () => {
     test('should return 400 if new client not found', async () => {
       mockDb.get.mockImplementation((query, params, callback) => {
         if (query.includes('work_entries')) {
-          callback(null, { id: 1 });
+          callback(null, { id: 1, status: 'draft' });
         } else {
           callback(null, null); // Client doesn't exist
         }
@@ -569,7 +596,7 @@ describe('Work Entry Routes', () => {
       mockDb.get.mockImplementation((query, params, callback) => {
         callCount++;
         if (callCount === 1) {
-          callback(null, { id: 1 });
+          callback(null, { id: 1, status: 'draft' });
         } else {
           callback(new Error('Database error'), null);
         }
@@ -585,7 +612,7 @@ describe('Work Entry Routes', () => {
 
     test('should handle database error during update', async () => {
       mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, { id: 1 });
+        callback(null, { id: 1, status: 'draft' });
       });
 
       mockDb.run.mockImplementation((query, params, callback) => {
@@ -605,7 +632,7 @@ describe('Work Entry Routes', () => {
       mockDb.get.mockImplementation((query, params, callback) => {
         getCallCount++;
         if (getCallCount === 1) {
-          callback(null, { id: 1 });
+          callback(null, { id: 1, status: 'draft' });
         } else {
           callback(new Error('Retrieval failed'), null);
         }
@@ -626,7 +653,7 @@ describe('Work Entry Routes', () => {
     test('should update work entry date', async () => {
       mockDb.get.mockImplementation((query, params, callback) => {
         if (query.includes('work_entries we')) {
-          callback(null, { id: 1, date: '2024-02-01', client_name: 'Client A' });
+          callback(null, { id: 1, status: 'draft', date: '2024-02-01', client_name: 'Client A' });
         } else {
           callback(null, { id: 1 });
         }
@@ -647,7 +674,7 @@ describe('Work Entry Routes', () => {
     test('should update work entry description', async () => {
       mockDb.get.mockImplementation((query, params, callback) => {
         if (query.includes('work_entries we')) {
-          callback(null, { id: 1, description: 'New description', client_name: 'Client A' });
+          callback(null, { id: 1, status: 'draft', description: 'New description', client_name: 'Client A' });
         } else {
           callback(null, { id: 1 });
         }
@@ -667,7 +694,7 @@ describe('Work Entry Routes', () => {
     test('should update description to null when empty string provided', async () => {
       mockDb.get.mockImplementation((query, params, callback) => {
         if (query.includes('work_entries we')) {
-          callback(null, { id: 1, description: null, client_name: 'Client A' });
+          callback(null, { id: 1, status: 'draft', description: null, client_name: 'Client A' });
         } else {
           callback(null, { id: 1 });
         }
@@ -687,7 +714,7 @@ describe('Work Entry Routes', () => {
     test('should update multiple fields at once', async () => {
       mockDb.get.mockImplementation((query, params, callback) => {
         if (query.includes('work_entries we')) {
-          callback(null, { id: 1, hours: 10, description: 'Updated', date: '2024-03-01', client_name: 'Client A' });
+          callback(null, { id: 1, status: 'draft', hours: 10, description: 'Updated', date: '2024-03-01', client_name: 'Client A' });
         } else {
           callback(null, { id: 1 });
         }
