@@ -2,6 +2,7 @@ const express = require('express');
 const { getDatabase } = require('../database/init');
 const { emailSchema } = require('../validation/schemas');
 const { authenticateUser } = require('../middleware/auth');
+const { isApproverEmail } = require('../config/approvers');
 
 const router = express.Router();
 
@@ -17,7 +18,8 @@ router.post('/login', async (req, res, next) => {
     const db = getDatabase();
 
     // Check if user exists
-    db.get('SELECT email, created_at FROM users WHERE email = ?', [email], (err, row) => {
+    const role = isApproverEmail(email) ? 'approver' : 'user';
+    db.get('SELECT email, role, created_at FROM users WHERE email = ?', [email], (err, row) => {
       if (err) {
         console.error('Database error:', err);
         return res.status(500).json({ error: 'Internal server error' });
@@ -25,16 +27,31 @@ router.post('/login', async (req, res, next) => {
 
       if (row) {
         // User exists
-        return res.json({
+        const sendLogin = () => res.json({
           message: 'Login successful',
           user: {
             email: row.email,
-            createdAt: row.created_at
+            createdAt: row.created_at,
+            role
           }
         });
+        if ((row.role || 'user') !== role) {
+          return db.run('UPDATE users SET role = ? WHERE email = ?', [role, email], (updateErr) => {
+            if (updateErr) {
+              console.error('Error updating user role:', updateErr);
+              return res.status(500).json({ error: 'Failed to update user role' });
+            }
+            sendLogin();
+          });
+        }
+        return sendLogin();
       } else {
         // Create new user
-        db.run('INSERT INTO users (email) VALUES (?)', [email], function(err) {
+        const insertQuery = role === 'user'
+          ? 'INSERT INTO users (email) VALUES (?)'
+          : 'INSERT INTO users (email, role) VALUES (?, ?)';
+        const insertParams = role === 'user' ? [email] : [email, role];
+        db.run(insertQuery, insertParams, function(err) {
           if (err) {
             console.error('Error creating user:', err);
             return res.status(500).json({ error: 'Failed to create user' });
@@ -44,7 +61,8 @@ router.post('/login', async (req, res, next) => {
             message: 'User created and logged in successfully',
             user: {
               email: email,
-              createdAt: new Date().toISOString()
+              createdAt: new Date().toISOString(),
+              role
             }
           });
         });
@@ -59,7 +77,7 @@ router.post('/login', async (req, res, next) => {
 router.get('/me', authenticateUser, (req, res) => {
   const db = getDatabase();
   
-  db.get('SELECT email, created_at FROM users WHERE email = ?', [req.userEmail], (err, row) => {
+  db.get('SELECT email, created_at, role FROM users WHERE email = ?', [req.userEmail], (err, row) => {
     if (err) {
       console.error('Database error:', err);
       return res.status(500).json({ error: 'Internal server error' });
@@ -72,7 +90,8 @@ router.get('/me', authenticateUser, (req, res) => {
     res.json({
       user: {
         email: row.email,
-        createdAt: row.created_at
+        createdAt: row.created_at,
+        role: row.role || req.userRole
       }
     });
   });

@@ -165,7 +165,7 @@ describe('Auth Routes', () => {
 
     test('should return 404 if user not found', async () => {
       mockDb.get.mockImplementation((query, params, callback) => {
-        if (query.includes('SELECT email FROM users WHERE email = ?')) {
+        if (query.includes('SELECT email, role')) {
           // Auth middleware check
           callback(null, { email: 'test@example.com' });
         } else {
@@ -184,7 +184,7 @@ describe('Auth Routes', () => {
 
     test('should handle database error', async () => {
       mockDb.get.mockImplementation((query, params, callback) => {
-        if (query.includes('SELECT email FROM users WHERE email = ?')) {
+        if (query.includes('SELECT email, role')) {
           callback(null, { email: 'test@example.com' });
         } else {
           callback(new Error('Database error'), null);

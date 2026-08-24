@@ -1,4 +1,5 @@
 const { getDatabase } = require('../database/init');
+const { isApproverEmail } = require('../config/approvers');
 
 // Simple email-based authentication middleware
 function authenticateUser(req, res, next) {
@@ -17,7 +18,9 @@ function authenticateUser(req, res, next) {
   const db = getDatabase();
   
   // Check if user exists, create if not
-  db.get('SELECT email FROM users WHERE email = ?', [userEmail], (err, row) => {
+  const expectedRole = isApproverEmail(userEmail) ? 'approver' : 'user';
+
+  db.get('SELECT email, role FROM users WHERE email = ?', [userEmail], (err, row) => {
     if (err) {
       console.error('Database error:', err);
       return res.status(500).json({ error: 'Internal server error' });
@@ -25,22 +28,57 @@ function authenticateUser(req, res, next) {
     
     if (!row) {
       // Create new user
-      db.run('INSERT INTO users (email) VALUES (?)', [userEmail], (err) => {
+      const insertQuery = expectedRole === 'user'
+        ? 'INSERT INTO users (email) VALUES (?)'
+        : 'INSERT INTO users (email, role) VALUES (?, ?)';
+      const insertParams = expectedRole === 'user' ? [userEmail] : [userEmail, expectedRole];
+      db.run(insertQuery, insertParams, (err) => {
         if (err) {
           console.error('Error creating user:', err);
           return res.status(500).json({ error: 'Failed to create user' });
         }
         
         req.userEmail = userEmail;
+        req.userRole = expectedRole;
+        req.isApprover = expectedRole === 'approver';
         next();
       });
     } else {
-      req.userEmail = userEmail;
-      next();
+      const persistedRole = row.role || 'user';
+      const finish = () => {
+        req.userEmail = userEmail;
+        req.userRole = expectedRole;
+        req.isApprover = expectedRole === 'approver';
+        next();
+      };
+
+      if (persistedRole !== expectedRole) {
+        db.run(
+          'UPDATE users SET role = ? WHERE email = ?',
+          [expectedRole, userEmail],
+          (updateErr) => {
+            if (updateErr) {
+              console.error('Error updating user role:', updateErr);
+              return res.status(500).json({ error: 'Failed to update user role' });
+            }
+            finish();
+          }
+        );
+      } else {
+        finish();
+      }
     }
   });
 }
 
+function requireApprover(req, res, next) {
+  if (!req.isApprover) {
+    return res.status(403).json({ error: 'Approver access required' });
+  }
+  next();
+}
+
 module.exports = {
-  authenticateUser
+  authenticateUser,
+  requireApprover
 };
