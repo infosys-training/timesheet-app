@@ -16,6 +16,11 @@ const WORK_ENTRY_COLUMNS = `we.id, we.client_id, we.hours, we.description, we.da
            we.status, we.submitted_at, we.reviewed_at, we.reviewed_by, we.review_note,
            we.created_at, we.updated_at, c.name as client_name`;
 
+const WORK_ENTRY_BY_ID_QUERY = `SELECT ${WORK_ENTRY_COLUMNS}
+  FROM work_entries we
+  JOIN clients c ON we.client_id = c.id
+  WHERE we.id = ?`;
+
 // All routes require authentication
 router.use(authenticateUser);
 
@@ -152,10 +157,7 @@ router.post('/', (req, res, next) => {
 
             // Return the created work entry with client name
             db.get(
-              `SELECT ${WORK_ENTRY_COLUMNS}
-               FROM work_entries we
-               JOIN clients c ON we.client_id = c.id
-               WHERE we.id = ?`,
+              WORK_ENTRY_BY_ID_QUERY,
               [this.lastID],
               (err, row) => {
                 if (err) {
@@ -272,10 +274,7 @@ router.put('/:id', (req, res, next) => {
 
             // Return updated work entry with client name
             db.get(
-              `SELECT ${WORK_ENTRY_COLUMNS}
-               FROM work_entries we
-               JOIN clients c ON we.client_id = c.id
-               WHERE we.id = ?`,
+              WORK_ENTRY_BY_ID_QUERY,
               [workEntryId],
               (err, row) => {
                 if (err) {
@@ -387,10 +386,7 @@ function performTransition({ action, workEntryId, ownerEmail, reviewer, note }, 
       }
 
       db.get(
-        `SELECT ${WORK_ENTRY_COLUMNS}
-         FROM work_entries we
-         JOIN clients c ON we.client_id = c.id
-         WHERE we.id = ?`,
+        WORK_ENTRY_BY_ID_QUERY,
         [workEntryId],
         (err, updatedRow) => {
           if (err) {
@@ -419,42 +415,28 @@ router.post('/:id/submit', (req, res) => {
   performTransition({ action: 'submit', workEntryId, ownerEmail: req.userEmail }, res);
 });
 
-// Approve a submitted work entry (approvers only)
-router.post('/:id/approve', requireApprover, (req, res, next) => {
-  const workEntryId = parseInt(req.params.id);
+// Review a submitted work entry (approvers only)
+function reviewHandler(action) {
+  return (req, res, next) => {
+    const workEntryId = parseInt(req.params.id);
 
-  if (isNaN(workEntryId)) {
-    return res.status(400).json({ error: 'Invalid work entry ID' });
-  }
+    if (isNaN(workEntryId)) {
+      return res.status(400).json({ error: 'Invalid work entry ID' });
+    }
 
-  const { error, value } = reviewDecisionSchema.validate(req.body || {});
-  if (error) {
-    return next(error);
-  }
+    const { error, value } = reviewDecisionSchema.validate(req.body || {});
+    if (error) {
+      return next(error);
+    }
 
-  performTransition(
-    { action: 'approve', workEntryId, reviewer: req.userEmail, note: value.note },
-    res
-  );
-});
+    performTransition(
+      { action, workEntryId, reviewer: req.userEmail, note: value.note },
+      res
+    );
+  };
+}
 
-// Reject a submitted work entry (approvers only)
-router.post('/:id/reject', requireApprover, (req, res, next) => {
-  const workEntryId = parseInt(req.params.id);
-
-  if (isNaN(workEntryId)) {
-    return res.status(400).json({ error: 'Invalid work entry ID' });
-  }
-
-  const { error, value } = reviewDecisionSchema.validate(req.body || {});
-  if (error) {
-    return next(error);
-  }
-
-  performTransition(
-    { action: 'reject', workEntryId, reviewer: req.userEmail, note: value.note },
-    res
-  );
-});
+router.post('/:id/approve', requireApprover, reviewHandler('approve'));
+router.post('/:id/reject', requireApprover, reviewHandler('reject'));
 
 module.exports = router;
