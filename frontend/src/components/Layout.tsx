@@ -21,6 +21,7 @@ import {
   Business as BusinessIcon,
   Assignment as AssignmentIcon,
   Assessment as AssessmentIcon,
+  FactCheck as FactCheckIcon,
   Logout as LogoutIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -46,6 +47,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
     { text: 'Clients', icon: <BusinessIcon />, path: '/clients' },
     { text: 'Work Entries', icon: <AssignmentIcon />, path: '/work-entries' },
+    ...(user?.isApprover
+      ? [{ text: 'Pending Approvals', icon: <FactCheckIcon />, path: '/pending-approvals' }]
+      : []),
     { text: 'Reports', icon: <AssessmentIcon />, path: '/reports' },
   ];
 

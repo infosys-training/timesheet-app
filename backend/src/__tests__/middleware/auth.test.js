@@ -1,4 +1,4 @@
-const { authenticateUser } = require('../../middleware/auth');
+const { authenticateUser, requireApprover, isApprover, getApproverEmails } = require('../../middleware/auth');
 const { getDatabase } = require('../../database/init');
 
 jest.mock('../../database/init');
@@ -149,6 +149,79 @@ describe('Authentication Middleware', () => {
         expect(next).not.toHaveBeenCalled();
         done();
       });
+    });
+  });
+
+  describe('Approver Role', () => {
+    const originalApprovers = process.env.APPROVER_EMAILS;
+
+    afterEach(() => {
+      if (originalApprovers === undefined) {
+        delete process.env.APPROVER_EMAILS;
+      } else {
+        process.env.APPROVER_EMAILS = originalApprovers;
+      }
+    });
+
+    test('should parse the configured approver list', () => {
+      process.env.APPROVER_EMAILS = 'Approver@Example.com, second@example.com ,';
+
+      expect(getApproverEmails()).toEqual(['approver@example.com', 'second@example.com']);
+    });
+
+    test('should treat configured emails as approvers regardless of case', () => {
+      process.env.APPROVER_EMAILS = 'approver@example.com';
+
+      expect(isApprover('APPROVER@example.com')).toBe(true);
+      expect(isApprover('someone@example.com')).toBe(false);
+      expect(isApprover(undefined)).toBe(false);
+    });
+
+    test('should have no approvers when the list is not configured', () => {
+      delete process.env.APPROVER_EMAILS;
+
+      expect(getApproverEmails()).toEqual([]);
+      expect(isApprover('approver@example.com')).toBe(false);
+    });
+
+    test('should flag approvers on the request', (done) => {
+      process.env.APPROVER_EMAILS = 'approver@example.com';
+      req.headers['x-user-email'] = 'approver@example.com';
+
+      mockDb.get.mockImplementation((query, params, callback) => {
+        callback(null, { email: 'approver@example.com' });
+      });
+
+      authenticateUser(req, res, next);
+
+      setImmediate(() => {
+        expect(req.isApprover).toBe(true);
+        expect(next).toHaveBeenCalled();
+        done();
+      });
+    });
+
+    test('requireApprover should pass approvers through', () => {
+      process.env.APPROVER_EMAILS = 'approver@example.com';
+      req.userEmail = 'approver@example.com';
+
+      requireApprover(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+      expect(res.status).not.toHaveBeenCalled();
+    });
+
+    test('requireApprover should return 403 for non approvers', () => {
+      process.env.APPROVER_EMAILS = 'approver@example.com';
+      req.userEmail = 'user@example.com';
+
+      requireApprover(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({
+        error: 'Only an approver can perform this action'
+      });
+      expect(next).not.toHaveBeenCalled();
     });
   });
 
