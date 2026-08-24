@@ -643,6 +643,7 @@ describe('Work Entry Routes', () => {
         .post('/api/work-entries/1/approve')
         .set('x-test-role', 'approver');
       expect(response.status).toBe(200);
+      expect(response.body.message).toBe('Work entry approved successfully');
       expect(response.body.workEntry.status).toBe('approved');
     });
 
@@ -662,6 +663,7 @@ describe('Work Entry Routes', () => {
         .set('x-test-role', 'approver')
         .send({ reason: 'Please correct the date' });
       expect(response.status).toBe(200);
+      expect(response.body.message).toBe('Work entry rejected successfully');
       expect(response.body.workEntry.status).toBe('rejected');
 
       configureTransition('submitted', { ...entry, status: 'rejected', rejection_reason: null });

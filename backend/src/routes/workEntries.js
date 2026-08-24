@@ -286,8 +286,8 @@ function reviewWorkEntry(req, res, action, status, reason) {
           res,
           workEntryId,
           null,
-          `Work entry ${action}d successfully`,
-          `Work entry ${action}d but failed to retrieve`
+          `Work entry ${status} successfully`,
+          `Work entry ${status} but failed to retrieve`
         );
       }
     );
