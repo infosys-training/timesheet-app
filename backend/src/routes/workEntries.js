@@ -43,6 +43,55 @@ function invalidStatusResponse(res, action, status) {
   return res.status(409).json({ error: `Cannot ${action} a work entry with status ${status}` });
 }
 
+function parseWorkEntryId(req, res) {
+  const workEntryId = parseInt(req.params.id);
+
+  if (isNaN(workEntryId)) {
+    res.status(400).json({ error: 'Invalid work entry ID' });
+    return null;
+  }
+
+  return workEntryId;
+}
+
+function runStatusAction({
+  db,
+  res,
+  id,
+  action,
+  lookupQuery,
+  lookupParams,
+  allowedStatuses,
+  updateQuery,
+  updateParams,
+  message,
+  retrievalError
+}) {
+  db.get(lookupQuery, lookupParams, (err, row) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+
+    if (!row) {
+      return res.status(404).json({ error: 'Work entry not found' });
+    }
+
+    if (!allowedStatuses.includes(row.status)) {
+      return invalidStatusResponse(res, action, row.status);
+    }
+
+    db.run(updateQuery, updateParams, (err) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: `Failed to ${action} work entry` });
+      }
+
+      respondWithWorkEntry(db, id, res, message, retrievalError);
+    });
+  });
+}
+
 // All routes require authentication
 router.use(authenticateUser);
 
@@ -190,112 +239,61 @@ router.post('/', (req, res, next) => {
 });
 
 router.post('/:id/submit', (req, res) => {
-  const workEntryId = parseInt(req.params.id);
-
-  if (isNaN(workEntryId)) {
-    return res.status(400).json({ error: 'Invalid work entry ID' });
+  const workEntryId = parseWorkEntryId(req, res);
+  if (workEntryId === null) {
+    return;
   }
 
   const db = getDatabase();
-  db.get(
-    'SELECT id, status FROM work_entries WHERE id = ? AND user_email = ?',
-    [workEntryId, req.userEmail],
-    (err, row) => {
-      if (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({ error: 'Internal server error' });
-      }
-
-      if (!row) {
-        return res.status(404).json({ error: 'Work entry not found' });
-      }
-
-      if (!['draft', 'rejected'].includes(row.status)) {
-        return invalidStatusResponse(res, 'submit', row.status);
-      }
-
-      db.run(
-        `UPDATE work_entries
-         SET status = 'submitted', submitted_at = CURRENT_TIMESTAMP,
-             reviewed_at = NULL, reviewed_by = NULL, rejection_reason = NULL,
-             updated_at = CURRENT_TIMESTAMP
-         WHERE id = ? AND user_email = ?`,
-        [workEntryId, req.userEmail],
-        (err) => {
-          if (err) {
-            console.error('Database error:', err);
-            return res.status(500).json({ error: 'Failed to submit work entry' });
-          }
-
-          respondWithWorkEntry(
-            db,
-            workEntryId,
-            res,
-            'Work entry submitted successfully',
-            'Work entry submitted but failed to retrieve'
-          );
-        }
-      );
-    }
-  );
+  runStatusAction({
+    db,
+    res,
+    id: workEntryId,
+    action: 'submit',
+    lookupQuery: 'SELECT id, status FROM work_entries WHERE id = ? AND user_email = ?',
+    lookupParams: [workEntryId, req.userEmail],
+    allowedStatuses: ['draft', 'rejected'],
+    updateQuery: `UPDATE work_entries
+      SET status = 'submitted', submitted_at = CURRENT_TIMESTAMP,
+          reviewed_at = NULL, reviewed_by = NULL, rejection_reason = NULL,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = ? AND user_email = ?`,
+    updateParams: [workEntryId, req.userEmail],
+    message: 'Work entry submitted successfully',
+    retrievalError: 'Work entry submitted but failed to retrieve'
+  });
 });
 
 router.post('/:id/approve', requireApprover, (req, res) => {
-  const workEntryId = parseInt(req.params.id);
-
-  if (isNaN(workEntryId)) {
-    return res.status(400).json({ error: 'Invalid work entry ID' });
+  const workEntryId = parseWorkEntryId(req, res);
+  if (workEntryId === null) {
+    return;
   }
 
   const db = getDatabase();
-  db.get(
-    'SELECT id, status FROM work_entries WHERE id = ?',
-    [workEntryId],
-    (err, row) => {
-      if (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({ error: 'Internal server error' });
-      }
-
-      if (!row) {
-        return res.status(404).json({ error: 'Work entry not found' });
-      }
-
-      if (row.status !== 'submitted') {
-        return invalidStatusResponse(res, 'approve', row.status);
-      }
-
-      db.run(
-        `UPDATE work_entries
-         SET status = 'approved', reviewed_at = CURRENT_TIMESTAMP,
-             reviewed_by = ?, rejection_reason = NULL, updated_at = CURRENT_TIMESTAMP
-         WHERE id = ?`,
-        [req.userEmail, workEntryId],
-        (err) => {
-          if (err) {
-            console.error('Database error:', err);
-            return res.status(500).json({ error: 'Failed to approve work entry' });
-          }
-
-          respondWithWorkEntry(
-            db,
-            workEntryId,
-            res,
-            'Work entry approved successfully',
-            'Work entry approved but failed to retrieve'
-          );
-        }
-      );
-    }
-  );
+  runStatusAction({
+    db,
+    res,
+    id: workEntryId,
+    action: 'approve',
+    lookupQuery: 'SELECT id, status FROM work_entries WHERE id = ?',
+    lookupParams: [workEntryId],
+    allowedStatuses: ['submitted'],
+    updateQuery: `UPDATE work_entries
+      SET status = 'approved', reviewed_at = CURRENT_TIMESTAMP,
+          reviewed_by = ?, rejection_reason = NULL, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?`,
+    updateParams: [req.userEmail, workEntryId],
+    message: 'Work entry approved successfully',
+    retrievalError: 'Work entry approved but failed to retrieve'
+  });
 });
 
 router.post('/:id/reject', requireApprover, (req, res, next) => {
   try {
-    const workEntryId = parseInt(req.params.id);
-
-    if (isNaN(workEntryId)) {
-      return res.status(400).json({ error: 'Invalid work entry ID' });
+    const workEntryId = parseWorkEntryId(req, res);
+    if (workEntryId === null) {
+      return;
     }
 
     const { error, value } = rejectWorkEntrySchema.validate(req.body);
@@ -304,47 +302,23 @@ router.post('/:id/reject', requireApprover, (req, res, next) => {
     }
 
     const db = getDatabase();
-    db.get(
-      'SELECT id, status FROM work_entries WHERE id = ?',
-      [workEntryId],
-      (err, row) => {
-        if (err) {
-          console.error('Database error:', err);
-          return res.status(500).json({ error: 'Internal server error' });
-        }
-
-        if (!row) {
-          return res.status(404).json({ error: 'Work entry not found' });
-        }
-
-        if (row.status !== 'submitted') {
-          return invalidStatusResponse(res, 'reject', row.status);
-        }
-
-        const rejectionReason = value.reason === undefined ? null : value.reason;
-        db.run(
-          `UPDATE work_entries
-           SET status = 'rejected', reviewed_at = CURRENT_TIMESTAMP,
-               reviewed_by = ?, rejection_reason = ?, updated_at = CURRENT_TIMESTAMP
-           WHERE id = ?`,
-          [req.userEmail, rejectionReason, workEntryId],
-          (err) => {
-            if (err) {
-              console.error('Database error:', err);
-              return res.status(500).json({ error: 'Failed to reject work entry' });
-            }
-
-            respondWithWorkEntry(
-              db,
-              workEntryId,
-              res,
-              'Work entry rejected successfully',
-              'Work entry rejected but failed to retrieve'
-            );
-          }
-        );
-      }
-    );
+    const rejectionReason = value.reason === undefined ? null : value.reason;
+    runStatusAction({
+      db,
+      res,
+      id: workEntryId,
+      action: 'reject',
+      lookupQuery: 'SELECT id, status FROM work_entries WHERE id = ?',
+      lookupParams: [workEntryId],
+      allowedStatuses: ['submitted'],
+      updateQuery: `UPDATE work_entries
+        SET status = 'rejected', reviewed_at = CURRENT_TIMESTAMP,
+            reviewed_by = ?, rejection_reason = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?`,
+      updateParams: [req.userEmail, rejectionReason, workEntryId],
+      message: 'Work entry rejected successfully',
+      retrievalError: 'Work entry rejected but failed to retrieve'
+    });
   } catch (error) {
     next(error);
   }
