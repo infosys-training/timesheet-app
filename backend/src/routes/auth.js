@@ -1,7 +1,11 @@
 const express = require('express');
 const { getDatabase } = require('../database/init');
 const { emailSchema } = require('../validation/schemas');
-const { authenticateUser, getRoleForEmail } = require('../middleware/auth');
+const {
+  authenticateUser,
+  getRoleForEmail,
+  reconcileUserRole
+} = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -24,30 +28,20 @@ router.post('/login', async (req, res, next) => {
       }
 
       if (row) {
-        const role = getRoleForEmail(row.email);
-        const respond = () => res.json({
-          message: 'Login successful',
-          user: {
-            email: row.email,
-            createdAt: row.created_at,
-            role
+        reconcileUserRole(db, row.email, row.role, (roleErr, role) => {
+          if (roleErr) {
+            console.error('Database error:', roleErr);
+            return res.status(500).json({ error: 'Internal server error' });
           }
-        });
-
-        if (row.role !== undefined && row.role !== role) {
-          return db.run(
-            'UPDATE users SET role = ? WHERE email = ?',
-            [role, row.email],
-            (updateErr) => {
-              if (updateErr) {
-                console.error('Database error:', updateErr);
-                return res.status(500).json({ error: 'Internal server error' });
-              }
-              respond();
+          res.json({
+            message: 'Login successful',
+            user: {
+              email: row.email,
+              createdAt: row.created_at,
+              role
             }
-          );
-        }
-        return respond();
+          });
+        });
       } else {
         // Create new user
         const role = getRoleForEmail(email);

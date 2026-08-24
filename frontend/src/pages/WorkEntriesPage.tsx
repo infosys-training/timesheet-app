@@ -244,7 +244,21 @@ const WorkEntriesPage: React.FC = () => {
                 </TableHead>
                 <TableBody>
                   {workEntries.length > 0 ? (
-                    workEntries.map((entry: WorkEntry) => (
+                    workEntries.map((entry: WorkEntry) => {
+                      const description = entry.description ? (
+                        <Typography variant="body2" color="text.secondary">
+                          {entry.description}
+                        </Typography>
+                      ) : (
+                        <Chip label="No description" size="small" variant="outlined" />
+                      );
+                      const descriptionWithReason = entry.status === 'rejected' && entry.rejection_reason ? (
+                        <Tooltip title={`Rejection reason: ${entry.rejection_reason}`}>
+                          {description}
+                        </Tooltip>
+                      ) : description;
+
+                      return (
                       <TableRow key={entry.id}>
                         <TableCell>
                           <Typography variant="subtitle1" fontWeight="medium">
@@ -271,27 +285,7 @@ const WorkEntriesPage: React.FC = () => {
                           />
                         </TableCell>
                         <TableCell>
-                          {entry.description ? (
-                            entry.status === 'rejected' && entry.rejection_reason ? (
-                              <Tooltip title={`Rejection reason: ${entry.rejection_reason}`}>
-                                <Typography variant="body2" color="text.secondary">
-                                  {entry.description}
-                                </Typography>
-                              </Tooltip>
-                            ) : (
-                              <Typography variant="body2" color="text.secondary">
-                                {entry.description}
-                              </Typography>
-                            )
-                          ) : (
-                            entry.status === 'rejected' && entry.rejection_reason ? (
-                              <Tooltip title={`Rejection reason: ${entry.rejection_reason}`}>
-                                <Chip label="Rejected" size="small" variant="outlined" />
-                              </Tooltip>
-                            ) : (
-                              <Chip label="No description" size="small" variant="outlined" />
-                            )
-                          )}
+                          {descriptionWithReason}
                         </TableCell>
                         <TableCell align="right">
                           {(entry.status === 'draft' || entry.status === 'rejected') && (
@@ -321,7 +315,8 @@ const WorkEntriesPage: React.FC = () => {
                           </IconButton>
                         </TableCell>
                       </TableRow>
-                    ))
+                      );
+                    })
                   ) : (
                     <TableRow>
                       <TableCell colSpan={6} align="center">

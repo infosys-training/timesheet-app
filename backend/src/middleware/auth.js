@@ -12,6 +12,18 @@ function getRoleForEmail(email) {
   return isApproverEmail(email) ? 'approver' : 'employee';
 }
 
+function reconcileUserRole(db, email, storedRole, callback) {
+  const role = getRoleForEmail(email);
+  if (storedRole !== undefined && storedRole !== role) {
+    return db.run(
+      'UPDATE users SET role = ? WHERE email = ?',
+      [role, email],
+      (err) => callback(err, role)
+    );
+  }
+  callback(null, role);
+}
+
 function setAuthenticatedUser(req, userEmail, role, next) {
   req.userEmail = userEmail;
   req.userRole = role;
@@ -54,22 +66,13 @@ function authenticateUser(req, res, next) {
         setAuthenticatedUser(req, userEmail, role, next);
       });
     } else {
-      const role = getRoleForEmail(userEmail);
-      if (row.role !== undefined && row.role !== role) {
-        db.run(
-          'UPDATE users SET role = ? WHERE email = ?',
-          [role, userEmail],
-          (updateErr) => {
-            if (updateErr) {
-              console.error('Database error:', updateErr);
-              return res.status(500).json({ error: 'Internal server error' });
-            }
-            setAuthenticatedUser(req, userEmail, role, next);
-          }
-        );
-      } else {
+      reconcileUserRole(db, userEmail, row.role, (roleErr, role) => {
+        if (roleErr) {
+          console.error('Database error:', roleErr);
+          return res.status(500).json({ error: 'Internal server error' });
+        }
         setAuthenticatedUser(req, userEmail, role, next);
-      }
+      });
     }
   });
 }
@@ -84,5 +87,6 @@ function requireApprover(req, res, next) {
 module.exports = {
   authenticateUser,
   requireApprover,
-  getRoleForEmail
+  getRoleForEmail,
+  reconcileUserRole
 };
