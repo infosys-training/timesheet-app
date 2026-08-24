@@ -67,6 +67,10 @@ Example:
 x-user-email: user@company.com
 ```
 
+Approver access is configured with the comma-separated `APPROVER_EMAILS`
+environment variable. Emails are matched case-insensitively; when unset, the
+development default is `approver@example.com`.
+
 ## Database Schema
 
 ### Users
