@@ -61,7 +61,7 @@ describe('Authentication Middleware', () => {
       req.headers['x-user-email'] = 'test@example.com';
       
       mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, { email: 'test@example.com' });
+        callback(null, { email: 'test@example.com', role: 'user' });
       });
 
       authenticateUser(req, res, next);
@@ -75,7 +75,7 @@ describe('Authentication Middleware', () => {
       req.headers['x-user-email'] = 'existing@example.com';
       
       mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, { email: 'existing@example.com' });
+        callback(null, { email: 'existing@example.com', role: 'user' });
       });
 
       authenticateUser(req, res, next);
@@ -181,7 +181,7 @@ describe('Authentication Middleware', () => {
       req.headers['x-user-email'] = 'test@mail.example.com';
       
       mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, { email: 'test@mail.example.com' });
+        callback(null, { email: 'test@mail.example.com', role: 'user' });
       });
 
       authenticateUser(req, res, next);
@@ -193,9 +193,9 @@ describe('Authentication Middleware', () => {
     test('promotes a stored user when email is configured as an approver', (done) => {
       process.env.APPROVER_EMAILS = ' APPROVER@EXAMPLE.COM ';
       req.headers['x-user-email'] = 'approver@example.com';
-      mockDb.get
-        .mockImplementationOnce((query, params, callback) => callback(null, { email: params[0] }))
-        .mockImplementationOnce((query, params, callback) => callback(null, { role: 'user' }));
+      mockDb.get.mockImplementationOnce((query, params, callback) => {
+        callback(null, { email: params[0], role: 'user' });
+      });
 
       authenticateUser(req, res, next);
 
@@ -210,9 +210,9 @@ describe('Authentication Middleware', () => {
     test('uses the stored approver role when email is not configured', (done) => {
       delete process.env.APPROVER_EMAILS;
       req.headers['x-user-email'] = 'approver@example.com';
-      mockDb.get
-        .mockImplementationOnce((query, params, callback) => callback(null, { email: params[0] }))
-        .mockImplementationOnce((query, params, callback) => callback(null, { role: 'approver' }));
+      mockDb.get.mockImplementationOnce((query, params, callback) => {
+        callback(null, { email: params[0], role: 'approver' });
+      });
 
       authenticateUser(req, res, next);
 

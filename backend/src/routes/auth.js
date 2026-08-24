@@ -68,7 +68,7 @@ router.post('/login', async (req, res, next) => {
 router.get('/me', authenticateUser, (req, res) => {
   const db = getDatabase();
   
-  db.get('SELECT email, created_at FROM users WHERE email = ?', [req.userEmail], (err, row) => {
+  db.get('SELECT email, created_at, role FROM users WHERE email = ?', [req.userEmail], (err, row) => {
     if (err) {
       console.error('Database error:', err);
       return res.status(500).json({ error: 'Internal server error' });

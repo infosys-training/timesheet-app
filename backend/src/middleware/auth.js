@@ -30,7 +30,7 @@ function authenticateUser(req, res, next) {
   const db = getDatabase();
   
   // Check if user exists, create if not
-  db.get('SELECT email FROM users WHERE email = ?', [userEmail], (err, row) => {
+  db.get('SELECT email, role FROM users WHERE email = ?', [userEmail], (err, row) => {
     if (err) {
       console.error('Database error:', err);
       return res.status(500).json({ error: 'Internal server error' });
@@ -54,16 +54,10 @@ function authenticateUser(req, res, next) {
         next();
       });
     } else {
-      db.get('SELECT role FROM users WHERE email = ?', [userEmail], (roleErr, roleRow) => {
-        if (roleErr) {
-          console.error('Database error:', roleErr);
-          return res.status(500).json({ error: 'Internal server error' });
-        }
-        req.userEmail = userEmail;
-        req.userRole = isConfiguredApprover(userEmail) ? 'approver' : (roleRow?.role || 'user');
-        req.isApprover = req.userRole === 'approver';
-        next();
-      });
+      req.userEmail = userEmail;
+      req.userRole = isConfiguredApprover(userEmail) ? 'approver' : (row.role || 'user');
+      req.isApprover = req.userRole === 'approver';
+      next();
     }
   });
 }
