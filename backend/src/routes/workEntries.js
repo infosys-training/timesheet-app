@@ -37,6 +37,27 @@ function getWorkEntryId(req, res) {
   return workEntryId;
 }
 
+function getOwnedWorkEntry(req, res, workEntryId, callback) {
+  const db = getDatabase();
+
+  db.get(
+    'SELECT id, status FROM work_entries WHERE id = ? AND user_email = ?',
+    [workEntryId, req.userEmail],
+    (err, row) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+
+      if (!row) {
+        return res.status(404).json({ error: 'Work entry not found' });
+      }
+
+      callback(db, row);
+    }
+  );
+}
+
 // Get pending work entries for approvers
 router.get('/pending-approvals', requireApprover, (req, res) => {
   const db = getDatabase();
@@ -185,25 +206,12 @@ router.post('/:id/submit', (req, res) => {
   const workEntryId = getWorkEntryId(req, res);
   if (workEntryId === null) return;
 
-  const db = getDatabase();
-  db.get(
-    'SELECT id, status FROM work_entries WHERE id = ? AND user_email = ?',
-    [workEntryId, req.userEmail],
-    (err, row) => {
-      if (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({ error: 'Internal server error' });
-      }
+  getOwnedWorkEntry(req, res, workEntryId, (db, row) => {
+    if (row.status !== 'draft' && row.status !== 'rejected') {
+      return transitionError(res, 'submit', row.status);
+    }
 
-      if (!row) {
-        return res.status(404).json({ error: 'Work entry not found' });
-      }
-
-      if (row.status !== 'draft' && row.status !== 'rejected') {
-        return transitionError(res, 'submit', row.status);
-      }
-
-      db.run(
+    db.run(
         `UPDATE work_entries
          SET status = 'submitted', submitted_at = CURRENT_TIMESTAMP,
              rejection_reason = NULL, reviewed_at = NULL, reviewed_by = NULL
@@ -231,9 +239,8 @@ router.post('/:id/submit', (req, res) => {
             }
           );
         }
-      );
-    }
-  );
+    );
+  });
 });
 
 function reviewWorkEntry(req, res, action, rejectionReason) {
@@ -331,27 +338,13 @@ router.put('/:id', (req, res, next) => {
       return next(error);
     }
 
-    const db = getDatabase();
-
     // Check if work entry exists and belongs to user
-    db.get(
-      'SELECT id, status FROM work_entries WHERE id = ? AND user_email = ?',
-      [workEntryId, req.userEmail],
-      (err, row) => {
-        if (err) {
-          console.error('Database error:', err);
-          return res.status(500).json({ error: 'Internal server error' });
-        }
-
-        if (!row) {
-          return res.status(404).json({ error: 'Work entry not found' });
-        }
-
-        if (row.status === 'submitted' || row.status === 'approved') {
-          return res.status(409).json({
-            error: `Work entry cannot be edited while status is ${row.status}`
-          });
-        }
+    getOwnedWorkEntry(req, res, workEntryId, (db, row) => {
+      if (row.status === 'submitted' || row.status === 'approved') {
+        return res.status(409).json({
+          error: `Work entry cannot be edited while status is ${row.status}`
+        });
+      }
 
         // If clientId is being updated, verify it belongs to user
         if (value.clientId) {
@@ -429,8 +422,7 @@ router.put('/:id', (req, res, next) => {
             );
           });
         }
-      }
-    );
+    });
   } catch (error) {
     next(error);
   }
@@ -441,27 +433,13 @@ router.delete('/:id', (req, res) => {
   const workEntryId = getWorkEntryId(req, res);
   if (workEntryId === null) return;
   
-  const db = getDatabase();
-  
   // Check if work entry exists and belongs to user
-  db.get(
-    'SELECT id, status FROM work_entries WHERE id = ? AND user_email = ?',
-    [workEntryId, req.userEmail],
-    (err, row) => {
-      if (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({ error: 'Internal server error' });
-      }
-      
-      if (!row) {
-        return res.status(404).json({ error: 'Work entry not found' });
-      }
-      
-      if (row.status === 'submitted' || row.status === 'approved') {
-        return res.status(409).json({
-          error: `Work entry cannot be deleted while status is ${row.status}`
-        });
-      }
+  getOwnedWorkEntry(req, res, workEntryId, (db, row) => {
+    if (row.status === 'submitted' || row.status === 'approved') {
+      return res.status(409).json({
+        error: `Work entry cannot be deleted while status is ${row.status}`
+      });
+    }
       // Delete work entry
       db.run(
         'DELETE FROM work_entries WHERE id = ? AND user_email = ?',
@@ -475,8 +453,7 @@ router.delete('/:id', (req, res) => {
           res.json({ message: 'Work entry deleted successfully' });
         }
       );
-    }
-  );
+  });
 });
 
 module.exports = router;
