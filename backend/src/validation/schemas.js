@@ -32,10 +32,15 @@ const emailSchema = Joi.object({
   email: Joi.string().email().required()
 });
 
+const rejectWorkEntrySchema = Joi.object({
+  reason: Joi.string().trim().max(1000).optional()
+});
+
 module.exports = {
   clientSchema,
   workEntrySchema,
   updateWorkEntrySchema,
   updateClientSchema,
-  emailSchema
+  emailSchema,
+  rejectWorkEntrySchema
 };

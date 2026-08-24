@@ -1,7 +1,10 @@
 export interface User {
   email: string;
+  role: 'employee' | 'approver';
   createdAt: string;
 }
+
+export type WorkEntryStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 
 export interface Client {
   id: number;
@@ -21,10 +24,20 @@ export interface WorkEntry {
   date: string;
   created_at: string;
   updated_at: string;
+  status: WorkEntryStatus;
+  submitted_at: string | null;
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+  rejection_reason: string | null;
   client_name?: string;
 }
 
 export interface WorkEntryWithClient extends WorkEntry {
+  client_name: string;
+}
+
+export interface PendingApprovalWorkEntry extends WorkEntry {
+  user_email: string;
   client_name: string;
 }
 

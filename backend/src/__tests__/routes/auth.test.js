@@ -18,6 +18,7 @@ app.use((err, req, res, next) => {
 
 describe('Auth Routes', () => {
   let mockDb;
+  const originalApproverEmails = process.env.APPROVER_EMAILS;
 
   beforeEach(() => {
     mockDb = {
@@ -28,13 +29,61 @@ describe('Auth Routes', () => {
   });
 
   afterEach(() => {
+    process.env.APPROVER_EMAILS = originalApproverEmails;
     jest.clearAllMocks();
   });
 
   describe('POST /api/auth/login', () => {
+    test('should assign approver role from configured email list', async () => {
+      process.env.APPROVER_EMAILS = 'approver@example.com';
+      mockDb.get.mockImplementation((query, params, callback) => {
+        callback(null, null);
+      });
+      mockDb.run.mockImplementation(function(query, params, callback) {
+        callback.call(this, null);
+      });
+
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'approver@example.com' });
+
+      expect(response.status).toBe(201);
+      expect(response.body.user.role).toBe('approver');
+      expect(mockDb.run).toHaveBeenCalledWith(
+        'INSERT INTO users (email, role) VALUES (?, ?)',
+        ['approver@example.com', 'approver'],
+        expect.any(Function)
+      );
+    });
+
+    test('should sync an existing configured approver role', async () => {
+      process.env.APPROVER_EMAILS = 'approver@example.com';
+      mockDb.get.mockImplementation((query, params, callback) => {
+        callback(null, {
+          email: 'approver@example.com',
+          role: 'employee',
+          created_at: '2024-01-01T00:00:00.000Z'
+        });
+      });
+      mockDb.run.mockImplementation((query, params, callback) => callback(null));
+
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'approver@example.com' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.user.role).toBe('approver');
+      expect(mockDb.run).toHaveBeenCalledWith(
+        'UPDATE users SET role = ? WHERE email = ?',
+        ['approver', 'approver@example.com'],
+        expect.any(Function)
+      );
+    });
+
     test('should login existing user', async () => {
       const existingUser = {
         email: 'existing@example.com',
+        role: 'employee',
         created_at: '2024-01-01T00:00:00.000Z'
       };
 
@@ -49,6 +98,7 @@ describe('Auth Routes', () => {
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('Login successful');
       expect(response.body.user.email).toBe('existing@example.com');
+      expect(response.body.user.role).toBe('employee');
     });
 
     test('should create new user on first login', async () => {
@@ -68,8 +118,8 @@ describe('Auth Routes', () => {
       expect(response.body.message).toBe('User created and logged in successfully');
       expect(response.body.user.email).toBe('newuser@example.com');
       expect(mockDb.run).toHaveBeenCalledWith(
-        'INSERT INTO users (email) VALUES (?)',
-        ['newuser@example.com'],
+        'INSERT INTO users (email, role) VALUES (?, ?)',
+        ['newuser@example.com', 'employee'],
         expect.any(Function)
       );
     });
@@ -153,6 +203,7 @@ describe('Auth Routes', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.user.email).toBe('test@example.com');
+      expect(response.body.user.role).toBe('employee');
       expect(response.body.user.createdAt).toBe('2024-01-01T00:00:00.000Z');
     });
 
@@ -165,7 +216,7 @@ describe('Auth Routes', () => {
 
     test('should return 404 if user not found', async () => {
       mockDb.get.mockImplementation((query, params, callback) => {
-        if (query.includes('SELECT email FROM users WHERE email = ?')) {
+        if (query.includes('SELECT email, role FROM users WHERE email = ?')) {
           // Auth middleware check
           callback(null, { email: 'test@example.com' });
         } else {
@@ -184,7 +235,7 @@ describe('Auth Routes', () => {
 
     test('should handle database error', async () => {
       mockDb.get.mockImplementation((query, params, callback) => {
-        if (query.includes('SELECT email FROM users WHERE email = ?')) {
+        if (query.includes('SELECT email, role FROM users WHERE email = ?')) {
           callback(null, { email: 'test@example.com' });
         } else {
           callback(new Error('Database error'), null);
