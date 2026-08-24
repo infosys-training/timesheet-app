@@ -67,9 +67,10 @@ describe('Auth Routes', () => {
       expect(response.status).toBe(201);
       expect(response.body.message).toBe('User created and logged in successfully');
       expect(response.body.user.email).toBe('newuser@example.com');
+      expect(response.body.user.role).toBe('employee');
       expect(mockDb.run).toHaveBeenCalledWith(
-        'INSERT INTO users (email) VALUES (?)',
-        ['newuser@example.com'],
+        'INSERT INTO users (email, role) VALUES (?, ?)',
+        ['newuser@example.com', 'employee'],
         expect.any(Function)
       );
     });
@@ -165,9 +166,9 @@ describe('Auth Routes', () => {
 
     test('should return 404 if user not found', async () => {
       mockDb.get.mockImplementation((query, params, callback) => {
-        if (query.includes('SELECT email FROM users WHERE email = ?')) {
+        if (query.includes('SELECT email, role FROM users WHERE email = ?')) {
           // Auth middleware check
-          callback(null, { email: 'test@example.com' });
+          callback(null, { email: 'test@example.com', role: 'employee' });
         } else {
           // /me endpoint check
           callback(null, null);
@@ -184,8 +185,8 @@ describe('Auth Routes', () => {
 
     test('should handle database error', async () => {
       mockDb.get.mockImplementation((query, params, callback) => {
-        if (query.includes('SELECT email FROM users WHERE email = ?')) {
-          callback(null, { email: 'test@example.com' });
+        if (query.includes('SELECT email, role FROM users WHERE email = ?')) {
+          callback(null, { email: 'test@example.com', role: 'employee' });
         } else {
           callback(new Error('Database error'), null);
         }
