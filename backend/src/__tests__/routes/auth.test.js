@@ -35,6 +35,7 @@ describe('Auth Routes', () => {
     test('should login existing user', async () => {
       const existingUser = {
         email: 'existing@example.com',
+        role: 'employee',
         created_at: '2024-01-01T00:00:00.000Z'
       };
 
@@ -49,6 +50,7 @@ describe('Auth Routes', () => {
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('Login successful');
       expect(response.body.user.email).toBe('existing@example.com');
+      expect(response.body.user.role).toBe('employee');
     });
 
     test('should create new user on first login', async () => {
@@ -68,8 +70,8 @@ describe('Auth Routes', () => {
       expect(response.body.message).toBe('User created and logged in successfully');
       expect(response.body.user.email).toBe('newuser@example.com');
       expect(mockDb.run).toHaveBeenCalledWith(
-        'INSERT INTO users (email) VALUES (?)',
-        ['newuser@example.com'],
+        'INSERT INTO users (email, role) VALUES (?, ?)',
+        ['newuser@example.com', 'employee'],
         expect.any(Function)
       );
     });
@@ -165,7 +167,7 @@ describe('Auth Routes', () => {
 
     test('should return 404 if user not found', async () => {
       mockDb.get.mockImplementation((query, params, callback) => {
-        if (query.includes('SELECT email FROM users WHERE email = ?')) {
+        if (query.includes('SELECT email, role FROM users WHERE email = ?')) {
           // Auth middleware check
           callback(null, { email: 'test@example.com' });
         } else {
@@ -184,7 +186,7 @@ describe('Auth Routes', () => {
 
     test('should handle database error', async () => {
       mockDb.get.mockImplementation((query, params, callback) => {
-        if (query.includes('SELECT email FROM users WHERE email = ?')) {
+        if (query.includes('SELECT email, role FROM users WHERE email = ?')) {
           callback(null, { email: 'test@example.com' });
         } else {
           callback(new Error('Database error'), null);
