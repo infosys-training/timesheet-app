@@ -83,6 +83,68 @@ describe('Report Routes', () => {
       expect(response.body.entryCount).toBe(2);
     });
 
+    test('should normalize epoch-millisecond dates in the JSON report', async () => {
+      mockDb.get.mockImplementation((query, params, callback) => {
+        callback(null, { id: 1, name: 'Test Client' });
+      });
+      mockDb.all.mockImplementation((query, params, callback) => {
+        callback(null, [{ id: 1, hours: 1, description: 'Work', date: 1705276800000 }]);
+      });
+
+      const response = await request(app).get('/api/reports/client/1');
+
+      expect(response.status).toBe(200);
+      expect(response.body.workEntries[0].date).toBe('2024-01-15');
+    });
+
+    test('should round total hours to two decimal places', async () => {
+      mockDb.get.mockImplementation((query, params, callback) => {
+        callback(null, { id: 1, name: 'Test Client' });
+      });
+      mockDb.all.mockImplementation((query, params, callback) => {
+        callback(null, [{ hours: 2.4 }, { hours: 3.300000000000001 }, { hours: 3.0 }]);
+      });
+
+      const response = await request(app).get('/api/reports/client/1');
+
+      expect(response.body.totalHours).toBe(8.7);
+    });
+
+    test('should use inclusive date bounds and bind date-only strings', async () => {
+      mockDb.get.mockImplementation((query, params, callback) => {
+        callback(null, { id: 1, name: 'Test Client' });
+      });
+      mockDb.all.mockImplementation((query, params, callback) => {
+        expect(query).toContain('>= ?');
+        expect(query).toContain('<= ?');
+        expect(query).not.toContain('> ?');
+        expect(query).not.toContain('< ?');
+        expect(params).toEqual([1, 'test@example.com', '2024-01-15', '2024-01-31']);
+        callback(null, []);
+      });
+
+      const response = await request(app)
+        .get('/api/reports/client/1')
+        .query({ startDate: '2024-01-15', endDate: '2024-01-31' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.dateRange).toEqual({
+        startDate: '2024-01-15',
+        endDate: '2024-01-31'
+      });
+    });
+
+    test.each([
+      ['malformed start date', { startDate: '2024-1-15' }],
+      ['malformed end date', { endDate: '2024-02-30' }],
+      ['reversed range', { startDate: '2024-02-01', endDate: '2024-01-31' }]
+    ])('should return 400 for %s', async (_name, query) => {
+      const response = await request(app).get('/api/reports/client/1').query(query);
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toEqual(expect.any(String));
+    });
+
     test('should return report with zero hours for client with no entries', async () => {
       const mockClient = { id: 1, name: 'Empty Client' };
 
@@ -166,6 +228,18 @@ describe('Report Routes', () => {
   });
 
   describe('GET /api/reports/export/csv/:clientId', () => {
+    test.each([
+      { startDate: '2024-02-01', endDate: '2024-01-31' },
+      { startDate: '2024-02-30' }
+    ])('should return 400 for invalid date ranges: %j', async (query) => {
+      const response = await request(app)
+        .get('/api/reports/export/csv/1')
+        .query(query);
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toEqual(expect.any(String));
+    });
+
     test('should return 400 for invalid client ID', async () => {
       const response = await request(app).get('/api/reports/export/csv/invalid');
 
@@ -212,6 +286,18 @@ describe('Report Routes', () => {
   });
 
   describe('GET /api/reports/export/pdf/:clientId', () => {
+    test.each([
+      { startDate: '2024-02-01', endDate: '2024-01-31' },
+      { endDate: '2024-02-30' }
+    ])('should return 400 for invalid date ranges: %j', async (query) => {
+      const response = await request(app)
+        .get('/api/reports/export/pdf/1')
+        .query(query);
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toEqual(expect.any(String));
+    });
+
     test('should return 400 for invalid client ID', async () => {
       const response = await request(app).get('/api/reports/export/pdf/invalid');
 

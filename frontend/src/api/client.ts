@@ -114,20 +114,22 @@ class ApiClient {
   }
 
   // Report endpoints
-  async getClientReport(clientId: number) {
-    const response = await this.client.get(`/api/reports/client/${clientId}`);
+  async getClientReport(clientId: number, dateRange?: { startDate?: string; endDate?: string }) {
+    const response = await this.client.get(`/api/reports/client/${clientId}`, { params: dateRange });
     return response.data;
   }
 
-  async exportClientReportCsv(clientId: number) {
+  async exportClientReportCsv(clientId: number, dateRange?: { startDate?: string; endDate?: string }) {
     const response = await this.client.get(`/api/reports/export/csv/${clientId}`, {
+      params: dateRange,
       responseType: 'blob',
     });
     return response.data;
   }
 
-  async exportClientReportPdf(clientId: number) {
+  async exportClientReportPdf(clientId: number, dateRange?: { startDate?: string; endDate?: string }) {
     const response = await this.client.get(`/api/reports/export/pdf/${clientId}`, {
+      params: dateRange,
       responseType: 'blob',
     });
     return response.data;

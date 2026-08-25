@@ -5,11 +5,38 @@ const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const PDFDocument = require('pdfkit');
 const path = require('path');
 const fs = require('fs');
+const { toDateOnly, DATE_ONLY_SQL, parseDateRange } = require('../utils/reportDates');
 
 const router = express.Router();
 
 // All routes require authentication
 router.use(authenticateUser);
+
+function getDateRange(req, res) {
+  const dateRange = parseDateRange(req.query);
+  if (dateRange.error) {
+    res.status(400).json({ error: dateRange.error });
+    return null;
+  }
+  return dateRange;
+}
+
+function getEntriesQuery(clientId, userEmail, dateRange, columns) {
+  let query = `SELECT ${columns}
+         FROM work_entries
+         WHERE client_id = ? AND user_email = ?`;
+  const params = [clientId, userEmail];
+  if (dateRange.startDate !== undefined) {
+    query += ` AND ${DATE_ONLY_SQL} >= ?`;
+    params.push(dateRange.startDate);
+  }
+  if (dateRange.endDate !== undefined) {
+    query += ` AND ${DATE_ONLY_SQL} <= ?`;
+    params.push(dateRange.endDate);
+  }
+  query += ' ORDER BY date DESC';
+  return { query, params };
+}
 
 // Get hourly report for specific client
 router.get('/client/:clientId', (req, res) => {
@@ -18,6 +45,9 @@ router.get('/client/:clientId', (req, res) => {
   if (isNaN(clientId)) {
     return res.status(400).json({ error: 'Invalid client ID' });
   }
+
+  const dateRange = getDateRange(req, res);
+  if (!dateRange) return;
   
   const db = getDatabase();
   
@@ -36,12 +66,15 @@ router.get('/client/:clientId', (req, res) => {
       }
       
       // Get work entries for this client
+      const entriesQuery = getEntriesQuery(
+        clientId,
+        req.userEmail,
+        dateRange,
+        'id, hours, description, date, created_at, updated_at'
+      );
       db.all(
-        `SELECT id, hours, description, date, created_at, updated_at
-         FROM work_entries 
-         WHERE client_id = ? AND user_email = ? 
-         ORDER BY date DESC`,
-        [clientId, req.userEmail],
+        entriesQuery.query,
+        entriesQuery.params,
         (err, workEntries) => {
           if (err) {
             console.error('Database error:', err);
@@ -49,13 +82,19 @@ router.get('/client/:clientId', (req, res) => {
           }
           
           // Calculate total hours
-          const totalHours = workEntries.reduce((sum, entry) => sum + parseFloat(entry.hours), 0);
-          
+          const totalHours = Math.round(
+            workEntries.reduce((sum, entry) => sum + parseFloat(entry.hours), 0) * 100
+          ) / 100;
+
           res.json({
             client: client,
-            workEntries: workEntries,
+            workEntries: workEntries.map((entry) => ({ ...entry, date: toDateOnly(entry.date) })),
             totalHours: totalHours,
-            entryCount: workEntries.length
+            entryCount: workEntries.length,
+            dateRange: {
+              startDate: dateRange.startDate || null,
+              endDate: dateRange.endDate || null
+            }
           });
         }
       );
@@ -70,6 +109,9 @@ router.get('/export/csv/:clientId', (req, res) => {
   if (isNaN(clientId)) {
     return res.status(400).json({ error: 'Invalid client ID' });
   }
+
+  const dateRange = getDateRange(req, res);
+  if (!dateRange) return;
   
   const db = getDatabase();
   
@@ -88,12 +130,15 @@ router.get('/export/csv/:clientId', (req, res) => {
       }
       
       // Get work entries
+      const entriesQuery = getEntriesQuery(
+        clientId,
+        req.userEmail,
+        dateRange,
+        'hours, description, date, created_at'
+      );
       db.all(
-        `SELECT hours, description, date, created_at
-         FROM work_entries 
-         WHERE client_id = ? AND user_email = ? 
-         ORDER BY date DESC`,
-        [clientId, req.userEmail],
+        entriesQuery.query,
+        entriesQuery.params,
         (err, workEntries) => {
           if (err) {
             console.error('Database error:', err);
@@ -121,7 +166,9 @@ router.get('/export/csv/:clientId', (req, res) => {
             ]
           });
           
-          csvWriter.writeRecords(workEntries)
+          csvWriter.writeRecords(
+            workEntries.map((entry) => ({ ...entry, date: toDateOnly(entry.date) }))
+          )
             .then(() => {
               // Send file and clean up
               res.download(tempPath, filename, (err) => {
@@ -153,6 +200,9 @@ router.get('/export/pdf/:clientId', (req, res) => {
   if (isNaN(clientId)) {
     return res.status(400).json({ error: 'Invalid client ID' });
   }
+
+  const dateRange = getDateRange(req, res);
+  if (!dateRange) return;
   
   const db = getDatabase();
   
@@ -171,12 +221,15 @@ router.get('/export/pdf/:clientId', (req, res) => {
       }
       
       // Get work entries
+      const entriesQuery = getEntriesQuery(
+        clientId,
+        req.userEmail,
+        dateRange,
+        'hours, description, date, created_at'
+      );
       db.all(
-        `SELECT hours, description, date, created_at
-         FROM work_entries 
-         WHERE client_id = ? AND user_email = ? 
-         ORDER BY date DESC`,
-        [clientId, req.userEmail],
+        entriesQuery.query,
+        entriesQuery.params,
         (err, workEntries) => {
           if (err) {
             console.error('Database error:', err);
@@ -199,9 +252,18 @@ router.get('/export/pdf/:clientId', (req, res) => {
           doc.fontSize(20).text(`Time Report for ${client.name}`, { align: 'center' });
           doc.moveDown();
           
-          const totalHours = workEntries.reduce((sum, entry) => sum + parseFloat(entry.hours), 0);
+          const normalizedEntries = workEntries.map((entry) => ({
+            ...entry,
+            date: toDateOnly(entry.date)
+          }));
+          const totalHours = Math.round(
+            workEntries.reduce((sum, entry) => sum + parseFloat(entry.hours), 0) * 100
+          ) / 100;
           doc.fontSize(14).text(`Total Hours: ${totalHours.toFixed(2)}`);
           doc.text(`Total Entries: ${workEntries.length}`);
+          if (dateRange.startDate || dateRange.endDate) {
+            doc.text(`Date Range: ${dateRange.startDate || 'Any'} to ${dateRange.endDate || 'Any'}`);
+          }
           doc.text(`Generated: ${new Date().toLocaleString()}`);
           doc.moveDown();
           
@@ -216,7 +278,7 @@ router.get('/export/pdf/:clientId', (req, res) => {
           doc.moveDown(0.5);
           
           // Add work entries
-          workEntries.forEach((entry, index) => {
+          normalizedEntries.forEach((entry, index) => {
             const y = doc.y;
             
             // Check if we need a new page

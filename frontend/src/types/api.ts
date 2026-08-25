@@ -33,6 +33,10 @@ export interface ClientReport {
   workEntries: WorkEntry[];
   totalHours: number;
   entryCount: number;
+  dateRange: {
+    startDate: string | null;
+    endDate: string | null;
+  };
 }
 
 export interface CreateClientRequest {
