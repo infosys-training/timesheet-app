@@ -337,6 +337,38 @@ describe('Client Routes', () => {
     });
   });
 
+  describe('DELETE /api/clients', () => {
+    test('should require confirmation before deleting all clients', async () => {
+      mockDb.run.mockImplementation(function(query, params, callback) {
+        this.changes = 2;
+        callback.call(this, null);
+      });
+
+      const response = await request(app).delete('/api/clients');
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        error: 'Refusing to delete all clients without confirm=all'
+      });
+      expect(mockDb.run).not.toHaveBeenCalled();
+    });
+
+    test('should delete all clients when explicitly confirmed', async () => {
+      mockDb.run.mockImplementation(function(query, params, callback) {
+        this.changes = 2;
+        callback.call(this, null);
+      });
+
+      const response = await request(app).delete('/api/clients?confirm=all');
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        message: 'All clients deleted successfully',
+        deletedCount: 2
+      });
+    });
+  });
+
   describe('POST /api/clients - Error Handling', () => {
     test('should handle error retrieving client after creation', async () => {
       mockDb.run.mockImplementation(function(query, params, callback) {
