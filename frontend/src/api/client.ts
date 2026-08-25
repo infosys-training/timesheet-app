@@ -87,8 +87,8 @@ class ApiClient {
   }
 
   // Work entry endpoints
-  async getWorkEntries(clientId?: number) {
-    const params = clientId ? { clientId } : {};
+  async getWorkEntries(clientId?: number, status?: string) {
+    const params = { ...(clientId ? { clientId } : {}), ...(status ? { status } : {}) };
     const response = await this.client.get('/api/work-entries', { params });
     return response.data;
   }
@@ -110,6 +110,26 @@ class ApiClient {
 
   async deleteWorkEntry(id: number) {
     const response = await this.client.delete(`/api/work-entries/${id}`);
+    return response.data;
+  }
+
+  async submitWorkEntry(id: number) {
+    const response = await this.client.post(`/api/work-entries/${id}/submit`);
+    return response.data;
+  }
+
+  async approveWorkEntry(id: number, note?: string) {
+    const response = await this.client.post(`/api/work-entries/${id}/approve`, note === undefined ? {} : { note });
+    return response.data;
+  }
+
+  async rejectWorkEntry(id: number, note?: string) {
+    const response = await this.client.post(`/api/work-entries/${id}/reject`, note === undefined ? {} : { note });
+    return response.data;
+  }
+
+  async getPendingApprovals() {
+    const response = await this.client.get('/api/work-entries/pending-approvals');
     return response.data;
   }
 

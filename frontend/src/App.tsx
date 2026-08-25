@@ -11,6 +11,7 @@ import DashboardPage from './pages/DashboardPage';
 import ClientsPage from './pages/ClientsPage';
 import WorkEntriesPage from './pages/WorkEntriesPage';
 import ReportsPage from './pages/ReportsPage';
+import PendingApprovalsPage from './pages/PendingApprovalsPage';
 
 const theme = createTheme({
   palette: {
@@ -33,7 +34,7 @@ const queryClient = new QueryClient({
 });
 
 const AppContent: React.FC = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   
   if (isLoading) {
     return <div>Loading...</div>;
@@ -53,6 +54,9 @@ const AppContent: React.FC = () => {
                   <Route path="/clients" element={<ClientsPage />} />
                   <Route path="/work-entries" element={<WorkEntriesPage />} />
                   <Route path="/reports" element={<ReportsPage />} />
+                  {user?.role === 'approver' && (
+                    <Route path="/pending-approvals" element={<PendingApprovalsPage />} />
+                  )}
                   <Route path="/" element={<Navigate to="/dashboard" replace />} />
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>

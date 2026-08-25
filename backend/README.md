@@ -67,6 +67,9 @@ Example:
 x-user-email: user@company.com
 ```
 
+Set `APPROVER_EMAILS` to a comma-separated list of email addresses that may approve
+or reject submitted work entries.
+
 ## Database Schema
 
 ### Users

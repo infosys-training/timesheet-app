@@ -1,5 +1,13 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs');
+const {
+  usersTable,
+  workEntriesTable,
+  workEntriesStatusIndex,
+  usersAddedColumns,
+  workEntriesAddedColumns
+} = require('./schema');
 
 let db = null;
 let isClosing = false;
@@ -10,16 +18,62 @@ function getDatabase() {
     // Reset state when creating a new database connection
     isClosing = false;
     isClosed = false;
-    // Use in-memory database as specified in requirements
-    db = new sqlite3.Database(':memory:', (err) => {
+    // Use file-based database in production, in-memory for development/testing
+    const dbPath = process.env.DATABASE_PATH || ':memory:';
+
+    // Ensure the directory exists for file-based database
+    if (dbPath !== ':memory:') {
+      const dbDir = path.dirname(dbPath);
+      if (!fs.existsSync(dbDir)) {
+        fs.mkdirSync(dbDir, { recursive: true });
+      }
+    }
+
+    db = new sqlite3.Database(dbPath, (err) => {
       if (err) {
         console.error('Error opening database:', err);
         throw err;
       }
-      console.log('Connected to SQLite in-memory database');
+      if (dbPath === ':memory:') {
+        console.log('Connected to SQLite in-memory database');
+      } else {
+        console.log(`Connected to SQLite database (file: ${dbPath})`);
+      }
     });
   }
   return db;
+}
+
+function migrateTable(database, tableName, columns) {
+  return new Promise((resolve, reject) => {
+    database.all(`PRAGMA table_info(${tableName})`, (err, rows) => {
+      if (err) {
+        return reject(err);
+      }
+
+      const existingColumns = new Set(rows.map((row) => row.name));
+      const missingColumns = columns.filter(({ name }) => !existingColumns.has(name));
+
+      const addNextColumn = (index) => {
+        if (index === missingColumns.length) {
+          return resolve();
+        }
+
+        const { name, definition } = missingColumns[index];
+        database.run(
+          `ALTER TABLE ${tableName} ADD COLUMN ${name} ${definition}`,
+          (alterError) => {
+            if (alterError) {
+              return reject(alterError);
+            }
+            addNextColumn(index + 1);
+          }
+        );
+      };
+
+      addNextColumn(0);
+    });
+  });
 }
 
 async function initializeDatabase() {
@@ -27,13 +81,11 @@ async function initializeDatabase() {
   
   return new Promise((resolve, reject) => {
     database.serialize(() => {
+      // Enable foreign keys
+      database.run('PRAGMA foreign_keys = ON');
+
       // Create users table
-      database.run(`
-        CREATE TABLE IF NOT EXISTS users (
-          email TEXT PRIMARY KEY,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
+      database.run(usersTable);
 
       // Create clients table
       database.run(`
@@ -51,20 +103,7 @@ async function initializeDatabase() {
       `);
 
       // Create work_entries table
-      database.run(`
-        CREATE TABLE IF NOT EXISTS work_entries (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          client_id INTEGER NOT NULL,
-          user_email TEXT NOT NULL,
-          hours DECIMAL(5,2) NOT NULL,
-          description TEXT,
-          date DATE NOT NULL,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (client_id) REFERENCES clients (id) ON DELETE CASCADE,
-          FOREIGN KEY (user_email) REFERENCES users (email) ON DELETE CASCADE
-        )
-      `);
+      database.run(workEntriesTable);
 
       // Create indexes for better performance
       database.run(`CREATE INDEX IF NOT EXISTS idx_clients_user_email ON clients (user_email)`);
@@ -72,8 +111,19 @@ async function initializeDatabase() {
       database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_user_email ON work_entries (user_email)`);
       database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_date ON work_entries (date)`);
 
-      console.log('Database tables created successfully');
-      resolve();
+      migrateTable(database, 'users', usersAddedColumns)
+        .then(() => migrateTable(database, 'work_entries', workEntriesAddedColumns))
+        .then(() => {
+          database.run(workEntriesStatusIndex, (err) => {
+            if (err) {
+              return reject(err);
+            }
+
+            console.log('Database tables created successfully');
+            resolve();
+          });
+        })
+        .catch(reject);
     });
   });
 }
