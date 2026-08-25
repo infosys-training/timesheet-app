@@ -44,7 +44,12 @@ const ReportsPage: React.FC = () => {
     queryFn: () => apiClient.getClients(),
   });
 
-  const { data: reportData, isLoading: reportLoading } = useQuery({
+  const {
+    data: reportData,
+    isLoading: reportLoading,
+    isError: reportIsError,
+    error: reportQueryError,
+  } = useQuery({
     queryKey: ['clientReport', selectedClientId, startDate, endDate],
     queryFn: () => apiClient.getClientReport(selectedClientId, {
       startDate: startDate || undefined,
@@ -55,6 +60,9 @@ const ReportsPage: React.FC = () => {
 
   const clients = clientsData?.clients || [];
   const report = reportData as ClientReport | undefined;
+  const reportErrorMessage =
+    (reportQueryError as { response?: { data?: { error?: string } } })?.response?.data?.error ||
+    'Failed to load report';
 
   const handleExportCsv = async () => {
     if (!selectedClientId) return;
@@ -121,6 +129,11 @@ const ReportsPage: React.FC = () => {
       {error && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
           {error}
+        </Alert>
+      )}
+      {reportIsError && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {reportErrorMessage}
         </Alert>
       )}
 
