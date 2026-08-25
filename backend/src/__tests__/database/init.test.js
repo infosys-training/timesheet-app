@@ -8,6 +8,9 @@ jest.mock('sqlite3', () => {
     run: jest.fn((query, callback) => {
       if (typeof callback === 'function') callback(null);
     }),
+    all: jest.fn((query, callback) => {
+      if (typeof callback === 'function') callback(null, []);
+    }),
     close: jest.fn((callback) => callback(null))
   };
 

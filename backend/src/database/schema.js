@@ -29,8 +29,22 @@ const workEntriesTable = `
 
 const workEntriesStatusIndex = 'CREATE INDEX IF NOT EXISTS idx_work_entries_status ON work_entries (status)';
 
+const usersAddedColumns = [
+  { name: 'role', definition: "TEXT NOT NULL DEFAULT 'member'" }
+];
+
+const workEntriesAddedColumns = [
+  { name: 'status', definition: "TEXT NOT NULL DEFAULT 'draft'" },
+  { name: 'submitted_at', definition: 'DATETIME' },
+  { name: 'reviewed_at', definition: 'DATETIME' },
+  { name: 'reviewed_by', definition: 'TEXT' },
+  { name: 'review_note', definition: 'TEXT' }
+];
+
 module.exports = {
   usersTable,
   workEntriesTable,
-  workEntriesStatusIndex
+  workEntriesStatusIndex,
+  usersAddedColumns,
+  workEntriesAddedColumns
 };

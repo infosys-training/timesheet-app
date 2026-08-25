@@ -1,7 +1,13 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
-const { usersTable, workEntriesTable, workEntriesStatusIndex } = require('./schema');
+const {
+  usersTable,
+  workEntriesTable,
+  workEntriesStatusIndex,
+  usersAddedColumns,
+  workEntriesAddedColumns
+} = require('./schema');
 
 let db = null;
 let isClosing = false;
@@ -38,6 +44,38 @@ function getDatabase() {
   return db;
 }
 
+function migrateTable(database, tableName, columns) {
+  return new Promise((resolve, reject) => {
+    database.all(`PRAGMA table_info(${tableName})`, (err, rows) => {
+      if (err) {
+        return reject(err);
+      }
+
+      const existingColumns = new Set(rows.map((row) => row.name));
+      const missingColumns = columns.filter(({ name }) => !existingColumns.has(name));
+
+      const addNextColumn = (index) => {
+        if (index === missingColumns.length) {
+          return resolve();
+        }
+
+        const { name, definition } = missingColumns[index];
+        database.run(
+          `ALTER TABLE ${tableName} ADD COLUMN ${name} ${definition}`,
+          (alterError) => {
+            if (alterError) {
+              return reject(alterError);
+            }
+            addNextColumn(index + 1);
+          }
+        );
+      };
+
+      addNextColumn(0);
+    });
+  });
+}
+
 async function initializeDatabase() {
   const database = getDatabase();
   
@@ -72,10 +110,20 @@ async function initializeDatabase() {
       database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_client_id ON work_entries (client_id)`);
       database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_user_email ON work_entries (user_email)`);
       database.run(`CREATE INDEX IF NOT EXISTS idx_work_entries_date ON work_entries (date)`);
-      database.run(workEntriesStatusIndex);
 
-      console.log('Database tables created successfully');
-      resolve();
+      migrateTable(database, 'users', usersAddedColumns)
+        .then(() => migrateTable(database, 'work_entries', workEntriesAddedColumns))
+        .then(() => {
+          database.run(workEntriesStatusIndex, (err) => {
+            if (err) {
+              return reject(err);
+            }
+
+            console.log('Database tables created successfully');
+            resolve();
+          });
+        })
+        .catch(reject);
     });
   });
 }
