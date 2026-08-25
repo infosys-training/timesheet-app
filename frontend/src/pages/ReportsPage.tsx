@@ -22,6 +22,7 @@ import {
   Chip,
   IconButton,
   Tooltip,
+  TextField,
 } from '@mui/material';
 import {
   PictureAsPdf as PdfIcon,
@@ -30,9 +31,12 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import { type ClientReport } from '../types/api';
+import { formatDateOnly } from '../utils/date';
 
 const ReportsPage: React.FC = () => {
   const [selectedClientId, setSelectedClientId] = useState<number>(0);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [error, setError] = useState('');
 
   const { data: clientsData, isLoading: clientsLoading } = useQuery({
@@ -40,20 +44,34 @@ const ReportsPage: React.FC = () => {
     queryFn: () => apiClient.getClients(),
   });
 
-  const { data: reportData, isLoading: reportLoading } = useQuery({
-    queryKey: ['clientReport', selectedClientId],
-    queryFn: () => apiClient.getClientReport(selectedClientId),
+  const {
+    data: reportData,
+    isLoading: reportLoading,
+    isError: reportIsError,
+    error: reportQueryError,
+  } = useQuery({
+    queryKey: ['clientReport', selectedClientId, startDate, endDate],
+    queryFn: () => apiClient.getClientReport(selectedClientId, {
+      startDate: startDate || undefined,
+      endDate: endDate || undefined,
+    }),
     enabled: selectedClientId > 0,
   });
 
   const clients = clientsData?.clients || [];
   const report = reportData as ClientReport | undefined;
+  const reportErrorMessage =
+    (reportQueryError as { response?: { data?: { error?: string } } })?.response?.data?.error ||
+    'Failed to load report';
 
   const handleExportCsv = async () => {
     if (!selectedClientId) return;
     
     try {
-      const blob = await apiClient.exportClientReportCsv(selectedClientId);
+      const blob = await apiClient.exportClientReportCsv(selectedClientId, {
+        startDate: startDate || undefined,
+        endDate: endDate || undefined,
+      });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -73,7 +91,10 @@ const ReportsPage: React.FC = () => {
     if (!selectedClientId) return;
 
     try {
-      const blob = await apiClient.exportClientReportPdf(selectedClientId);
+      const blob = await apiClient.exportClientReportPdf(selectedClientId, {
+        startDate: startDate || undefined,
+        endDate: endDate || undefined,
+      });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -110,6 +131,11 @@ const ReportsPage: React.FC = () => {
           {error}
         </Alert>
       )}
+      {reportIsError && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {reportErrorMessage}
+        </Alert>
+      )}
 
       {clients.length === 0 ? (
         <Paper sx={{ p: 3, textAlign: 'center' }}>
@@ -124,7 +150,7 @@ const ReportsPage: React.FC = () => {
         <>
           <Paper sx={{ p: 3, mb: 3 }}>
             <Grid container spacing={3} alignItems="center">
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <FormControl fullWidth>
                   <InputLabel>Select Client</InputLabel>
                   <Select
@@ -141,7 +167,27 @@ const ReportsPage: React.FC = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid size={{ xs: 12, md: 3 }}>
+                <TextField
+                  fullWidth
+                  type="date"
+                  label="Start date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  slotProps={{ inputLabel: { shrink: true } }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, md: 3 }}>
+                <TextField
+                  fullWidth
+                  type="date"
+                  label="End date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  slotProps={{ inputLabel: { shrink: true } }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, md: 2 }}>
                 <Box display="flex" gap={2}>
                   <Tooltip title="Export as CSV">
                     <IconButton
@@ -232,7 +278,7 @@ const ReportsPage: React.FC = () => {
                           <TableRow key={entry.id}>
                             <TableCell>
                               <Typography variant="body2">
-                                {new Date(entry.date).toLocaleDateString()}
+                                {formatDateOnly(entry.date)}
                               </Typography>
                             </TableCell>
                             <TableCell>
