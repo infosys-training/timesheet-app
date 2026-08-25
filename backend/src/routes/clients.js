@@ -188,6 +188,12 @@ router.put('/:id', (req, res, next) => {
 
 // Delete all clients for authenticated user
 router.delete('/', (req, res) => {
+  if (req.query.confirm !== 'all') {
+    return res.status(400).json({
+      error: 'Refusing to delete all clients without confirm=all'
+    });
+  }
+
   const db = getDatabase();
   
   db.run(
