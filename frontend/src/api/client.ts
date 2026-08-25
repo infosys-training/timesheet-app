@@ -82,7 +82,7 @@ class ApiClient {
   }
 
   async deleteAllClients() {
-    const response = await this.client.delete('/api/clients');
+    const response = await this.client.delete('/api/clients?confirm=all');
     return response.data;
   }
 
