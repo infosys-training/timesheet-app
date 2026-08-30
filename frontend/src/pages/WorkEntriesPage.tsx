@@ -4,11 +4,7 @@ import {
   Typography,
   Button,
   Paper,
-  Table,
-  TableBody,
   TableCell,
-  TableContainer,
-  TableHead,
   TableRow,
   IconButton,
   Dialog,
@@ -36,6 +32,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import apiClient from '../api/client';
 import { getApiErrorMessage } from '../api/errors';
+import EntryTable from '../components/EntryTable';
 import WorkEntryCells from '../components/WorkEntryCells';
 import { type WorkEntry, type WorkEntryStatus } from '../types/api';
 
@@ -221,73 +218,51 @@ const WorkEntriesPage: React.FC = () => {
             </Button>
           </Paper>
         ) : (
-          <Paper>
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Client</TableCell>
-                    <TableCell>Date</TableCell>
-                    <TableCell>Hours</TableCell>
-                    <TableCell>Description</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell align="right">Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {workEntries.length > 0 ? (
-                    workEntries.map((entry: WorkEntry) => (
-                      <TableRow key={entry.id}>
-                        <WorkEntryCells entry={entry} />
-                        <TableCell>
-                          <Chip
-                            label={entry.status}
-                            color={STATUS_COLORS[entry.status]}
-                            size="small"
-                            sx={{ textTransform: 'capitalize' }}
-                          />
-                        </TableCell>
-                        <TableCell align="right">
-                          <Button
-                            startIcon={<SendIcon />}
-                            size="small"
-                            onClick={() => submitMutation.mutate(entry.id)}
-                            disabled={!isSubmittable(entry.status) || submitMutation.isPending}
-                          >
-                            Submit
-                          </Button>
-                          <IconButton
-                            onClick={() => handleOpen(entry)}
-                            color="primary"
-                            size="small"
-                            disabled={entry.status === 'approved'}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            onClick={() => handleDelete(entry)}
-                            color="error"
-                            size="small"
-                            disabled={entry.status === 'approved'}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={6} align="center">
-                        <Typography color="text.secondary" sx={{ py: 3 }}>
-                          No work entries found. Add your first work entry to get started.
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Paper>
+          <EntryTable
+            columns={['Client', 'Date', 'Hours', 'Description', 'Status', 'Actions']}
+            isEmpty={workEntries.length === 0}
+            emptyMessage="No work entries found. Add your first work entry to get started."
+          >
+            {workEntries.map((entry: WorkEntry) => (
+              <TableRow key={entry.id}>
+                <WorkEntryCells entry={entry} />
+                <TableCell>
+                  <Chip
+                    label={entry.status}
+                    color={STATUS_COLORS[entry.status]}
+                    size="small"
+                    sx={{ textTransform: 'capitalize' }}
+                  />
+                </TableCell>
+                <TableCell align="right">
+                  <Button
+                    startIcon={<SendIcon />}
+                    size="small"
+                    onClick={() => submitMutation.mutate(entry.id)}
+                    disabled={!isSubmittable(entry.status) || submitMutation.isPending}
+                  >
+                    Submit
+                  </Button>
+                  <IconButton
+                    onClick={() => handleOpen(entry)}
+                    color="primary"
+                    size="small"
+                    disabled={entry.status === 'approved'}
+                  >
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton
+                    onClick={() => handleDelete(entry)}
+                    color="error"
+                    size="small"
+                    disabled={entry.status === 'approved'}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </EntryTable>
         )}
 
         <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
