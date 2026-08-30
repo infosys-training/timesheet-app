@@ -1,4 +1,4 @@
-const { authenticateUser } = require('../../middleware/auth');
+const { authenticateUser, requireApprover, isApprover } = require('../../middleware/auth');
 const { getDatabase } = require('../../database/init');
 
 jest.mock('../../database/init');
@@ -180,6 +180,61 @@ describe('Authentication Middleware', () => {
 
       authenticateUser(req, res, next);
       expect(mockDb.get).toHaveBeenCalled();
+    });
+  });
+
+  describe('Approver Authorization', () => {
+    const originalApprovers = process.env.APPROVER_EMAILS;
+
+    afterEach(() => {
+      process.env.APPROVER_EMAILS = originalApprovers;
+    });
+
+    test('isApprover should match configured emails case insensitively', () => {
+      process.env.APPROVER_EMAILS = ' Boss@example.com , lead@example.com ';
+
+      expect(isApprover('boss@example.com')).toBe(true);
+      expect(isApprover('LEAD@example.com')).toBe(true);
+      expect(isApprover('test@example.com')).toBe(false);
+    });
+
+    test('isApprover should return false when no approvers are configured', () => {
+      delete process.env.APPROVER_EMAILS;
+
+      expect(isApprover('boss@example.com')).toBe(false);
+    });
+
+    test('authenticateUser should flag approvers on the request', () => {
+      process.env.APPROVER_EMAILS = 'boss@example.com';
+      req.headers['x-user-email'] = 'boss@example.com';
+
+      mockDb.get.mockImplementation((query, params, callback) => {
+        callback(null, { email: 'boss@example.com' });
+      });
+
+      authenticateUser(req, res, next);
+
+      expect(req.isApprover).toBe(true);
+      expect(next).toHaveBeenCalled();
+    });
+
+    test('requireApprover should call next for approvers', () => {
+      req.isApprover = true;
+
+      requireApprover(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+      expect(res.status).not.toHaveBeenCalled();
+    });
+
+    test('requireApprover should return 403 for non approvers', () => {
+      req.isApprover = false;
+
+      requireApprover(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({ error: 'Only an approver can perform this action' });
+      expect(next).not.toHaveBeenCalled();
     });
   });
 });
