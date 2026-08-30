@@ -113,6 +113,27 @@ class ApiClient {
     return response.data;
   }
 
+  // Approval endpoints
+  async submitWorkEntry(id: number) {
+    const response = await this.client.post(`/api/work-entries/${id}/submit`);
+    return response.data;
+  }
+
+  async approveWorkEntry(id: number) {
+    const response = await this.client.post(`/api/work-entries/${id}/approve`);
+    return response.data;
+  }
+
+  async rejectWorkEntry(id: number) {
+    const response = await this.client.post(`/api/work-entries/${id}/reject`);
+    return response.data;
+  }
+
+  async getPendingApprovals() {
+    const response = await this.client.get('/api/work-entries/pending-approvals');
+    return response.data;
+  }
+
   // Report endpoints
   async getClientReport(clientId: number) {
     const response = await this.client.get(`/api/reports/client/${clientId}`);

@@ -91,6 +91,21 @@ describe('Database Initialization', () => {
       expect(queries.some(q => q.includes('CREATE TABLE IF NOT EXISTS work_entries'))).toBe(true);
     });
 
+    test('should create work entries with an approval status column', async () => {
+      const db = getDatabase();
+      await initializeDatabase();
+
+      const workEntriesQuery = db.run.mock.calls
+        .map(call => call[0])
+        .find(q => q.includes('CREATE TABLE IF NOT EXISTS work_entries'));
+
+      expect(workEntriesQuery).toContain("status TEXT NOT NULL DEFAULT 'draft'");
+      expect(workEntriesQuery).toContain("CHECK (status IN ('draft', 'submitted', 'approved', 'rejected'))");
+      expect(workEntriesQuery).toContain('submitted_at DATETIME');
+      expect(workEntriesQuery).toContain('reviewed_at DATETIME');
+      expect(workEntriesQuery).toContain('reviewed_by TEXT');
+    });
+
     test('should create indexes for performance', async () => {
       const db = getDatabase();
       await initializeDatabase();
