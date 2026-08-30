@@ -35,6 +35,8 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import apiClient from '../api/client';
+import { getApiErrorMessage } from '../api/errors';
+import WorkEntryCells from '../components/WorkEntryCells';
 import { type WorkEntry, type WorkEntryStatus } from '../types/api';
 
 const STATUS_COLORS: Record<WorkEntryStatus, 'default' | 'info' | 'success' | 'error'> = {
@@ -76,10 +78,7 @@ const WorkEntriesPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['workEntries'] });
       handleClose();
     },
-    onError: (err: unknown) => {
-      const error = err as { response?: { data?: { error?: string } } };
-      setError(error.response?.data?.error || 'Failed to create work entry');
-    },
+    onError: (err: unknown) => setError(getApiErrorMessage(err, 'Failed to create work entry')),
   });
 
   const updateMutation = useMutation({
@@ -89,10 +88,7 @@ const WorkEntriesPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['workEntries'] });
       handleClose();
     },
-    onError: (err: unknown) => {
-      const error = err as { response?: { data?: { error?: string } } };
-      setError(error.response?.data?.error || 'Failed to update work entry');
-    },
+    onError: (err: unknown) => setError(getApiErrorMessage(err, 'Failed to update work entry')),
   });
 
   const submitMutation = useMutation({
@@ -100,10 +96,7 @@ const WorkEntriesPage: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workEntries'] });
     },
-    onError: (err: unknown) => {
-      const error = err as { response?: { data?: { error?: string } } };
-      setError(error.response?.data?.error || 'Failed to submit work entry');
-    },
+    onError: (err: unknown) => setError(getApiErrorMessage(err, 'Failed to submit work entry')),
   });
 
   const deleteMutation = useMutation({
@@ -111,10 +104,7 @@ const WorkEntriesPage: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workEntries'] });
     },
-    onError: (err: unknown) => {
-      const error = err as { response?: { data?: { error?: string } } };
-      setError(error.response?.data?.error || 'Failed to delete work entry');
-    },
+    onError: (err: unknown) => setError(getApiErrorMessage(err, 'Failed to delete work entry')),
   });
 
   const workEntries = workEntriesData?.workEntries || [];
@@ -248,32 +238,7 @@ const WorkEntriesPage: React.FC = () => {
                   {workEntries.length > 0 ? (
                     workEntries.map((entry: WorkEntry) => (
                       <TableRow key={entry.id}>
-                        <TableCell>
-                          <Typography variant="subtitle1" fontWeight="medium">
-                            {entry.client_name}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {new Date(entry.date).toLocaleDateString()}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip 
-                            label={`${entry.hours} hours`} 
-                            color="primary" 
-                            variant="outlined" 
-                          />
-                        </TableCell>
-                        <TableCell>
-                          {entry.description ? (
-                            <Typography variant="body2" color="text.secondary">
-                              {entry.description}
-                            </Typography>
-                          ) : (
-                            <Chip label="No description" size="small" variant="outlined" />
-                          )}
-                        </TableCell>
+                        <WorkEntryCells entry={entry} />
                         <TableCell>
                           <Chip
                             label={entry.status}

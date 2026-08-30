@@ -22,6 +22,27 @@ function canTransition(from, to) {
   return (ALLOWED_TRANSITIONS[from] || []).includes(to);
 }
 
+// Reload an entry with its client name and send it back with a message
+function respondWithEntry(db, res, workEntryId, message, options = {}) {
+  const { statusCode = 200, retrieveError = 'Work entry updated but failed to retrieve' } = options;
+
+  db.get(
+    `SELECT ${ENTRY_COLUMNS}
+     FROM work_entries we
+     JOIN clients c ON we.client_id = c.id
+     WHERE we.id = ?`,
+    [workEntryId],
+    (err, row) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: retrieveError });
+      }
+
+      res.status(statusCode).json({ message, workEntry: row });
+    }
+  );
+}
+
 // All routes require authentication
 router.use(authenticateUser);
 
@@ -148,25 +169,10 @@ router.post('/', (req, res, next) => {
               return res.status(500).json({ error: 'Failed to create work entry' });
             }
 
-            // Return the created work entry with client name
-            db.get(
-              `SELECT ${ENTRY_COLUMNS}
-               FROM work_entries we
-               JOIN clients c ON we.client_id = c.id
-               WHERE we.id = ?`,
-              [this.lastID],
-              (err, row) => {
-                if (err) {
-                  console.error('Database error:', err);
-                  return res.status(500).json({ error: 'Work entry created but failed to retrieve' });
-                }
-
-                res.status(201).json({
-                  message: 'Work entry created successfully',
-                  workEntry: row
-                });
-              }
-            );
+            respondWithEntry(db, res, this.lastID, 'Work entry created successfully', {
+              statusCode: 201,
+              retrieveError: 'Work entry created but failed to retrieve'
+            });
           }
         );
       }
@@ -268,25 +274,7 @@ router.put('/:id', (req, res, next) => {
               return res.status(500).json({ error: 'Failed to update work entry' });
             }
 
-            // Return updated work entry with client name
-            db.get(
-              `SELECT ${ENTRY_COLUMNS}
-               FROM work_entries we
-               JOIN clients c ON we.client_id = c.id
-               WHERE we.id = ?`,
-              [workEntryId],
-              (err, row) => {
-                if (err) {
-                  console.error('Database error:', err);
-                  return res.status(500).json({ error: 'Work entry updated but failed to retrieve' });
-                }
-
-                res.json({
-                  message: 'Work entry updated successfully',
-                  workEntry: row
-                });
-              }
-            );
+            respondWithEntry(db, res, workEntryId, 'Work entry updated successfully');
           });
         }
       }
@@ -434,24 +422,6 @@ function reviewEntry(targetStatus, successMessage) {
       }
     );
   };
-}
-
-function respondWithEntry(db, res, workEntryId, message) {
-  db.get(
-    `SELECT ${ENTRY_COLUMNS}
-     FROM work_entries we
-     JOIN clients c ON we.client_id = c.id
-     WHERE we.id = ?`,
-    [workEntryId],
-    (err, row) => {
-      if (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({ error: 'Work entry updated but failed to retrieve' });
-      }
-
-      res.json({ message, workEntry: row });
-    }
-  );
 }
 
 router.post('/:id/approve', requireApprover, reviewEntry('approved', 'Work entry approved successfully'));

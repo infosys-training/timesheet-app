@@ -680,23 +680,14 @@ describe('Work Entry Routes', () => {
       );
     });
 
-    test('should return 409 when submitting an already submitted work entry', async () => {
-      mockEntry('submitted');
+    test.each(['submitted', 'approved'])('should return 409 when submitting a %s work entry', async (status) => {
+      mockEntry(status);
 
       const response = await request(app).post('/api/work-entries/1/submit');
 
       expect(response.status).toBe(409);
-      expect(response.body).toEqual({ error: "Cannot submit a work entry with status 'submitted'" });
+      expect(response.body).toEqual({ error: `Cannot submit a work entry with status '${status}'` });
       expect(mockDb.run).not.toHaveBeenCalled();
-    });
-
-    test('should return 409 when submitting an approved work entry', async () => {
-      mockEntry('approved');
-
-      const response = await request(app).post('/api/work-entries/1/submit');
-
-      expect(response.status).toBe(409);
-      expect(response.body).toEqual({ error: "Cannot submit a work entry with status 'approved'" });
     });
 
     test('should return 404 if the work entry does not belong to the user', async () => {
@@ -732,11 +723,27 @@ describe('Work Entry Routes', () => {
     });
   });
 
-  describe('POST /api/work-entries/:id/approve', () => {
-    function mockEntry(status, finalStatus = 'approved') {
+  describe.each([
+    {
+      action: 'approve',
+      targetStatus: 'approved',
+      successMessage: 'Work entry approved successfully',
+      invalidStatuses: ['draft', 'rejected', 'approved']
+    },
+    {
+      action: 'reject',
+      targetStatus: 'rejected',
+      successMessage: 'Work entry rejected',
+      invalidStatuses: ['draft', 'approved', 'rejected']
+    }
+  ])('POST /api/work-entries/:id/$action', ({ action, targetStatus, successMessage, invalidStatuses }) => {
+    const approver = { email: 'boss@example.com', isApprover: true };
+
+    // Returns the entry lookup row, then the reloaded entry after the review
+    function mockEntry(status, finalStatus = targetStatus) {
       mockDb.get.mockImplementation((query, params, callback) => {
         if (query.includes('work_entries we')) {
-          callback(null, { id: 1, status: finalStatus, reviewed_by: 'boss@example.com', client_name: 'Client A' });
+          callback(null, { id: 1, status: finalStatus, reviewed_by: approver.email, client_name: 'Client A' });
         } else {
           callback(null, { id: 1, status });
         }
@@ -746,35 +753,37 @@ describe('Work Entry Routes', () => {
       });
     }
 
+    const review = (id = 1) => request(app).post(`/api/work-entries/${id}/${action}`);
+
     test('should return 403 when the user is not an approver', async () => {
-      const response = await request(app).post('/api/work-entries/1/approve');
+      const response = await review();
 
       expect(response.status).toBe(403);
       expect(response.body).toEqual({ error: 'Only an approver can perform this action' });
       expect(mockDb.run).not.toHaveBeenCalled();
     });
 
-    test('should approve a submitted work entry', async () => {
-      mockAuthState = { email: 'boss@example.com', isApprover: true };
+    test('should review a submitted work entry', async () => {
+      mockAuthState = approver;
       mockEntry('submitted');
 
-      const response = await request(app).post('/api/work-entries/1/approve');
+      const response = await review();
 
       expect(response.status).toBe(200);
-      expect(response.body.message).toBe('Work entry approved successfully');
-      expect(response.body.workEntry.status).toBe('approved');
+      expect(response.body.message).toBe(successMessage);
+      expect(response.body.workEntry.status).toBe(targetStatus);
       expect(mockDb.run).toHaveBeenCalledWith(
         expect.stringContaining('reviewed_by = ?'),
-        ['approved', 'boss@example.com', 1],
+        [targetStatus, approver.email, 1],
         expect.any(Function)
       );
     });
 
-    test('should approve an entry belonging to another user', async () => {
-      mockAuthState = { email: 'boss@example.com', isApprover: true };
+    test('should review an entry belonging to another user', async () => {
+      mockAuthState = approver;
       mockEntry('submitted');
 
-      await request(app).post('/api/work-entries/1/approve');
+      await review();
 
       expect(mockDb.get).toHaveBeenCalledWith(
         'SELECT id, status FROM work_entries WHERE id = ?',
@@ -783,60 +792,40 @@ describe('Work Entry Routes', () => {
       );
     });
 
-    test('should return 409 when approving a draft work entry', async () => {
-      mockAuthState = { email: 'boss@example.com', isApprover: true };
-      mockEntry('draft');
+    test.each(invalidStatuses)('should return 409 for a %s work entry', async (status) => {
+      mockAuthState = approver;
+      mockEntry(status);
 
-      const response = await request(app).post('/api/work-entries/1/approve');
+      const response = await review();
 
       expect(response.status).toBe(409);
-      expect(response.body).toEqual({ error: "Cannot approve a work entry with status 'draft'" });
+      expect(response.body).toEqual({ error: `Cannot ${action} a work entry with status '${status}'` });
       expect(mockDb.run).not.toHaveBeenCalled();
     });
 
-    test('should return 409 when approving a rejected work entry', async () => {
-      mockAuthState = { email: 'boss@example.com', isApprover: true };
-      mockEntry('rejected');
-
-      const response = await request(app).post('/api/work-entries/1/approve');
-
-      expect(response.status).toBe(409);
-      expect(response.body).toEqual({ error: "Cannot approve a work entry with status 'rejected'" });
-    });
-
-    test('should return 409 when approving an already approved work entry', async () => {
-      mockAuthState = { email: 'boss@example.com', isApprover: true };
-      mockEntry('approved');
-
-      const response = await request(app).post('/api/work-entries/1/approve');
-
-      expect(response.status).toBe(409);
-      expect(response.body).toEqual({ error: "Cannot approve a work entry with status 'approved'" });
-    });
-
     test('should return 404 if the work entry does not exist', async () => {
-      mockAuthState = { email: 'boss@example.com', isApprover: true };
+      mockAuthState = approver;
       mockDb.get.mockImplementation((query, params, callback) => {
         callback(null, null);
       });
 
-      const response = await request(app).post('/api/work-entries/999/approve');
+      const response = await review(999);
 
       expect(response.status).toBe(404);
       expect(response.body).toEqual({ error: 'Work entry not found' });
     });
 
     test('should return 400 for invalid work entry ID', async () => {
-      mockAuthState = { email: 'boss@example.com', isApprover: true };
+      mockAuthState = approver;
 
-      const response = await request(app).post('/api/work-entries/invalid/approve');
+      const response = await review('invalid');
 
       expect(response.status).toBe(400);
       expect(response.body).toEqual({ error: 'Invalid work entry ID' });
     });
 
     test('should handle database error on update', async () => {
-      mockAuthState = { email: 'boss@example.com', isApprover: true };
+      mockAuthState = approver;
       mockDb.get.mockImplementation((query, params, callback) => {
         callback(null, { id: 1, status: 'submitted' });
       });
@@ -844,94 +833,10 @@ describe('Work Entry Routes', () => {
         callback(new Error('Update failed'));
       });
 
-      const response = await request(app).post('/api/work-entries/1/approve');
+      const response = await review();
 
       expect(response.status).toBe(500);
-      expect(response.body).toEqual({ error: 'Failed to approve work entry' });
-    });
-  });
-
-  describe('POST /api/work-entries/:id/reject', () => {
-    function mockEntry(status, finalStatus = 'rejected') {
-      mockDb.get.mockImplementation((query, params, callback) => {
-        if (query.includes('work_entries we')) {
-          callback(null, { id: 1, status: finalStatus, reviewed_by: 'boss@example.com', client_name: 'Client A' });
-        } else {
-          callback(null, { id: 1, status });
-        }
-      });
-      mockDb.run.mockImplementation((query, params, callback) => {
-        callback(null);
-      });
-    }
-
-    test('should return 403 when the user is not an approver', async () => {
-      const response = await request(app).post('/api/work-entries/1/reject');
-
-      expect(response.status).toBe(403);
-      expect(response.body).toEqual({ error: 'Only an approver can perform this action' });
-    });
-
-    test('should reject a submitted work entry', async () => {
-      mockAuthState = { email: 'boss@example.com', isApprover: true };
-      mockEntry('submitted');
-
-      const response = await request(app).post('/api/work-entries/1/reject');
-
-      expect(response.status).toBe(200);
-      expect(response.body.message).toBe('Work entry rejected');
-      expect(response.body.workEntry.status).toBe('rejected');
-      expect(mockDb.run).toHaveBeenCalledWith(
-        expect.any(String),
-        ['rejected', 'boss@example.com', 1],
-        expect.any(Function)
-      );
-    });
-
-    test('should return 409 when rejecting a draft work entry', async () => {
-      mockAuthState = { email: 'boss@example.com', isApprover: true };
-      mockEntry('draft');
-
-      const response = await request(app).post('/api/work-entries/1/reject');
-
-      expect(response.status).toBe(409);
-      expect(response.body).toEqual({ error: "Cannot reject a work entry with status 'draft'" });
-      expect(mockDb.run).not.toHaveBeenCalled();
-    });
-
-    test('should return 409 when rejecting an approved work entry', async () => {
-      mockAuthState = { email: 'boss@example.com', isApprover: true };
-      mockEntry('approved');
-
-      const response = await request(app).post('/api/work-entries/1/reject');
-
-      expect(response.status).toBe(409);
-      expect(response.body).toEqual({ error: "Cannot reject a work entry with status 'approved'" });
-    });
-
-    test('should return 409 when rejecting an already rejected work entry', async () => {
-      mockAuthState = { email: 'boss@example.com', isApprover: true };
-      mockEntry('rejected');
-
-      const response = await request(app).post('/api/work-entries/1/reject');
-
-      expect(response.status).toBe(409);
-      expect(response.body).toEqual({ error: "Cannot reject a work entry with status 'rejected'" });
-    });
-
-    test('should handle database error on update', async () => {
-      mockAuthState = { email: 'boss@example.com', isApprover: true };
-      mockDb.get.mockImplementation((query, params, callback) => {
-        callback(null, { id: 1, status: 'submitted' });
-      });
-      mockDb.run.mockImplementation((query, params, callback) => {
-        callback(new Error('Update failed'));
-      });
-
-      const response = await request(app).post('/api/work-entries/1/reject');
-
-      expect(response.status).toBe(500);
-      expect(response.body).toEqual({ error: 'Failed to reject work entry' });
+      expect(response.body).toEqual({ error: `Failed to ${action} work entry` });
     });
   });
 

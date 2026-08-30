@@ -12,7 +12,6 @@ import {
   TableRow,
   Alert,
   CircularProgress,
-  Chip,
 } from '@mui/material';
 import {
   Check as CheckIcon,
@@ -20,6 +19,8 @@ import {
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
+import { getApiErrorMessage } from '../api/errors';
+import WorkEntryCells from '../components/WorkEntryCells';
 import { useAuth } from '../hooks/useAuth';
 import { type WorkEntry } from '../types/api';
 
@@ -39,10 +40,7 @@ const PendingApprovalsPage: React.FC = () => {
     queryClient.invalidateQueries({ queryKey: ['workEntries'] });
   };
 
-  const handleError = (fallback: string) => (err: unknown) => {
-    const error = err as { response?: { data?: { error?: string } } };
-    setError(error.response?.data?.error || fallback);
-  };
+  const handleError = (fallback: string) => (err: unknown) => setError(getApiErrorMessage(err, fallback));
 
   const approveMutation = useMutation({
     mutationFn: (id: number) => apiClient.approveWorkEntry(id),
@@ -108,28 +106,7 @@ const PendingApprovalsPage: React.FC = () => {
                     <TableCell>
                       <Typography variant="body2">{entry.user_email}</Typography>
                     </TableCell>
-                    <TableCell>
-                      <Typography variant="subtitle1" fontWeight="medium">
-                        {entry.client_name}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">
-                        {new Date(entry.date).toLocaleDateString()}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip label={`${entry.hours} hours`} color="primary" variant="outlined" />
-                    </TableCell>
-                    <TableCell>
-                      {entry.description ? (
-                        <Typography variant="body2" color="text.secondary">
-                          {entry.description}
-                        </Typography>
-                      ) : (
-                        <Chip label="No description" size="small" variant="outlined" />
-                      )}
-                    </TableCell>
+                    <WorkEntryCells entry={entry} />
                     <TableCell>
                       <Typography variant="body2" color="text.secondary">
                         {entry.submitted_at ? new Date(entry.submitted_at).toLocaleString() : '-'}
